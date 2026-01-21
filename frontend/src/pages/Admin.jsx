@@ -476,6 +476,22 @@ function UploadPhotos({ tagGroups, authParams, onRefresh, showSuccess, showError
     setCurrentIndex(currentIndex === uploadedPhotos.length - 1 ? 0 : currentIndex + 1)
   }
 
+  // Manejar teclas de flecha del teclado
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault()
+        goToPrev()
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault()
+        goToNext()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [currentIndex, uploadedPhotos.length])
+
   const handleChangeBucket = async (bucketId) => {
     // Guardar bucket actual si hay fotos
     if (uploadedPhotos.length > 0 && currentPhoto) {
@@ -1281,6 +1297,22 @@ function ManagePhotos({ photos, tagGroups, authParams, onRefresh, showSuccess, s
     // Continuo: si está en la última, va a la primera
     setCurrentIndex(currentIndex === filteredPhotos.length - 1 ? 0 : currentIndex + 1)
   }
+
+  // Manejar teclas de flecha del teclado
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault()
+        goToPrev()
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault()
+        goToNext()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [currentIndex, filteredPhotos.length])
 
   const currentTags = currentPhoto ? (photoTags[currentPhoto.id] || []) : []
   const currentText = currentPhoto ? (photoTexts[currentPhoto.id] || '') : ''
