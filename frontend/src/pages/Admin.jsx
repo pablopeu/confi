@@ -1646,7 +1646,7 @@ function TagsManager({ tagGroups, authParams, onRefresh, showSuccess, showError,
               <div className="space-y-1 max-h-48 overflow-y-auto">
                 {(group.id === 'tipo' ? group.tags : [...group.tags].sort((a, b) => a.name.localeCompare(b.name))).map((tag, index) => {
                   const isConfirming = confirmingDelete?.tagId === tag.id && confirmingDelete?.groupId === group.id
-                  const isHeaderTag = group.id === 'tipo' && index < 3
+                  const isHeaderTag = group.id === 'tipo' && index < 4
                   const isDragging = draggedTag?.tagId === tag.id
 
                   return (
@@ -1660,7 +1660,6 @@ function TagsManager({ tagGroups, authParams, onRefresh, showSuccess, showError,
                     >
                       <span className={`text-sm text-gray-700 dark:text-gray-300 ${isHeaderTag ? 'font-bold' : ''}`}>
                         {capitalize(tag.name)}
-                        {isHeaderTag && <span className="ml-1 text-xs text-blue-600">(header)</span>}
                       </span>
                       {isConfirming ? (
                         <div className="flex items-center gap-1">
@@ -1696,6 +1695,11 @@ function TagsManager({ tagGroups, authParams, onRefresh, showSuccess, showError,
                     </div>
                   )
                 })}
+                {group.id === 'tipo' && group.tags.length > 0 && (
+                  <p className="text-xs text-gray-500 italic mt-2">
+                    Los tags en negrita aparecen en el header del frontend (primeras 4 posiciones)
+                  </p>
+                )}
               </div>
             )}
           </div>

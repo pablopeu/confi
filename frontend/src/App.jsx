@@ -182,12 +182,12 @@ function App() {
         const tipoGroup = groups.find(g => g.id === 'tipo')
         if (tipoGroup && tipoGroup.tags && tipoGroup.tags.length > 0) {
           const tipoTags = tipoGroup.tags
-          const mainTabs = tipoTags.slice(0, 3).map(tag => ({
+          const mainTabs = tipoTags.slice(0, 4).map(tag => ({
             id: tag.id,
             label: capitalize(tag.name),
             isOtros: false
           }))
-          const otrosTagsIds = tipoTags.slice(3).map(tag => tag.id)
+          const otrosTagsIds = tipoTags.slice(4).map(tag => tag.id)
 
           const tabs = [
             ...mainTabs,
