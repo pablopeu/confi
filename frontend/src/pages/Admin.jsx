@@ -34,6 +34,7 @@ export default function Admin() {
   const [showPasswordModal, setShowPasswordModal] = useState(false)
   const [newPassword, setNewPassword] = useState('')
   const [pendingSave, setPendingSave] = useState(null) // Función para guardar antes de cambiar tab
+  const [backendTitle, setBackendTitle] = useState('FotoCRM Admin')
 
   const { isOpen, modalProps, closeModal, showSuccess, showError, showConfirm } = useModal()
 
@@ -1656,7 +1657,6 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange }) {
   const [siteTitle, setSiteTitle] = useState('PEU Cuchillos Artesanales')
   const [siteSubtitleMobile, setSiteSubtitleMobile] = useState('Buscador interactivo')
   const [siteSubtitleDesktop, setSiteSubtitleDesktop] = useState('Buscador interactivo de modelos y materiales')
-  const [backendTitle, setBackendTitle] = useState('FotoCRM Admin')
   const [savingSiteInfo, setSavingSiteInfo] = useState(false)
   const [savedSiteInfoFeedback, setSavedSiteInfoFeedback] = useState(false)
 
