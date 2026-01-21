@@ -320,6 +320,38 @@ function UploadPhotos({ tagGroups, authParams, onRefresh, showSuccess, showError
     return () => setPendingSave && setPendingSave(null)
   }, [currentPhoto, photoTags, photoTexts])
 
+  // Manejar Escape y clicks fuera para deseleccionar bucket
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && activeBucketId) {
+        setActiveBucketId(null)
+        setUploadedPhotos([])
+        setCurrentIndex(0)
+        setPhotoTags({})
+        setPhotoTexts({})
+      }
+    }
+
+    const handleClickOutside = (e) => {
+      // Si hay un bucket activo y el click no fue en un botón
+      if (activeBucketId && !e.target.closest('button')) {
+        setActiveBucketId(null)
+        setUploadedPhotos([])
+        setCurrentIndex(0)
+        setPhotoTags({})
+        setPhotoTexts({})
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    document.addEventListener('click', handleClickOutside)
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+      document.removeEventListener('click', handleClickOutside)
+    }
+  }, [activeBucketId])
+
   const handleUpload = async (files) => {
     if (!files || files.length === 0) return
 
@@ -735,7 +767,7 @@ function UploadPhotos({ tagGroups, authParams, onRefresh, showSuccess, showError
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
               </svg>
-              Eliminar todo
+              Eliminar bucket y su contenido
             </button>
           )}
         </div>
