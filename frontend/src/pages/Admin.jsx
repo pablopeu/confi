@@ -1451,6 +1451,7 @@ function TagsManager({ tagGroups, authParams, onRefresh, showSuccess, showError,
   const [newTagName, setNewTagName] = useState('')
   const [selectedGroup, setSelectedGroup] = useState('')
   const [editingGroup, setEditingGroup] = useState(null)
+  const [editingTag, setEditingTag] = useState(null) // { groupId, tagId, name }
   const [confirmingDelete, setConfirmingDelete] = useState(null) // { groupId, tagId, tagName }
 
   // Manejar tecla Escape para cancelar confirmación
@@ -1529,6 +1530,32 @@ function TagsManager({ tagGroups, authParams, onRefresh, showSuccess, showError,
     }
   }
 
+  const handleRenameTag = async () => {
+    if (!editingTag) return
+
+    try {
+      const params = new URLSearchParams(authParams)
+      const response = await fetch(apiUrl(`admin/tags/${editingTag.groupId}/${editingTag.tagId}`) + '&' + params.toString(), {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: editingTag.name })
+      })
+
+      if (response.ok) {
+        showSuccess('Actualizado', 'Tag renombrado')
+        setEditingTag(null)
+        onRefresh()
+      } else if (response.status === 401) {
+        showError('Sesión expirada', 'Por favor, vuelve a iniciar sesión')
+      } else {
+        const error = await response.json()
+        showError('Error', error.error || 'Error al renombrar tag')
+      }
+    } catch (error) {
+      showError('Error', 'Error de conexión')
+    }
+  }
+
   return (
     <div className="h-full overflow-y-auto py-4 space-y-6">
       {/* Create Tag */}
@@ -1600,12 +1627,20 @@ function TagsManager({ tagGroups, authParams, onRefresh, showSuccess, showError,
                           </button>
                         </div>
                       ) : (
-                        <button
-                          onClick={() => setConfirmingDelete({ groupId: group.id, tagId: tag.id, tagName: tag.name })}
-                          className="text-xs text-red-600 hover:underline"
-                        >
-                          Eliminar
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => setEditingTag({ groupId: group.id, tagId: tag.id, name: tag.name })}
+                            className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                          >
+                            Renombrar
+                          </button>
+                          <button
+                            onClick={() => setConfirmingDelete({ groupId: group.id, tagId: tag.id, tagName: tag.name })}
+                            className="text-xs text-red-600 hover:underline"
+                          >
+                            Eliminar
+                          </button>
+                        </div>
                       )}
                     </div>
                   )
@@ -1632,6 +1667,29 @@ function TagsManager({ tagGroups, authParams, onRefresh, showSuccess, showError,
                 Cancelar
               </button>
               <button onClick={handleRenameGroup} className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                Guardar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Rename Tag Modal */}
+      {editingTag && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setEditingTag(null)}>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-sm mx-4" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Renombrar tag</h3>
+            <input
+              type="text"
+              value={editingTag.name}
+              onChange={(e) => setEditingTag({ ...editingTag, name: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white mb-4"
+            />
+            <div className="flex gap-2">
+              <button onClick={() => setEditingTag(null)} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg">
+                Cancelar
+              </button>
+              <button onClick={handleRenameTag} className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
                 Guardar
               </button>
             </div>
