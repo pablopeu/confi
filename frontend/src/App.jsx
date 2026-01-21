@@ -1330,14 +1330,19 @@ function Configurador({
 
       if (response.ok) {
         const data = await response.json()
-        console.log('Configuración guardada, código:', data.code)
-        console.log('savedCode actual:', savedCode)
 
-        // Recargar página con el código en la URL (siempre, para mostrar en URL)
+        // Actualizar la URL sin recargar la página
         const newUrl = `${window.location.origin}${window.location.pathname}?config=${data.code}`
-        console.log('Recargando con URL:', newUrl)
-        window.location.href = newUrl
-        return
+        window.history.pushState({}, '', newUrl)
+
+        // Actualizar estado y mostrar botones de compartir
+        setSavedCode(data.code)
+        setShowShareButtons(true)
+
+        // Ocultar botones después de 5 segundos
+        setTimeout(() => {
+          setShowShareButtons(false)
+        }, 5000)
       }
     } catch (error) {
       console.error('Error al guardar configuración:', error)
