@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faInfoCircle } from '@fortawesome/free-solid-svg-icons'
 import SearchBar from './components/SearchBar'
 import {
   getCategories,
@@ -817,10 +819,7 @@ function App() {
               className="w-14 h-14 rounded-full bg-gray-800 hover:bg-gray-900 text-white flex items-center justify-center shadow-lg transition-all hover:scale-110"
               title="Ver instrucciones"
             >
-              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.323 5.477 5.477 10.323 5 10.323c0 5.618 0 10.077 2.53 10.622 5.707a9.96 9.96 0 011.658 5.228M9 20h6m-7 0h10m2-10v5m0 0a2 2 0 11-4 0 2 2 0 014 0zm-3-6a2 2 0 11-4 0 2 2 0 014 0" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 0h6m-3 3v-6" />
-              </svg>
+              <FontAwesomeIcon icon={faInfoCircle} className="text-3xl" />
             </button>
           )}
 
