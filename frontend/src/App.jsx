@@ -400,6 +400,8 @@ function App() {
       setSavedCode={setSavedCode}
       footerConfig={footerConfig}
       siteTitle={siteTitle}
+      siteSubtitleMobile={siteSubtitleMobile}
+      siteSubtitleDesktop={siteSubtitleDesktop}
     />
   }
 
@@ -1185,7 +1187,9 @@ function Configurador({
   savedCode,
   setSavedCode,
   footerConfig,
-  siteTitle
+  siteTitle,
+  siteSubtitleMobile,
+  siteSubtitleDesktop
 }) {
   const [saving, setSaving] = useState(false)
   const [showShareButtons, setShowShareButtons] = useState(false)
