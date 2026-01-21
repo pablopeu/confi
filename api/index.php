@@ -828,26 +828,53 @@ switch (true) {
         // Guardar fotos en archivo general
         writeJSON('photos.json', $data);
 
-        // Crear nuevo bucket con estas fotos
+        // Verificar si se debe agregar a un bucket existente
+        $bucketId = $_POST['bucket_id'] ?? null;
+
         if (!empty($newPhotos)) {
             $bucketsData = readJSON('buckets.json');
-            $newBucket = [
-                'id' => generateUUID(),
-                'created_at' => date('c'),
-                'photos' => $newPhotos
-            ];
 
-            // Agregar al inicio del array (más reciente primero)
-            array_unshift($bucketsData['buckets'], $newBucket);
+            if ($bucketId) {
+                // Agregar fotos a un bucket existente
+                $bucketIndex = null;
+                foreach ($bucketsData['buckets'] as $i => $bucket) {
+                    if ($bucket['id'] === $bucketId) {
+                        $bucketIndex = $i;
+                        break;
+                    }
+                }
 
-            // Mantener solo los últimos 5 buckets (FIFO)
-            if (count($bucketsData['buckets']) > 5) {
-                $bucketsData['buckets'] = array_slice($bucketsData['buckets'], 0, 5);
+                if ($bucketIndex !== null) {
+                    // Agregar nuevas fotos al bucket existente
+                    $bucketsData['buckets'][$bucketIndex]['photos'] = array_merge(
+                        $bucketsData['buckets'][$bucketIndex]['photos'],
+                        $newPhotos
+                    );
+                    writeJSON('buckets.json', $bucketsData);
+                    response(['photos' => $newPhotos, 'bucket_id' => $bucketId], 201);
+                } else {
+                    response(['error' => 'Bucket not found'], 404);
+                }
+            } else {
+                // Crear nuevo bucket con estas fotos
+                $newBucket = [
+                    'id' => generateUUID(),
+                    'created_at' => date('c'),
+                    'photos' => $newPhotos
+                ];
+
+                // Agregar al inicio del array (más reciente primero)
+                array_unshift($bucketsData['buckets'], $newBucket);
+
+                // Mantener solo los últimos 5 buckets (FIFO)
+                if (count($bucketsData['buckets']) > 5) {
+                    $bucketsData['buckets'] = array_slice($bucketsData['buckets'], 0, 5);
+                }
+
+                writeJSON('buckets.json', $bucketsData);
+
+                response(['photos' => $newPhotos, 'bucket_id' => $newBucket['id']], 201);
             }
-
-            writeJSON('buckets.json', $bucketsData);
-
-            response(['photos' => $newPhotos, 'bucket_id' => $newBucket['id']], 201);
         } else {
             response(['photos' => $newPhotos], 201);
         }

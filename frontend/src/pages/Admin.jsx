@@ -323,56 +323,86 @@ function UploadPhotos({ tagGroups, authParams, onRefresh, showSuccess, showError
     if (!files || files.length === 0) return
 
     setUploading(true)
-    const formData = new FormData()
-    for (const file of files) {
-      formData.append('photos[]', file)
-    }
-    formData.append('tags', '')
-    formData.append('text', '')
-    formData.append('auth_user', authParams.auth_user)
-    formData.append('auth_pass', authParams.auth_pass)
+    const MAX_FILES_PER_REQUEST = 20 // Límite del hosting
+    const allPhotos = []
+    let bucketId = null
 
     try {
-      const response = await fetch(apiUrl('admin/upload'), {
-        method: 'POST',
-        body: formData
-      })
+      // Dividir en lotes de MAX_FILES_PER_REQUEST
+      const chunks = []
+      for (let i = 0; i < files.length; i += MAX_FILES_PER_REQUEST) {
+        chunks.push(Array.from(files).slice(i, i + MAX_FILES_PER_REQUEST))
+      }
 
-      if (response.ok) {
-        const data = await response.json()
-        const newPhotos = data.photos || []
-        const newBucketId = data.bucket_id
+      // Subir cada lote secuencialmente
+      for (let i = 0; i < chunks.length; i++) {
+        const chunk = chunks[i]
+        const formData = new FormData()
 
-        // Recargar buckets
-        await loadBuckets()
-
-        // Activar el nuevo bucket
-        if (newBucketId) {
-          setActiveBucketId(newBucketId)
+        // Agregar archivos del lote
+        for (const file of chunk) {
+          formData.append('photos[]', file)
         }
 
-        // Cargar fotos del nuevo bucket
-        setUploadedPhotos(newPhotos)
-        setCurrentIndex(0)
+        // Si es el primer lote, usar bucket vacío
+        // Para lotes subsiguientes, enviar el bucket_id para agregar al mismo bucket
+        if (bucketId) {
+          formData.append('bucket_id', bucketId)
+        }
 
-        // Inicializar tags y textos vacíos para las nuevas fotos
-        const newTags = {}
-        const newTexts = {}
-        newPhotos.forEach(p => {
-          newTags[p.id] = []
-          newTexts[p.id] = ''
+        formData.append('tags', '')
+        formData.append('text', '')
+        formData.append('auth_user', authParams.auth_user)
+        formData.append('auth_pass', authParams.auth_pass)
+
+        const response = await fetch(apiUrl('admin/upload'), {
+          method: 'POST',
+          body: formData
         })
-        setPhotoTags(newTags)
-        setPhotoTexts(newTexts)
 
-        showSuccess('Éxito', `${newPhotos.length} foto(s) subida(s)`)
-        onRefresh()
-      } else if (response.status === 401) {
-        showError('Sesión expirada', 'Por favor, vuelve a iniciar sesión')
-      } else {
-        const error = await response.json()
-        showError('Error', error.error || 'Error al subir')
+        if (response.ok) {
+          const data = await response.json()
+          const uploadedPhotos = data.photos || []
+          allPhotos.push(...uploadedPhotos)
+
+          // Guardar el bucket_id del primer lote
+          if (data.bucket_id && !bucketId) {
+            bucketId = data.bucket_id
+          }
+        } else if (response.status === 401) {
+          showError('Sesión expirada', 'Por favor, vuelve a iniciar sesión')
+          return
+        } else {
+          const error = await response.json()
+          showError('Error', error.error || 'Error al subir lote ' + (i + 1))
+          return
+        }
       }
+
+      // Recargar buckets al final
+      await loadBuckets()
+
+      // Activar el nuevo bucket
+      if (bucketId) {
+        setActiveBucketId(bucketId)
+      }
+
+      // Cargar fotos del nuevo bucket
+      setUploadedPhotos(allPhotos)
+      setCurrentIndex(0)
+
+      // Inicializar tags y textos vacíos para las nuevas fotos
+      const newTags = {}
+      const newTexts = {}
+      allPhotos.forEach(p => {
+        newTags[p.id] = []
+        newTexts[p.id] = ''
+      })
+      setPhotoTags(newTags)
+      setPhotoTexts(newTexts)
+
+      showSuccess('Éxito', `${allPhotos.length} foto(s) subida(s)`)
+      onRefresh()
     } catch (error) {
       showError('Error', 'Error de conexión')
     } finally {
