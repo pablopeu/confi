@@ -23,6 +23,94 @@ const normalizeText = (str) => {
     .replace(/[\u0300-\u036f]/g, '')
 }
 
+// Helper para parsear markdown a HTML
+const parseMarkdown = (text) => {
+  if (!text) return ''
+
+  // Escapar HTML primero para prevenir XSS
+  let html = text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+
+  // Convertir markdown a HTML
+  const lines = html.split('\n')
+  let result = []
+  let inList = false
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]
+
+    // Encabezado ## (h2)
+    if (line.startsWith('## ')) {
+      if (inList) {
+        result.push('</ul>')
+        inList = false
+      }
+      const content = line.substring(3).trim()
+      result.push(`<h2 class="text-xl font-bold text-gray-900 dark:text-white mt-6 mb-3">${parseInlineMarkdown(content)}</h2>`)
+    }
+    // Encabezado ### (h3)
+    else if (line.startsWith('### ')) {
+      if (inList) {
+        result.push('</ul>')
+        inList = false
+      }
+      const content = line.substring(4).trim()
+      result.push(`<h3 class="text-lg font-semibold text-gray-900 dark:text-white mt-5 mb-2">${parseInlineMarkdown(content)}</h3>`)
+    }
+    // Lista con * o -
+    else if (line.match(/^\s*[\*\-]\s+/)) {
+      if (!inList) {
+        result.push('<ul class="list-disc list-inside space-y-1 my-3 ml-6">')
+        inList = true
+      }
+      const content = line.replace(/^\s*[\*\-]\s+/, '').trim()
+      result.push(`<li>${parseInlineMarkdown(content)}</li>`)
+    }
+    // Línea en blanco dentro de lista - cerrar lista
+    else if (line.trim() === '' && inList) {
+      result.push('</ul>')
+      inList = false
+    }
+    // Párrafo normal (no vacío)
+    else if (line.trim() !== '') {
+      if (inList) {
+        result.push('</ul>')
+        inList = false
+      }
+      result.push(`<p class="my-2">${parseInlineMarkdown(line)}</p>`)
+    }
+    // Línea vacía fuera de lista
+    else if (line.trim() === '') {
+      if (!inList) {
+        result.push('<br />')
+      }
+    }
+  }
+
+  // Cerrar lista abierta al final
+  if (inList) {
+    result.push('</ul>')
+  }
+
+  return result.join('\n')
+}
+
+// Parsear markdown inline (negrita, itálica, links)
+const parseInlineMarkdown = (text) => {
+  // Links [texto](url)
+  text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-blue-600 dark:text-blue-400 hover:underline" target="_blank" rel="noopener noreferrer">$1</a>')
+
+  // Negrita **texto**
+  text = text.replace(/\*\*([^*]+)\*\*/g, '<strong class="font-bold">$1</strong>')
+
+  // Itálica *texto* (pero no si está dentro de negrita)
+  text = text.replace(/\*([^*]+)\*/g, '<em>$1</em>')
+
+  return text
+}
+
 function App() {
   const [tagGroups, setTagGroups] = useState([])
   const [photos, setPhotos] = useState([])
@@ -884,7 +972,7 @@ function App() {
             <div className="p-6">
               <div
                 className="prose dark:prose-invert max-w-none"
-                dangerouslySetInnerHTML={{ __html: instructionsConfig.text.replace(/\n/g, '<br>') }}
+                dangerouslySetInnerHTML={{ __html: parseMarkdown(instructionsConfig.text) }}
               />
             </div>
           </div>
