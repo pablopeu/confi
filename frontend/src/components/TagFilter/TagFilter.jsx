@@ -1,8 +1,6 @@
 import { useState } from 'react'
-import { useTranslation } from 'react-i18next'
 
 export default function TagFilter({ tagGroups, selectedTags, onTagToggle, onClearAll }) {
-  const { t } = useTranslation('components')
   const [collapsedGroups, setCollapsedGroups] = useState({})
 
   const toggleGroup = (groupId) => {
@@ -19,14 +17,14 @@ export default function TagFilter({ tagGroups, selectedTags, onTagToggle, onClea
       {/* Header con botón limpiar */}
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-          {t('tagFilter.filters')}
+          Filtros
         </h2>
         {hasSelectedTags && (
           <button
             onClick={onClearAll}
             className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
           >
-            {t('tagFilter.clear')} ({selectedTags.length})
+            Limpiar ({selectedTags.length})
           </button>
         )}
       </div>
@@ -99,7 +97,7 @@ export default function TagFilter({ tagGroups, selectedTags, onTagToggle, onClea
       {/* Tags seleccionados como chips */}
       {hasSelectedTags && (
         <div className="pt-2">
-          <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">{t('tagFilter.selected')}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Seleccionados:</p>
           <div className="flex flex-wrap gap-1">
             {selectedTags.map((tagId) => {
               // Buscar el nombre del tag

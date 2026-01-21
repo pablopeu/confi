@@ -1,9 +1,7 @@
-import { useState, useEffect, useRef, useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useState, useEffect, useRef } from 'react'
 import Modal from '../components/Modal'
 import { useModal } from '../hooks/useModal'
 import SearchBar from '../components/SearchBar/SearchBar'
-import LanguageSwitcher from '../components/LanguageSwitcher'
 
 const API_BASE = import.meta.env.VITE_API_URL || './api/index.php'
 
@@ -27,7 +25,6 @@ function apiUrl(route) {
 }
 
 export default function Admin() {
-  const { t } = useTranslation('admin')
   const [authenticated, setAuthenticated] = useState(false)
   const [credentials, setCredentials] = useState({ user: '', pass: '' })
   const [activeTab, setActiveTab] = useState('manage')
@@ -37,18 +34,8 @@ export default function Admin() {
   const [showPasswordModal, setShowPasswordModal] = useState(false)
   const [newPassword, setNewPassword] = useState('')
   const [pendingSave, setPendingSave] = useState(null) // Función para guardar antes de cambiar tab
-  const [backendTitle, setBackendTitle] = useState('FotoCRM Admin')
-  const [enabledLanguages, setEnabledLanguages] = useState({ es: true, en: true })
 
   const { isOpen, modalProps, closeModal, showSuccess, showError, showConfirm } = useModal()
-
-  // Tabs - debe estar antes del early return
-  const tabs = useMemo(() => [
-    { id: 'manage', label: t('tabs.manage') },
-    { id: 'upload', label: t('tabs.upload') },
-    { id: 'tags', label: t('tabs.tags') },
-    { id: 'config', label: t('tabs.config') },
-  ], [t])
 
   const getAuthParams = () => ({
     auth_user: credentials.user,
@@ -67,36 +54,26 @@ export default function Admin() {
         setAuthenticated(true)
         loadData()
       } else {
-        showError(t('messages.error', { ns: 'common' }), t('errors.invalid_credentials'))
+        showError('Error', 'Credenciales inválidas')
       }
     } catch (error) {
-      showError(t('messages.error', { ns: 'common' }), t('errors.connection_error'))
+      showError('Error', 'No se pudo conectar con el servidor')
     }
   }
 
   const loadData = async () => {
     setLoading(true)
     try {
-      // Agregar timestamp para evitar caché del navegador
-      const cacheBuster = `&_t=${Date.now()}`
-      // Agregar auth params para que backend devuelva datos multilingües completos
-      const authParams = new URLSearchParams(getAuthParams()).toString()
-      const [catRes, photoRes, configRes] = await Promise.all([
-        fetch(apiUrl('tags') + '&' + authParams + cacheBuster, { cache: 'no-store' }),
-        fetch(apiUrl('photos') + cacheBuster, { cache: 'no-store' }),
-        fetch(apiUrl('config') + '&' + authParams + cacheBuster, { cache: 'no-store' })
+      const [catRes, photoRes] = await Promise.all([
+        fetch(apiUrl('tags')),
+        fetch(apiUrl('photos'))
       ])
       const catData = await catRes.json()
       const photoData = await photoRes.json()
-      const configData = await configRes.json()
-
       setTagGroups(catData.tag_groups || [])
       setPhotos(photoData.photos || [])
-      setBackendTitle(configData.backend_title || 'FotoCRM Admin')
-      console.log('[Admin] Received enabled_languages from backend:', configData.enabled_languages)
-      setEnabledLanguages(configData.enabled_languages || { es: true, en: true })
     } catch (error) {
-      showError(t('messages.error', { ns: 'common' }), t('errors.load_data_error'))
+      showError('Error', 'Error al cargar datos')
     } finally {
       setLoading(false)
     }
@@ -104,7 +81,7 @@ export default function Admin() {
 
   const handleChangePassword = async () => {
     if (newPassword.length < 6) {
-      showError(t('messages.error', { ns: 'common' }), t('errors.password_length'))
+      showError('Error', 'La contraseña debe tener al menos 6 caracteres')
       return
     }
 
@@ -119,12 +96,12 @@ export default function Admin() {
         setCredentials({ ...credentials, pass: newPassword })
         setShowPasswordModal(false)
         setNewPassword('')
-        showSuccess(t('success.updated'), t('success.password_updated'))
+        showSuccess('Éxito', 'Contraseña actualizada')
       } else {
-        showError(t('messages.error', { ns: 'common' }), t('errors.password_change_error'))
+        showError('Error', 'No se pudo cambiar la contraseña')
       }
     } catch (error) {
-      showError(t('messages.error', { ns: 'common' }), t('errors.generic_error'))
+      showError('Error', 'Error de conexión')
     }
   }
 
@@ -145,7 +122,7 @@ export default function Admin() {
           </h1>
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('login.user')}</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Usuario</label>
               <input
                 type="text"
                 autoComplete="username"
@@ -156,7 +133,7 @@ export default function Admin() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('login.password')}</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Contraseña</label>
               <input
                 type="password"
                 autoComplete="current-password"
@@ -167,11 +144,11 @@ export default function Admin() {
               />
             </div>
             <button type="submit" className="w-full py-2 px-4 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700">
-              {t('buttons.login')}
+              Iniciar sesión
             </button>
           </form>
           <a href="#/" target="_blank" rel="noopener noreferrer" className="block text-center mt-4 text-sm text-gray-500 dark:text-gray-400 hover:underline">
-            {t('links.back_to_catalog')}
+            Volver al catálogo
           </a>
         </div>
         <Modal isOpen={isOpen} onClose={closeModal} {...modalProps} />
@@ -179,11 +156,18 @@ export default function Admin() {
     )
   }
 
+  const tabs = [
+    { id: 'manage', label: 'Administrar fotos' },
+    { id: 'upload', label: 'Subir fotos' },
+    { id: 'tags', label: 'Tags' },
+    { id: 'config', label: 'Configuración' },
+  ]
+
   return (
     <div className="h-screen bg-gray-100 dark:bg-gray-900 flex flex-col overflow-hidden">
       <header className="bg-white dark:bg-gray-800 shadow flex-shrink-0">
         <div className="max-w-7xl mx-auto px-4 py-2 flex justify-between items-center">
-          <h1 className="text-lg font-bold text-gray-900 dark:text-white">{backendTitle}</h1>
+          <h1 className="text-lg font-bold text-gray-900 dark:text-white">FotoCRM Admin</h1>
 
           {/* Tabs en el header */}
           <div className="flex gap-1">
@@ -203,13 +187,12 @@ export default function Admin() {
           </div>
 
           <div className="flex items-center gap-4">
-            <LanguageSwitcher enabledLanguages={enabledLanguages} />
-            <a href="#/" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-600 dark:text-gray-300 hover:underline">{t('navigation.back_to_catalog')}</a>
+            <a href="#/" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-600 dark:text-gray-300 hover:underline">Ver catálogo</a>
             <button onClick={() => setShowPasswordModal(true)} className="text-sm text-gray-600 dark:text-gray-300 hover:underline">
-              {t('navigation.change_password', { defaultValue: 'Cambiar contraseña' })}
+              Cambiar contraseña
             </button>
             <button onClick={() => setAuthenticated(false)} className="text-sm text-red-600 dark:text-red-400 hover:underline">
-              {t('navigation.logout', { defaultValue: 'Cerrar sesión' })}
+              Cerrar sesión
             </button>
           </div>
         </div>
@@ -255,8 +238,6 @@ export default function Admin() {
               showSuccess={showSuccess}
               showError={showError}
               onLogoChange={loadData}
-              backendTitle={backendTitle}
-              onBackendTitleChange={setBackendTitle}
             />
           )}
         </div>
@@ -266,21 +247,21 @@ export default function Admin() {
       {showPasswordModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowPasswordModal(false)}>
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-sm mx-4" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t("navigation.change_password")}</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Cambiar contraseña</h3>
             <input
               type="password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              placeholder={t('password_modal.placeholder')}
+              placeholder="Nueva contraseña (mín. 6 caracteres)"
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white mb-4"
               autoComplete="new-password"
             />
             <div className="flex gap-2">
               <button onClick={() => setShowPasswordModal(false)} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg">
-                {t('buttons.cancel')}
+                Cancelar
               </button>
               <button onClick={handleChangePassword} className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                {t('buttons.save')}
+                Guardar
               </button>
             </div>
           </div>
@@ -296,7 +277,6 @@ export default function Admin() {
 // Upload Photos - Nueva sección de subida
 // ==================
 function UploadPhotos({ tagGroups, authParams, onRefresh, showSuccess, showError, setPendingSave }) {
-  const { t } = useTranslation('admin')
   const [buckets, setBuckets] = useState([])
   const [activeBucketId, setActiveBucketId] = useState(null)
   const [uploadedPhotos, setUploadedPhotos] = useState([])
@@ -385,13 +365,13 @@ function UploadPhotos({ tagGroups, authParams, onRefresh, showSuccess, showError
         showSuccess('Éxito', `${newPhotos.length} foto(s) subida(s)`)
         onRefresh()
       } else if (response.status === 401) {
-        showError(t('errors.session_expired'), t('errors.session_expired_message'))
+        showError('Sesión expirada', 'Por favor, vuelve a iniciar sesión')
       } else {
         const error = await response.json()
         showError('Error', error.error || 'Error al subir')
       }
     } catch (error) {
-      showError(t('messages.error', { ns: 'common' }), t('errors.generic_error'))
+      showError('Error', 'Error de conexión')
     } finally {
       setUploading(false)
     }
@@ -440,7 +420,7 @@ function UploadPhotos({ tagGroups, authParams, onRefresh, showSuccess, showError
         onRefresh()
         return newTag
       } else if (response.status === 401) {
-        showError(t('errors.session_expired'), t('errors.session_expired_message'))
+        showError('Sesión expirada', 'Por favor, vuelve a iniciar sesión')
       }
     } catch (error) {
       showError('Error', 'Error al crear tag')
@@ -468,7 +448,7 @@ function UploadPhotos({ tagGroups, authParams, onRefresh, showSuccess, showError
         setSavedFeedback(true)
         setTimeout(() => setSavedFeedback(false), 1000)
       } else if (response.status === 401) {
-        showError(t('errors.session_expired'), t('errors.session_expired_message'))
+        showError('Sesión expirada', 'Por favor, vuelve a iniciar sesión')
       }
     } catch (error) {
       showError('Error', 'Error al guardar')
@@ -568,12 +548,12 @@ function UploadPhotos({ tagGroups, authParams, onRefresh, showSuccess, showError
         await loadBuckets()
         setBucketToDelete(null)
       } else if (response.status === 401) {
-        showError(t('errors.session_expired'), t('errors.session_expired_message'))
+        showError('Sesión expirada', 'Por favor, vuelve a iniciar sesión')
       } else {
         showError('Error', 'Error al eliminar bucket')
       }
     } catch (error) {
-      showError(t('messages.error', { ns: 'common' }), t('errors.generic_error'))
+      showError('Error', 'Error de conexión')
     }
   }
 
@@ -605,24 +585,24 @@ function UploadPhotos({ tagGroups, authParams, onRefresh, showSuccess, showError
                   : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
               }`}
             >
-              {t('buckets.bucket')} {index + 1}
+              Bucket {index + 1}
               {bucket && ` (${bucket.photos.length})`}
             </button>
             {bucket && (
               isAwaitingConfirmation ? (
                 <div className="flex items-center gap-1 bg-red-100 dark:bg-red-900/50 px-2 py-1 rounded-lg">
-                  <span className="text-xs text-red-600 dark:text-red-400">{t('buckets.delete_confirm')}</span>
+                  <span className="text-xs text-red-600 dark:text-red-400">¿Eliminar?</span>
                   <button
                     onClick={() => handleDeleteBucket(bucket.id)}
                     className="text-xs px-2 py-0.5 bg-red-600 text-white rounded hover:bg-red-700"
                   >
-                    {t('buckets.yes')}
+                    Sí
                   </button>
                   <button
                     onClick={() => setBucketToDelete(null)}
                     className="text-xs px-2 py-0.5 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded hover:bg-gray-400 dark:hover:bg-gray-500"
                   >
-                    {t('buckets.no')}
+                    No
                   </button>
                 </div>
               ) : (
@@ -666,17 +646,17 @@ function UploadPhotos({ tagGroups, authParams, onRefresh, showSuccess, showError
             {uploading ? (
               <div className="flex flex-col items-center gap-3">
                 <div className="w-10 h-10 border-3 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                <span className="text-gray-600 dark:text-gray-300">{t('upload.uploading')}</span>
+                <span className="text-gray-600 dark:text-gray-300">Subiendo fotos...</span>
               </div>
             ) : (
               <>
                 <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
-                <p className="text-lg text-gray-600 dark:text-gray-300 mb-3">{t('upload.drag_here')}</p>
-                <p className="text-sm text-gray-400 mb-4">{t('upload.or')}</p>
+                <p className="text-lg text-gray-600 dark:text-gray-300 mb-3">Arrastra las fotos aquí</p>
+                <p className="text-sm text-gray-400 mb-4">o</p>
                 <label className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg cursor-pointer hover:bg-blue-700 transition-colors">
-                  {t('upload.select_files')}
+                  Seleccionar archivos
                   <input
                     type="file"
                     multiple
@@ -742,7 +722,7 @@ function UploadPhotos({ tagGroups, authParams, onRefresh, showSuccess, showError
           </svg>
         </button>
 
-        {/* Controles y Tags de Encabado */}
+        {/* Descripción y controles - ocupa el resto del espacio */}
         <div className="flex-1 flex flex-col gap-2">
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-500 dark:text-gray-400">
@@ -759,18 +739,13 @@ function UploadPhotos({ tagGroups, authParams, onRefresh, showSuccess, showError
               />
             </label>
           </div>
-          {/* Sección de tags Encabado */}
-          <div className="flex-1 min-h-0">
-            {tagGroups.filter(g => g.id === 'encabado').map((group) => (
-              <TagSection
-                key={group.id}
-                group={group}
-                selectedTags={currentTags}
-                onTagToggle={handleTagToggle}
-                onCreateTag={(name) => handleCreateTag(group.id, name)}
-              />
-            ))}
-          </div>
+          <textarea
+            value={currentText}
+            onChange={(e) => handleTextChange(e.target.value)}
+            placeholder="Descripción de la foto..."
+            rows={3}
+            className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
+          />
           <button
             onClick={() => handleSaveCurrentPhoto(true)}
             disabled={saving}
@@ -785,9 +760,9 @@ function UploadPhotos({ tagGroups, authParams, onRefresh, showSuccess, showError
         </div>
       </div>
 
-      {/* Área inferior: 3 secciones de tags - Tipo (más pequeño), Extras y Acero */}
-      <div className="flex-1 grid gap-3 min-h-0" style={{ gridTemplateColumns: 'minmax(150px, 1fr) 3fr 3fr' }}>
-        {tagGroups.filter(g => g.id !== 'encabado').map((group) => (
+      {/* Área inferior: 4 secciones de tags - Tipo más pequeño, otros más grandes */}
+      <div className="flex-1 grid gap-3 min-h-0" style={{ gridTemplateColumns: '1fr 2fr 2fr 2fr' }}>
+        {tagGroups.map((group) => (
           <TagSection
             key={group.id}
             group={group}
@@ -1033,29 +1008,17 @@ function TagSection({ group, selectedTags, onTagToggle, onCreateTag }) {
   const [search, setSearch] = useState('')
   const [creating, setCreating] = useState(false)
 
-  // Helper para obtener nombre del tag (maneja string y objeto multilingüe)
-  const getTagName = (tag) => {
-    if (typeof tag.name === 'object') {
-      return tag.name.es || tag.name.en || ''
-    }
-    return tag.name || ''
-  }
-
   // Ordenar tags alfabéticamente
-  const sortedTags = [...group.tags].sort((a, b) => {
-    const aName = getTagName(a)
-    const bName = getTagName(b)
-    return aName.localeCompare(bName)
-  })
+  const sortedTags = [...group.tags].sort((a, b) => a.name.localeCompare(b.name))
 
   // Filtrar por búsqueda
   const filteredTags = search
-    ? sortedTags.filter(t => getTagName(t).toLowerCase().includes(search.toLowerCase()))
+    ? sortedTags.filter(t => t.name.toLowerCase().includes(search.toLowerCase()))
     : sortedTags
 
   // Verificar si el search es un tag nuevo
   const searchMatchesExisting = sortedTags.some(
-    t => getTagName(t).toLowerCase() === search.toLowerCase()
+    t => t.name.toLowerCase() === search.toLowerCase()
   )
   const canCreate = search.trim() && !searchMatchesExisting
 
@@ -1078,9 +1041,7 @@ function TagSection({ group, selectedTags, onTagToggle, onCreateTag }) {
     <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 flex flex-col overflow-hidden">
       {/* Header con nombre del grupo */}
       <div className="px-3 py-2 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600 flex-shrink-0">
-        <h3 className="font-semibold text-gray-700 dark:text-gray-200 text-sm">
-          {typeof group.name === 'object' ? (group.name.es || group.name.en) : group.name}
-        </h3>
+        <h3 className="font-semibold text-gray-700 dark:text-gray-200 text-sm">{group.name}</h3>
       </div>
 
       {/* Input de búsqueda/creación */}
@@ -1121,7 +1082,7 @@ function TagSection({ group, selectedTags, onTagToggle, onCreateTag }) {
                     : 'bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-500'
                 }`}
               >
-                {capitalize(getTagName(tag))}
+                {capitalize(tag.name)}
               </button>
             )
           })}
@@ -1257,7 +1218,7 @@ function ManagePhotos({ photos, tagGroups, authParams, onRefresh, showSuccess, s
         onRefresh()
         return newTag
       } else if (response.status === 401) {
-        showError(t('errors.session_expired'), t('errors.session_expired_message'))
+        showError('Sesión expirada', 'Por favor, vuelve a iniciar sesión')
       }
     } catch (error) {
       showError('Error', 'Error al crear tag')
@@ -1284,7 +1245,7 @@ function ManagePhotos({ photos, tagGroups, authParams, onRefresh, showSuccess, s
         setSavedFeedback(true)
         setTimeout(() => setSavedFeedback(false), 1000)
       } else if (response.status === 401) {
-        showError(t('errors.session_expired'), t('errors.session_expired_message'))
+        showError('Sesión expirada', 'Por favor, vuelve a iniciar sesión')
       }
     } catch (error) {
       showError('Error', 'Error al guardar')
@@ -1308,10 +1269,10 @@ function ManagePhotos({ photos, tagGroups, authParams, onRefresh, showSuccess, s
           }
           onRefresh()
         } else if (response.status === 401) {
-          showError(t('errors.session_expired'), t('errors.session_expired_message'))
+          showError('Sesión expirada', 'Por favor, vuelve a iniciar sesión')
         }
       } catch (error) {
-        showError(t('messages.error', { ns: 'common' }), t('errors.generic_error'))
+        showError('Error', 'Error de conexión')
       }
     })
   }
@@ -1464,8 +1425,8 @@ function ManagePhotos({ photos, tagGroups, authParams, onRefresh, showSuccess, s
         </div>
       </div>
 
-      {/* Área inferior: 3 secciones de tags - Tipo (más pequeño), Extras y Acero */}
-      <div className="flex-1 grid gap-3 min-h-0" style={{ gridTemplateColumns: 'minmax(150px, 1fr) 3fr 3fr' }}>
+      {/* Área inferior: 3 secciones de tags - Tipo pequeño, Extras y Acero más grandes */}
+      <div className="flex-1 grid gap-3 min-h-0" style={{ gridTemplateColumns: '1fr 3fr 3fr' }}>
         {tagGroups.filter(g => g.id !== 'encabado').map((group) => (
           <TagSection
             key={group.id}
@@ -1484,16 +1445,10 @@ function ManagePhotos({ photos, tagGroups, authParams, onRefresh, showSuccess, s
 // Tags Manager - Gestión de tags
 // ==================
 function TagsManager({ tagGroups, authParams, onRefresh, showSuccess, showError, showConfirm }) {
-  const { t, i18n } = useTranslation('admin')
-  const currentLang = i18n.language
-  const [newTagNameEs, setNewTagNameEs] = useState('')
-  const [newTagNameEn, setNewTagNameEn] = useState('')
+  const [newTagName, setNewTagName] = useState('')
   const [selectedGroup, setSelectedGroup] = useState('')
   const [editingGroup, setEditingGroup] = useState(null)
-  const [editingTag, setEditingTag] = useState(null)
   const [confirmingDelete, setConfirmingDelete] = useState(null) // { groupId, tagId, tagName }
-  const [draggedTag, setDraggedTag] = useState(null) // { groupId, tagId, index }
-  const [dragOverIndex, setDragOverIndex] = useState(null)
 
   // Manejar tecla Escape para cancelar confirmación
   useEffect(() => {
@@ -1508,32 +1463,27 @@ function TagsManager({ tagGroups, authParams, onRefresh, showSuccess, showError,
 
   const handleCreateTag = async (e) => {
     e.preventDefault()
-    if (!newTagNameEs.trim() || !newTagNameEn.trim() || !selectedGroup) return
+    if (!newTagName.trim() || !selectedGroup) return
 
     try {
       const response = await fetch(apiUrl('admin/tags'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          group_id: selectedGroup,
-          name: { es: newTagNameEs, en: newTagNameEn },
-          ...authParams
-        })
+        body: JSON.stringify({ group_id: selectedGroup, name: newTagName, ...authParams })
       })
 
       if (response.ok) {
-        showSuccess(t('success.created'), t('success.tag_created'))
-        setNewTagNameEs('')
-        setNewTagNameEn('')
+        showSuccess('Creado', 'Tag creado correctamente')
+        setNewTagName('')
         onRefresh()
       } else if (response.status === 401) {
-        showError(t('errors.session_expired'), t('errors.session_expired_message'))
+        showError('Sesión expirada', 'Por favor, vuelve a iniciar sesión')
       } else {
         const error = await response.json()
         showError('Error', error.error || 'Error al crear')
       }
     } catch (error) {
-      showError(t('messages.error', { ns: 'common' }), t('errors.generic_error'))
+      showError('Error', 'Error de conexión')
     }
   }
 
@@ -1547,379 +1497,139 @@ function TagsManager({ tagGroups, authParams, onRefresh, showSuccess, showError,
         setConfirmingDelete(null)
         onRefresh()
       } else if (response.status === 401) {
-        showError(t('errors.session_expired'), t('errors.session_expired_message'))
+        showError('Sesión expirada', 'Por favor, vuelve a iniciar sesión')
       }
     } catch (error) {
-      showError(t('messages.error', { ns: 'common' }), t('errors.generic_error'))
+      showError('Error', 'Error de conexión')
     }
   }
 
   const handleRenameGroup = async () => {
     if (!editingGroup) return
 
-    const url = apiUrl(`admin/tag-groups/${editingGroup.id}`)
-    const payload = { name: editingGroup.name, ...authParams }
-
     try {
-      const response = await fetch(url, {
+      const response = await fetch(apiUrl(`admin/tag-groups/${editingGroup.id}`), {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({ name: editingGroup.name, ...authParams })
       })
 
       if (response.ok) {
-        showSuccess(t('success.updated'), t('success.group_renamed'))
+        showSuccess('Actualizado', 'Grupo renombrado')
         setEditingGroup(null)
         onRefresh()
       } else if (response.status === 401) {
-        showError(t('errors.session_expired'), t('errors.session_expired_message'))
-      } else {
-        const error = await response.json()
-        showError('Error', error.error || 'Error al actualizar grupo')
+        showError('Sesión expirada', 'Por favor, vuelve a iniciar sesión')
       }
     } catch (error) {
-      showError(t('messages.error', { ns: 'common' }), t('errors.generic_error'))
+      showError('Error', 'Error de conexión')
     }
-  }
-
-  const handleUpdateTag = async () => {
-    if (!editingTag) return
-
-    const url = apiUrl(`admin/tags/${editingTag.groupId}/${editingTag.id}`)
-    const payload = { name: editingTag.name, ...authParams }
-
-    try {
-      const response = await fetch(url, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      })
-
-      if (response.ok) {
-        showSuccess(t('success.updated'), t('success.updated'))
-        setEditingTag(null)
-        onRefresh()
-      } else if (response.status === 401) {
-        showError(t('errors.session_expired'), t('errors.session_expired_message'))
-      } else {
-        const error = await response.json()
-        showError('Error', error.error || 'Error al actualizar tag')
-      }
-    } catch (error) {
-      showError(t('messages.error', { ns: 'common' }), t('errors.generic_error'))
-    }
-  }
-
-  const handleReorderTags = async (groupId, newOrder) => {
-    try {
-      const response = await fetch(apiUrl(`admin/tag-groups/${groupId}/reorder`), {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tag_order: newOrder,
-          ...authParams
-        })
-      })
-
-      if (response.ok) {
-        onRefresh()
-      } else if (response.status === 401) {
-        showError(t('errors.session_expired'), t('errors.session_expired_message'))
-      } else {
-        const error = await response.json()
-        showError('Error', error.error || 'Error al reordenar tags')
-      }
-    } catch (error) {
-      showError(t('messages.error', { ns: 'common' }), t('errors.generic_error'))
-    }
-  }
-
-  const handleDragStart = (e, groupId, tagId, index) => {
-    setDraggedTag({ groupId, tagId, index })
-    e.dataTransfer.effectAllowed = 'move'
-  }
-
-  const handleDragOver = (e, index) => {
-    e.preventDefault()
-    e.dataTransfer.dropEffect = 'move'
-    setDragOverIndex(index)
-  }
-
-  const handleDragEnd = () => {
-    setDraggedTag(null)
-    setDragOverIndex(null)
-  }
-
-  const handleDrop = (e, groupId, targetIndex) => {
-    e.preventDefault()
-
-    if (!draggedTag || draggedTag.groupId !== groupId) {
-      setDraggedTag(null)
-      setDragOverIndex(null)
-      return
-    }
-
-    const group = tagGroups.find(g => g.id === groupId)
-    if (!group) return
-
-    // Crear nuevo array de tags reordenado
-    const newTags = [...group.tags]
-    const [movedTag] = newTags.splice(draggedTag.index, 1)
-    newTags.splice(targetIndex, 0, movedTag)
-
-    // Enviar nuevo orden al backend
-    const newOrder = newTags.map(tag => tag.id)
-    handleReorderTags(groupId, newOrder)
-
-    setDraggedTag(null)
-    setDragOverIndex(null)
   }
 
   return (
     <div className="h-full overflow-y-auto py-4 space-y-6">
       {/* Create Tag */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('tag_management.create_tag')}</h2>
-        <form onSubmit={handleCreateTag} className="space-y-3">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Crear nuevo tag</h2>
+        <form onSubmit={handleCreateTag} className="flex gap-4">
           <select
             value={selectedGroup}
             onChange={(e) => setSelectedGroup(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             required
           >
-            <option value="">{t('tags.group_name')}</option>
+            <option value="">Seleccionar grupo</option>
             {tagGroups.map(g => (
-              <option key={g.id} value={g.id}>
-                {typeof g.name === 'object' ? g.name[currentLang] || g.name.es : g.name}
-              </option>
+              <option key={g.id} value={g.id}>{g.name}</option>
             ))}
           </select>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
-                Español
-              </label>
-              <input
-                type="text"
-                placeholder="Nombre en español"
-                value={newTagNameEs}
-                onChange={(e) => setNewTagNameEs(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
-                English
-              </label>
-              <input
-                type="text"
-                placeholder="Name in English"
-                value={newTagNameEn}
-                onChange={(e) => setNewTagNameEn(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                required
-              />
-            </div>
-          </div>
-          <button type="submit" className="w-full px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-            {t('buttons.create')}
+          <input
+            type="text"
+            placeholder="Nombre del tag"
+            value={newTagName}
+            onChange={(e) => setNewTagName(e.target.value)}
+            className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            required
+          />
+          <button type="submit" className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+            Crear
           </button>
         </form>
       </div>
 
       {/* Tag Groups */}
       <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {tagGroups.map(group => {
-          const groupName = typeof group.name === 'object' ? group.name[currentLang] || group.name.es : group.name
-
-          return (
-            <div key={group.id} className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold text-gray-900 dark:text-white">{groupName}</h3>
-                <button
-                  onClick={() => setEditingGroup({ ...group })}
-                  className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
-                >
-                  {t('tags.edit')}
-                </button>
-              </div>
-
-              {group.tags.length === 0 ? (
-                <p className="text-sm text-gray-500 italic">{t('upload.no_tags')}</p>
-              ) : (
-                <div className="space-y-1 max-h-48 overflow-y-auto">
-                  {/* Para el grupo "tipo", mantener orden original (drag and drop). Para otros, ordenar alfabéticamente */}
-                  {(group.id === 'tipo' ? group.tags : [...group.tags].sort((a, b) => {
-                    const aName = typeof a.name === 'object' ? a.name[currentLang] || a.name.es : a.name
-                    const bName = typeof b.name === 'object' ? b.name[currentLang] || b.name.es : b.name
-                    return aName.localeCompare(bName)
-                  })).map((tag, index) => {
-                    const isConfirming = confirmingDelete?.tagId === tag.id && confirmingDelete?.groupId === group.id
-                    const tagName = typeof tag.name === 'object' ? tag.name[currentLang] || tag.name.es : tag.name
-                    const isDragging = draggedTag?.tagId === tag.id && draggedTag?.groupId === group.id
-                    const isDragOver = dragOverIndex === index && draggedTag?.groupId === group.id
-                    const isDraggable = group.id === 'tipo'
-
-                    return (
-                      <div
-                        key={tag.id}
-                        draggable={isDraggable}
-                        onDragStart={(e) => isDraggable && handleDragStart(e, group.id, tag.id, index)}
-                        onDragOver={(e) => isDraggable && handleDragOver(e, index)}
-                        onDragEnd={handleDragEnd}
-                        onDrop={(e) => isDraggable && handleDrop(e, group.id, index)}
-                        className={`flex items-center justify-between py-1 px-2 bg-gray-50 dark:bg-gray-700 rounded transition-all ${
-                          isDragging ? 'opacity-50' : ''
-                        } ${isDragOver ? 'border-2 border-blue-500' : ''} ${isDraggable ? 'cursor-move' : ''}`}
-                      >
-                        {isDraggable && (
-                          <svg className="w-4 h-4 text-gray-400 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
-                          </svg>
-                        )}
-                        <span className="text-sm text-gray-700 dark:text-gray-300 flex-1">{capitalize(tagName)}</span>
-                        {isConfirming ? (
-                          <div className="flex items-center gap-1">
-                            <button
-                              onClick={() => handleDeleteTag(group.id, tag.id)}
-                              className="px-2 py-0.5 text-xs bg-red-600 text-white rounded hover:bg-red-700"
-                            >
-                              {t('buttons.delete')}
-                            </button>
-                            <button
-                              onClick={() => setConfirmingDelete(null)}
-                              className="px-2 py-0.5 text-xs bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded hover:bg-gray-400 dark:hover:bg-gray-500"
-                            >
-                              {t('buttons.cancel')}
-                            </button>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-1">
-                            <button
-                              onClick={() => setEditingTag({ ...tag, groupId: group.id })}
-                              className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
-                            >
-                              {t('tags.edit')}
-                            </button>
-                            <button
-                              onClick={() => setConfirmingDelete({ groupId: group.id, tagId: tag.id, tagName: tagName })}
-                              className="text-xs text-red-600 hover:underline"
-                            >
-                              {t('tag_management.delete')}
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    )
-                  })}
-                </div>
-              )}
+        {tagGroups.map(group => (
+          <div key={group.id} className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold text-gray-900 dark:text-white">{group.name}</h3>
+              <button
+                onClick={() => setEditingGroup({ ...group })}
+                className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+              >
+                Renombrar
+              </button>
             </div>
-          )
-        })}
+
+            {group.tags.length === 0 ? (
+              <p className="text-sm text-gray-500 italic">Sin tags</p>
+            ) : (
+              <div className="space-y-1 max-h-48 overflow-y-auto">
+                {[...group.tags].sort((a, b) => a.name.localeCompare(b.name)).map(tag => {
+                  const isConfirming = confirmingDelete?.tagId === tag.id && confirmingDelete?.groupId === group.id
+
+                  return (
+                    <div key={tag.id} className="flex items-center justify-between py-1 px-2 bg-gray-50 dark:bg-gray-700 rounded">
+                      <span className="text-sm text-gray-700 dark:text-gray-300">{capitalize(tag.name)}</span>
+                      {isConfirming ? (
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleDeleteTag(group.id, tag.id)}
+                            className="px-2 py-0.5 text-xs bg-red-600 text-white rounded hover:bg-red-700"
+                          >
+                            Borrar
+                          </button>
+                          <button
+                            onClick={() => setConfirmingDelete(null)}
+                            className="px-2 py-0.5 text-xs bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded hover:bg-gray-400 dark:hover:bg-gray-500"
+                          >
+                            Cancelar
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setConfirmingDelete({ groupId: group.id, tagId: tag.id, tagName: tag.name })}
+                          className="text-xs text-red-600 hover:underline"
+                        >
+                          Eliminar
+                        </button>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        ))}
       </div>
 
-      {/* Edit Group Modal */}
+      {/* Rename Group Modal */}
       {editingGroup && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setEditingGroup(null)}>
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md mx-4" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('tag_management.rename_group')}</h3>
-            <div className="space-y-3 mb-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Español
-                </label>
-                <input
-                  type="text"
-                  value={typeof editingGroup.name === 'object' ? editingGroup.name.es : editingGroup.name}
-                  onChange={(e) => setEditingGroup({
-                    ...editingGroup,
-                    name: typeof editingGroup.name === 'object'
-                      ? { ...editingGroup.name, es: e.target.value }
-                      : { es: e.target.value, en: editingGroup.name }
-                  })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  English
-                </label>
-                <input
-                  type="text"
-                  value={typeof editingGroup.name === 'object' ? editingGroup.name.en : editingGroup.name}
-                  onChange={(e) => setEditingGroup({
-                    ...editingGroup,
-                    name: typeof editingGroup.name === 'object'
-                      ? { ...editingGroup.name, en: e.target.value }
-                      : { es: editingGroup.name, en: e.target.value }
-                  })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  required
-                />
-              </div>
-            </div>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-sm mx-4" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Renombrar grupo</h3>
+            <input
+              type="text"
+              value={editingGroup.name}
+              onChange={(e) => setEditingGroup({ ...editingGroup, name: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white mb-4"
+            />
             <div className="flex gap-2">
               <button onClick={() => setEditingGroup(null)} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg">
-                {t('buttons.cancel')}
+                Cancelar
               </button>
               <button onClick={handleRenameGroup} className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                {t('buttons.save')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Tag Modal */}
-      {editingTag && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setEditingTag(null)}>
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md mx-4" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('tags.edit')} Tag</h3>
-            <div className="space-y-3 mb-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Español
-                </label>
-                <input
-                  type="text"
-                  value={typeof editingTag.name === 'object' ? editingTag.name.es : editingTag.name}
-                  onChange={(e) => setEditingTag({
-                    ...editingTag,
-                    name: typeof editingTag.name === 'object'
-                      ? { ...editingTag.name, es: e.target.value }
-                      : { es: e.target.value, en: editingTag.name }
-                  })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  English
-                </label>
-                <input
-                  type="text"
-                  value={typeof editingTag.name === 'object' ? editingTag.name.en : editingTag.name}
-                  onChange={(e) => setEditingTag({
-                    ...editingTag,
-                    name: typeof editingTag.name === 'object'
-                      ? { ...editingTag.name, en: e.target.value }
-                      : { es: editingTag.name, en: e.target.value }
-                  })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  required
-                />
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <button onClick={() => setEditingTag(null)} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg">
-                {t('buttons.cancel')}
-              </button>
-              <button onClick={handleUpdateTag} className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                {t('buttons.save')}
+                Guardar
               </button>
             </div>
           </div>
@@ -1932,8 +1642,7 @@ function TagsManager({ tagGroups, authParams, onRefresh, showSuccess, showError,
 // ==================
 // Configuration - Configuración del sistema (backups, logo)
 // ==================
-function Configuration({ authParams, showSuccess, showError, onLogoChange, backendTitle, onBackendTitleChange }) {
-  const { t } = useTranslation('admin')
+function Configuration({ authParams, showSuccess, showError, onLogoChange }) {
   const [backups, setBackups] = useState([])
   const [loading, setLoading] = useState(false)
   const [creating, setCreating] = useState(false)
@@ -1943,16 +1652,16 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
   const [logo, setLogo] = useState(null)
   const [uploadingLogo, setUploadingLogo] = useState(false)
 
-  // Estado para título y subtítulo del sitio (bilingüe)
-  const [siteTitle, setSiteTitle] = useState({ es: 'PEU Cuchillos Artesanales', en: 'PEU Artisan Knives' })
-  const [siteSubtitleMobile, setSiteSubtitleMobile] = useState({ es: 'Buscador interactivo', en: 'Interactive search' })
-  const [siteSubtitleDesktop, setSiteSubtitleDesktop] = useState({ es: 'Buscador interactivo de modelos y materiales', en: 'Interactive search for models and materials' })
+  // Estado para título y subtítulo del sitio
+  const [siteTitle, setSiteTitle] = useState('PEU Cuchillos Artesanales')
+  const [siteSubtitleMobile, setSiteSubtitleMobile] = useState('Buscador interactivo')
+  const [siteSubtitleDesktop, setSiteSubtitleDesktop] = useState('Buscador interactivo de modelos y materiales')
   const [savingSiteInfo, setSavingSiteInfo] = useState(false)
   const [savedSiteInfoFeedback, setSavedSiteInfoFeedback] = useState(false)
 
-  // Estado para WhatsApp y Telegram (bilingüe)
-  const [whatsappConfig, setWhatsappConfig] = useState({ enabled: false, number: '', message: { es: '', en: '' } })
-  const [telegramConfig, setTelegramConfig] = useState({ enabled: false, username: '', message: { es: '', en: '' } })
+  // Estado para WhatsApp y Telegram
+  const [whatsappConfig, setWhatsappConfig] = useState({ enabled: false, number: '', message: '' })
+  const [telegramConfig, setTelegramConfig] = useState({ enabled: false, username: '', message: '' })
   const [savingContact, setSavingContact] = useState(false)
   const [savedContactFeedback, setSavedContactFeedback] = useState(false)
 
@@ -1961,31 +1670,23 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
   const [savingMetaTags, setSavingMetaTags] = useState(false)
   const [savedMetaTagsFeedback, setSavedMetaTagsFeedback] = useState(false)
 
-  // Estado para mensaje del configurador (bilingüe)
-  const [configuratorMessage, setConfiguratorMessage] = useState({
-    es: 'Hola Pablo, te envío mi página del configurador de cuchillos: {link}',
-    en: 'Hi Pablo, here is my knife configurator page: {link}'
-  })
+  // Estado para mensaje del configurador
+  const [configuratorMessage, setConfiguratorMessage] = useState('Hola Pablo, te envío mi página del configurador de cuchillos: {link}')
   const [savingConfiguratorMessage, setSavingConfiguratorMessage] = useState(false)
   const [savedConfiguratorMessageFeedback, setSavedConfiguratorMessageFeedback] = useState(false)
 
-  // Estado para footer (bilingüe)
+  // Estado para footer
   const [footerConfig, setFooterConfig] = useState({
     enabled: false,
     website_url: '',
-    website_text: { es: 'Visita mi página web', en: 'Visit my website' },
-    social_text: { es: 'Seguime en mis redes sociales', en: 'Follow me on social media' },
+    website_text: 'Visita mi página web',
+    social_text: 'Seguime en mis redes sociales',
     instagram: '',
     twitter: '',
     facebook: ''
   })
   const [savingFooter, setSavingFooter] = useState(false)
   const [savedFooterFeedback, setSavedFooterFeedback] = useState(false)
-
-  // Estado para idiomas habilitados
-  const [enabledLanguages, setEnabledLanguages] = useState({ es: true, en: true })
-  const [savingLanguages, setSavingLanguages] = useState(false)
-  const [savedLanguagesFeedback, setSavedLanguagesFeedback] = useState(false)
 
   useEffect(() => {
     loadBackups()
@@ -1995,7 +1696,6 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
     loadConfiguratorMessage()
     loadFooterConfig()
     loadSiteInfo()
-    loadLanguagesConfig()
   }, [])
 
   const loadBackups = async () => {
@@ -2007,10 +1707,10 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
         const data = await response.json()
         setBackups(data.backups || [])
       } else if (response.status === 401) {
-        showError(t('errors.session_expired'), t('errors.session_expired_message'))
+        showError('Sesión expirada', 'Por favor, vuelve a iniciar sesión')
       }
     } catch (error) {
-      showError(t('messages.error', { ns: 'common' }), t('errors.load_data_error'))
+      showError('Error', 'Error al cargar backups')
     } finally {
       setLoading(false)
     }
@@ -2034,16 +1734,8 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
       const response = await fetch(apiUrl('admin/config/contact') + '&' + params.toString())
       if (response.ok) {
         const data = await response.json()
-        // Normalizar mensaje: si es string, convertir a {es, en}
-        const normalizeMessage = (msg) => {
-          if (!msg) return { es: '', en: '' }
-          if (typeof msg === 'string') return { es: msg, en: msg }
-          return msg
-        }
-        const whatsapp = data.whatsapp || { enabled: false, number: '', message: { es: '', en: '' } }
-        const telegram = data.telegram || { enabled: false, username: '', message: { es: '', en: '' } }
-        setWhatsappConfig({ ...whatsapp, message: normalizeMessage(whatsapp.message) })
-        setTelegramConfig({ ...telegram, message: normalizeMessage(telegram.message) })
+        setWhatsappConfig(data.whatsapp || { enabled: false, number: '', message: '' })
+        setTelegramConfig(data.telegram || { enabled: false, username: '', message: '' })
       }
     } catch (error) {
       // Error silencioso
@@ -2069,18 +1761,7 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
       const response = await fetch(apiUrl('admin/config/configurator') + '&' + params.toString())
       if (response.ok) {
         const data = await response.json()
-        const msg = data.configurator_message
-        // Normalizar: si es string, convertir a {es, en}
-        if (!msg) {
-          setConfiguratorMessage({
-            es: 'Hola Pablo, te envío mi página del configurador de cuchillos: {link}',
-            en: 'Hi Pablo, here is my knife configurator page: {link}'
-          })
-        } else if (typeof msg === 'string') {
-          setConfiguratorMessage({ es: msg, en: msg })
-        } else {
-          setConfiguratorMessage(msg)
-        }
+        setConfiguratorMessage(data.configurator_message || 'Hola Pablo, te envío mi página del configurador de cuchillos: {link}')
       }
     } catch (error) {
       // Error silencioso
@@ -2093,25 +1774,16 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
       const response = await fetch(apiUrl('admin/config/footer') + '&' + params.toString())
       if (response.ok) {
         const data = await response.json()
-        const footer = data.footer || {
+        setFooterConfig(data.footer || {
           enabled: false,
           website_url: '',
-          website_text: { es: 'Visita mi página web', en: 'Visit my website' },
-          social_text: { es: 'Seguime en mis redes sociales', en: 'Follow me on social media' },
+          website_text: 'Visita mi página web',
+          social_text: 'Seguime en mis redes sociales',
           instagram: '',
           twitter: '',
-          facebook: ''
-        }
-        // Normalizar textos: si son string, convertir a {es, en}
-        const normalizeText = (text, defaultEs, defaultEn) => {
-          if (!text) return { es: defaultEs, en: defaultEn }
-          if (typeof text === 'string') return { es: text, en: text }
-          return text
-        }
-        setFooterConfig({
-          ...footer,
-          website_text: normalizeText(footer.website_text, 'Visita mi página web', 'Visit my website'),
-          social_text: normalizeText(footer.social_text, 'Seguime en mis redes sociales', 'Follow me on social media')
+          facebook: '',
+          whatsapp: '',
+          telegram: ''
         })
       }
     } catch (error) {
@@ -2125,82 +1797,13 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
       const response = await fetch(apiUrl('admin/config/site-info') + '&' + params.toString())
       if (response.ok) {
         const data = await response.json()
-        // Normalizar datos: si vienen como string, convertir a objeto {es, en}
-        const normalizeField = (field, defaultEs, defaultEn) => {
-          if (!field) return { es: defaultEs, en: defaultEn }
-          if (typeof field === 'string') return { es: field, en: field }
-          return field
-        }
-        setSiteTitle(normalizeField(data.site_title, 'PEU Cuchillos Artesanales', 'PEU Artisan Knives'))
-        setSiteSubtitleMobile(normalizeField(data.site_subtitle_mobile, 'Buscador interactivo', 'Interactive search'))
-        setSiteSubtitleDesktop(normalizeField(data.site_subtitle_desktop, 'Buscador interactivo de modelos y materiales', 'Interactive search for models and materials'))
-        if (onBackendTitleChange) {
-          const backendTitle = data.backend_title
-          const titleValue = typeof backendTitle === 'string' ? backendTitle : (backendTitle?.es || 'FotoCRM Admin')
-          onBackendTitleChange(titleValue)
-        }
+        setSiteTitle(data.site_title || 'PEU Cuchillos Artesanales')
+        setSiteSubtitleMobile(data.site_subtitle_mobile || 'Buscador interactivo')
+        setSiteSubtitleDesktop(data.site_subtitle_desktop || 'Buscador interactivo de modelos y materiales')
       }
     } catch (error) {
       // Error silencioso
     }
-  }
-
-  const loadLanguagesConfig = async () => {
-    try {
-      const params = new URLSearchParams(authParams)
-      const response = await fetch(apiUrl('admin/config/languages') + '&' + params.toString())
-      if (response.ok) {
-        const data = await response.json()
-        setEnabledLanguages(data.enabled_languages || { es: true, en: true })
-      }
-    } catch (error) {
-      // Error silencioso - por defecto ambos idiomas habilitados
-    }
-  }
-
-  const handleSaveLanguages = async () => {
-    // Validación: al menos un idioma debe estar habilitado
-    if (!enabledLanguages.es && !enabledLanguages.en) {
-      showError('Error', 'Debe habilitar al menos un idioma')
-      return
-    }
-
-    setSavingLanguages(true)
-    try {
-      const params = new URLSearchParams(authParams)
-      const response = await fetch(apiUrl('admin/config/languages') + '&' + params.toString(), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ enabled_languages: enabledLanguages })
-      })
-
-      if (response.ok) {
-        setSavedLanguagesFeedback(true)
-        setTimeout(() => {
-          setSavedLanguagesFeedback(false)
-          // Recargar la página para que el frontend público actualice la configuración
-          window.location.reload()
-        }, 1500)
-      } else if (response.status === 401) {
-        showError(t('errors.session_expired'), t('errors.session_expired_message'))
-      } else {
-        const error = await response.json()
-        showError('Error', error.error || 'Error al guardar idiomas')
-      }
-    } catch (error) {
-      showError(t('messages.error', { ns: 'common' }), t('errors.generic_error'))
-    } finally {
-      setSavingLanguages(false)
-    }
-  }
-
-  const handleToggleLanguage = (lang) => {
-    const newState = { ...enabledLanguages, [lang]: !enabledLanguages[lang] }
-    // Validar que no se desactiven ambos (el mensaje inline se muestra automáticamente)
-    if (!newState.es && !newState.en) {
-      return
-    }
-    setEnabledLanguages(newState)
   }
 
   const handleSaveMetaTags = async () => {
@@ -2217,13 +1820,13 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
         setSavedMetaTagsFeedback(true)
         setTimeout(() => setSavedMetaTagsFeedback(false), 2000)
       } else if (response.status === 401) {
-        showError(t('errors.session_expired'), t('errors.session_expired_message'))
+        showError('Sesión expirada', 'Por favor, vuelve a iniciar sesión')
       } else {
         const error = await response.json()
         showError('Error', error.error || 'Error al guardar metadatos')
       }
     } catch (error) {
-      showError(t('messages.error', { ns: 'common' }), t('errors.generic_error'))
+      showError('Error', 'Error de conexión')
     } finally {
       setSavingMetaTags(false)
     }
@@ -2243,13 +1846,13 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
         setSavedConfiguratorMessageFeedback(true)
         setTimeout(() => setSavedConfiguratorMessageFeedback(false), 2000)
       } else if (response.status === 401) {
-        showError(t('errors.session_expired'), t('errors.session_expired_message'))
+        showError('Sesión expirada', 'Por favor, vuelve a iniciar sesión')
       } else {
         const error = await response.json()
         showError('Error', error.error || 'Error al guardar mensaje')
       }
     } catch (error) {
-      showError(t('messages.error', { ns: 'common' }), t('errors.generic_error'))
+      showError('Error', 'Error de conexión')
     } finally {
       setSavingConfiguratorMessage(false)
     }
@@ -2269,13 +1872,13 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
         setSavedFooterFeedback(true)
         setTimeout(() => setSavedFooterFeedback(false), 2000)
       } else if (response.status === 401) {
-        showError(t('errors.session_expired'), t('errors.session_expired_message'))
+        showError('Sesión expirada', 'Por favor, vuelve a iniciar sesión')
       } else {
         const error = await response.json()
         showError('Error', error.error || 'Error al guardar footer')
       }
     } catch (error) {
-      showError(t('messages.error', { ns: 'common' }), t('errors.generic_error'))
+      showError('Error', 'Error de conexión')
     } finally {
       setSavingFooter(false)
     }
@@ -2291,8 +1894,7 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
         body: JSON.stringify({
           site_title: siteTitle,
           site_subtitle_mobile: siteSubtitleMobile,
-          site_subtitle_desktop: siteSubtitleDesktop,
-          backend_title: backendTitle
+          site_subtitle_desktop: siteSubtitleDesktop
         })
       })
 
@@ -2300,13 +1902,13 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
         setSavedSiteInfoFeedback(true)
         setTimeout(() => setSavedSiteInfoFeedback(false), 2000)
       } else if (response.status === 401) {
-        showError(t('errors.session_expired'), t('errors.session_expired_message'))
+        showError('Sesión expirada', 'Por favor, vuelve a iniciar sesión')
       } else {
         const error = await response.json()
         showError('Error', error.error || 'Error al guardar información del sitio')
       }
     } catch (error) {
-      showError(t('messages.error', { ns: 'common' }), t('errors.generic_error'))
+      showError('Error', 'Error de conexión')
     } finally {
       setSavingSiteInfo(false)
     }
@@ -2337,7 +1939,7 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
 
         await loadBackups()
       } else if (response.status === 401) {
-        showError(t('errors.session_expired'), t('errors.session_expired_message'))
+        showError('Sesión expirada', 'Por favor, vuelve a iniciar sesión')
       } else {
         const error = await response.json()
         const errorMsg = error.details
@@ -2374,14 +1976,14 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
           await loadBackups()
           setDeletingBackup(null)
         } else if (response.status === 401) {
-          showError(t('errors.session_expired'), t('errors.session_expired_message'))
+          showError('Sesión expirada', 'Por favor, vuelve a iniciar sesión')
           setDeletingBackup(null)
         } else {
           showError('Error', 'Error al eliminar backup')
           setDeletingBackup(null)
         }
       } catch (error) {
-        showError(t('messages.error', { ns: 'common' }), t('errors.generic_error'))
+        showError('Error', 'Error de conexión')
         setDeletingBackup(null)
       }
     }, 400) // 400ms para la animación
@@ -2408,13 +2010,13 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
         // Notificar al componente padre para que actualice el logo en el header público
         if (onLogoChange) onLogoChange()
       } else if (response.status === 401) {
-        showError(t('errors.session_expired'), t('errors.session_expired_message'))
+        showError('Sesión expirada', 'Por favor, vuelve a iniciar sesión')
       } else {
         const error = await response.json()
         showError('Error', error.error || 'Error al subir logo')
       }
     } catch (error) {
-      showError(t('messages.error', { ns: 'common' }), t('errors.generic_error'))
+      showError('Error', 'Error de conexión')
     } finally {
       setUploadingLogo(false)
     }
@@ -2432,12 +2034,12 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
         // Notificar al componente padre para que actualice el logo en el header público
         if (onLogoChange) onLogoChange()
       } else if (response.status === 401) {
-        showError(t('errors.session_expired'), t('errors.session_expired_message'))
+        showError('Sesión expirada', 'Por favor, vuelve a iniciar sesión')
       } else {
         showError('Error', 'Error al eliminar logo')
       }
     } catch (error) {
-      showError(t('messages.error', { ns: 'common' }), t('errors.generic_error'))
+      showError('Error', 'Error de conexión')
     }
   }
 
@@ -2458,13 +2060,13 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
         setSavedContactFeedback(true)
         setTimeout(() => setSavedContactFeedback(false), 2000)
       } else if (response.status === 401) {
-        showError(t('errors.session_expired'), t('errors.session_expired_message'))
+        showError('Sesión expirada', 'Por favor, vuelve a iniciar sesión')
       } else {
         const error = await response.json()
         showError('Error', error.error || 'Error al guardar configuración')
       }
     } catch (error) {
-      showError(t('messages.error', { ns: 'common' }), t('errors.generic_error'))
+      showError('Error', 'Error de conexión')
     } finally {
       setSavingContact(false)
     }
@@ -2479,14 +2081,16 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
   return (
     <div className="h-full overflow-y-auto py-6 px-4">
       <div className="max-w-7xl mx-auto space-y-6">
+        {/* Grid de 2 columnas para Logo y Mensaje del Configurador */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Sección de Logo y Títulos */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">{t('config.logo_section_title')}</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Logo y Títulos del Sitio</h2>
 
             {/* Logo */}
             <div className="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                {t('config.logo_description')}
+                Sube un logo que se mostrará en el header. Formatos: JPG, PNG, SVG, WEBP (máx 2MB).
               </p>
 
               {logo ? (
@@ -2497,11 +2101,11 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
                       onClick={handleDeleteLogo}
                       className="px-4 py-2 bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-200 dark:hover:bg-red-900"
                     >
-                      {t('config.delete_logo')}
+                      Eliminar logo
                     </button>
                   </div>
                   <label className="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer">
-                    {t('config.change_logo')}
+                    Cambiar logo
                     <input
                       type="file"
                       accept="image/*"
@@ -2513,7 +2117,7 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
                 </div>
               ) : (
                 <label className="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer">
-                  {uploadingLogo ? t('config.uploading') : t('config.upload_logo')}
+                  {uploadingLogo ? 'Subiendo...' : 'Subir logo'}
                   <input
                     type="file"
                     accept="image/*"
@@ -2525,101 +2129,43 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
               )}
             </div>
 
-            {/* Títulos (bilingüe) */}
+            {/* Títulos */}
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {t('config.site_title_label')}
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Título del sitio
                 </label>
-                <div className="space-y-2">
-                  <div>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">Español:</span>
-                    <input
-                      type="text"
-                      value={siteTitle.es || ''}
-                      onChange={(e) => setSiteTitle({ ...siteTitle, es: e.target.value })}
-                      placeholder="PEU Cuchillos Artesanales"
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white mt-1"
-                    />
-                  </div>
-                  <div>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">English:</span>
-                    <input
-                      type="text"
-                      value={siteTitle.en || ''}
-                      onChange={(e) => setSiteTitle({ ...siteTitle, en: e.target.value })}
-                      placeholder="PEU Artisan Knives"
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white mt-1"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {t('config.subtitle_mobile_label')}
-                </label>
-                <div className="space-y-2">
-                  <div>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">Español:</span>
-                    <input
-                      type="text"
-                      value={siteSubtitleMobile.es || ''}
-                      onChange={(e) => setSiteSubtitleMobile({ ...siteSubtitleMobile, es: e.target.value })}
-                      placeholder="Buscador interactivo"
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white mt-1"
-                    />
-                  </div>
-                  <div>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">English:</span>
-                    <input
-                      type="text"
-                      value={siteSubtitleMobile.en || ''}
-                      onChange={(e) => setSiteSubtitleMobile({ ...siteSubtitleMobile, en: e.target.value })}
-                      placeholder="Interactive search"
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white mt-1"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {t('config.subtitle_desktop_label')}
-                </label>
-                <div className="space-y-2">
-                  <div>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">Español:</span>
-                    <input
-                      type="text"
-                      value={siteSubtitleDesktop.es || ''}
-                      onChange={(e) => setSiteSubtitleDesktop({ ...siteSubtitleDesktop, es: e.target.value })}
-                      placeholder="Buscador interactivo de modelos y materiales"
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white mt-1"
-                    />
-                  </div>
-                  <div>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">English:</span>
-                    <input
-                      type="text"
-                      value={siteSubtitleDesktop.en || ''}
-                      onChange={(e) => setSiteSubtitleDesktop({ ...siteSubtitleDesktop, en: e.target.value })}
-                      placeholder="Interactive search for models and materials"
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white mt-1"
-                    />
-                  </div>
-                </div>
+                <input
+                  type="text"
+                  value={siteTitle}
+                  onChange={(e) => setSiteTitle(e.target.value)}
+                  placeholder="PEU Cuchillos Artesanales"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t('config.backend_title_label')}
+                  Subtítulo (móvil)
                 </label>
                 <input
                   type="text"
-                  value={backendTitle}
-                  onChange={(e) => onBackendTitleChange && onBackendTitleChange(e.target.value)}
-                  placeholder="FotoCRM Admin"
+                  value={siteSubtitleMobile}
+                  onChange={(e) => setSiteSubtitleMobile(e.target.value)}
+                  placeholder="Buscador interactivo"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Subtítulo (escritorio)
+                </label>
+                <input
+                  type="text"
+                  value={siteSubtitleDesktop}
+                  onChange={(e) => setSiteSubtitleDesktop(e.target.value)}
+                  placeholder="Buscador interactivo de modelos y materiales"
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 />
               </div>
@@ -2633,88 +2179,25 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
                     : 'bg-blue-600 text-white hover:bg-blue-700'
                 } disabled:opacity-50`}
               >
-                {savingSiteInfo ? t('config.saving') : savedSiteInfoFeedback ? t('config.saved') : t('config.save_titles')}
+                {savingSiteInfo ? 'Guardando...' : savedSiteInfoFeedback ? '✓ Guardado' : 'Guardar Títulos'}
               </button>
             </div>
           </div>
 
-          {/* Sección de Idiomas */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">Idiomas</h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-              Habilita o deshabilita idiomas del sitio.
-            </p>
-
-            <div className="space-y-2 mb-3">
-              <label className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-700 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
-                <input
-                  type="checkbox"
-                  checked={enabledLanguages.es}
-                  onChange={() => handleToggleLanguage('es')}
-                  className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
-                />
-                <span className="text-sm font-medium text-gray-900 dark:text-white">Español</span>
-              </label>
-
-              <label className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-700 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
-                <input
-                  type="checkbox"
-                  checked={enabledLanguages.en}
-                  onChange={() => handleToggleLanguage('en')}
-                  className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
-                />
-                <span className="text-sm font-medium text-gray-900 dark:text-white">English</span>
-              </label>
-            </div>
-
-            {!enabledLanguages.es && !enabledLanguages.en && (
-              <p className="text-sm text-amber-600 dark:text-amber-400 mb-3">
-                ⚠️ Debe mantener al menos un idioma habilitado
-              </p>
-            )}
-
-            <button
-              onClick={handleSaveLanguages}
-              disabled={savingLanguages}
-              className={`px-4 py-2 rounded-lg transition-all duration-300 ${
-                savedLanguagesFeedback
-                  ? 'bg-green-500 text-white'
-                  : 'bg-blue-600 text-white hover:bg-blue-700'
-              } disabled:opacity-50`}
-            >
-              {savingLanguages ? t('config.saving') : savedLanguagesFeedback ? t('config.saved') : 'Guardar idiomas'}
-            </button>
-          </div>
-
           {/* Sección de Mensaje del Configurador */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">{t('config.configurator_message_title')}</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Mensaje del Configurador</h2>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              {t('config.configurator_message_description')}
+              Mensaje que se enviará por WhatsApp/Telegram al compartir una configuración. Usa {'{link}'} donde quieras incluir el enlace.
             </p>
 
-            <div className="space-y-3 mb-4">
-              <div>
-                <span className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Español:</span>
-                <textarea
-                  value={configuratorMessage.es || ''}
-                  onChange={(e) => setConfiguratorMessage({ ...configuratorMessage, es: e.target.value })}
-                  placeholder="Hola Pablo, te envío mi página del configurador de cuchillos: {link}"
-                  rows={2}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
-                />
-              </div>
-              <div>
-                <span className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">English:</span>
-                <textarea
-                  value={configuratorMessage.en || ''}
-                  onChange={(e) => setConfiguratorMessage({ ...configuratorMessage, en: e.target.value })}
-                  placeholder="Hi Pablo, here is my knife configurator page: {link}"
-                  rows={2}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
-                />
-              </div>
-            </div>
+            <textarea
+              value={configuratorMessage}
+              onChange={(e) => setConfiguratorMessage(e.target.value)}
+              placeholder="Hola Pablo, te envío mi página del configurador de cuchillos: {link}"
+              rows={3}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none mb-4"
+            />
 
             <button
               onClick={handleSaveConfiguratorMessage}
@@ -2725,17 +2208,18 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
                   : 'bg-blue-600 text-white hover:bg-blue-700'
               } disabled:opacity-50`}
             >
-              {savingConfiguratorMessage ? t('config.saving') : savedConfiguratorMessageFeedback ? t('config.saved') : t('config.save_message')}
+              {savingConfiguratorMessage ? 'Guardando...' : savedConfiguratorMessageFeedback ? '✓ Guardado' : 'Guardar Mensaje'}
             </button>
           </div>
+        </div>
 
         {/* Grid de Backups y Contacto */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Sección de Backups */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">{t('config.backups_title')}</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Backups</h2>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              {t('config.backups_description')}
+              Los backups incluyen las carpetas /data y /uploads. Se conservan máximo 5 backups.
             </p>
 
             <div className="flex items-center gap-4 mb-6">
@@ -2744,19 +2228,19 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
                 disabled={creating || backups.length >= 5}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {creating ? t('config.creating_backup') : t('config.create_backup')}
+                {creating ? 'Creando...' : 'Crear Backup'}
               </button>
               {backups.length >= 5 && (
                 <span className="text-sm text-amber-600 dark:text-amber-400">
-                  {t('config.backup_limit_reached')}
+                  Límite alcanzado. Elimina un backup para crear uno nuevo.
                 </span>
               )}
             </div>
 
             {loading ? (
-              <p className="text-gray-500">{t('settings.loading_backups')}</p>
+              <p className="text-gray-500">Cargando backups...</p>
             ) : backups.length === 0 ? (
-              <p className="text-gray-500 dark:text-gray-400">{t('settings.no_backups')}</p>
+              <p className="text-gray-500 dark:text-gray-400">No hay backups disponibles</p>
             ) : (
               <div className="space-y-2">
                 {backups.map((backup) => {
@@ -2784,18 +2268,18 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
                       <div className="flex items-center gap-2">
                         {backupToDelete === backup.filename ? (
                           <>
-                            <span className="text-xs text-red-600 dark:text-red-400 mr-2">{t('config.confirm_delete')}</span>
+                            <span className="text-xs text-red-600 dark:text-red-400 mr-2">¿Eliminar?</span>
                             <button
                               onClick={() => handleDeleteBackup(backup.filename)}
                               className="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700"
                             >
-                              {t('buttons.yes')}
+                              Sí
                             </button>
                             <button
                               onClick={() => setBackupToDelete(null)}
                               className="px-3 py-1 text-xs bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded hover:bg-gray-400 dark:hover:bg-gray-500"
                             >
-                              {t('buttons.no')}
+                              No
                             </button>
                           </>
                         ) : (
@@ -2830,7 +2314,7 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
 
           {/* Sección de Contacto - WhatsApp y Telegram */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">{t('config.contact_title')}</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Contacto</h2>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
               Configura botones flotantes de WhatsApp y Telegram en el sitio público.
             </p>
@@ -2846,7 +2330,7 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
                   className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
                 />
                 <label htmlFor="whatsapp-enabled" className="text-lg font-medium text-gray-900 dark:text-white">
-                  {t('config.whatsapp_section')}
+                  WhatsApp
                 </label>
               </div>
 
@@ -2854,7 +2338,7 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
                 <div className="space-y-3 ml-7">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      {t('config.whatsapp_number')}
+                      Número de WhatsApp (con código de país, sin +)
                     </label>
                     <input
                       type="text"
@@ -2865,31 +2349,16 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {t('config.whatsapp_message')}
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Mensaje predeterminado
                     </label>
-                    <div className="space-y-2">
-                      <div>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">Español:</span>
-                        <textarea
-                          placeholder="Hola, me interesan tus productos..."
-                          value={whatsappConfig.message.es || ''}
-                          onChange={(e) => setWhatsappConfig({ ...whatsappConfig, message: { ...whatsappConfig.message, es: e.target.value } })}
-                          rows={2}
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none mt-1"
-                        />
-                      </div>
-                      <div>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">English:</span>
-                        <textarea
-                          placeholder="Hi, I'm interested in your products..."
-                          value={whatsappConfig.message.en || ''}
-                          onChange={(e) => setWhatsappConfig({ ...whatsappConfig, message: { ...whatsappConfig.message, en: e.target.value } })}
-                          rows={2}
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none mt-1"
-                        />
-                      </div>
-                    </div>
+                    <textarea
+                      placeholder="Hola, me interesan tus productos..."
+                      value={whatsappConfig.message}
+                      onChange={(e) => setWhatsappConfig({ ...whatsappConfig, message: e.target.value })}
+                      rows={3}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
+                    />
                   </div>
                 </div>
               )}
@@ -2906,7 +2375,7 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
                   className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
                 />
                 <label htmlFor="telegram-enabled" className="text-lg font-medium text-gray-900 dark:text-white">
-                  {t('config.telegram_section')}
+                  Telegram
                 </label>
               </div>
 
@@ -2914,7 +2383,7 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
                 <div className="space-y-3 ml-7">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      {t('config.telegram_username')}
+                      Usuario de Telegram (sin @)
                     </label>
                     <input
                       type="text"
@@ -2925,31 +2394,16 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {t('config.telegram_message')}
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Mensaje predeterminado
                     </label>
-                    <div className="space-y-2">
-                      <div>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">Español:</span>
-                        <textarea
-                          placeholder="Hola, me interesan tus productos..."
-                          value={telegramConfig.message.es || ''}
-                          onChange={(e) => setTelegramConfig({ ...telegramConfig, message: { ...telegramConfig.message, es: e.target.value } })}
-                          rows={2}
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none mt-1"
-                        />
-                      </div>
-                      <div>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">English:</span>
-                        <textarea
-                          placeholder="Hi, I'm interested in your products..."
-                          value={telegramConfig.message.en || ''}
-                          onChange={(e) => setTelegramConfig({ ...telegramConfig, message: { ...telegramConfig.message, en: e.target.value } })}
-                          rows={2}
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none mt-1"
-                        />
-                      </div>
-                    </div>
+                    <textarea
+                      placeholder="Hola, me interesan tus productos..."
+                      value={telegramConfig.message}
+                      onChange={(e) => setTelegramConfig({ ...telegramConfig, message: e.target.value })}
+                      rows={3}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
+                    />
                   </div>
                 </div>
               )}
@@ -2964,16 +2418,16 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
                   : 'bg-blue-600 text-white hover:bg-blue-700'
               } disabled:opacity-50`}
             >
-              {savingContact ? t('config.saving') : savedContactFeedback ? t('config.saved') : t('config.save_contact')}
+              {savingContact ? 'Guardando...' : savedContactFeedback ? '✓ Guardado' : 'Guardar Configuración'}
             </button>
           </div>
         </div>
 
         {/* Sección de Metadatos HTML */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">{t('config.metadata_title')}</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Metadatos HTML</h2>
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-            {t('config.metadata_description')}
+            Etiquetas meta que se inyectarán en el &lt;head&gt; del HTML. Incluye Open Graph, Twitter Cards, etc.
           </p>
 
           <textarea
@@ -2994,16 +2448,16 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
             className={`px-4 py-2 rounded-lg transition-all duration-300 ${
               savedMetaTagsFeedback
                 ? 'bg-green-500 text-white'
-                  : 'bg-blue-600 text-white hover:bg-blue-700'
+                : 'bg-blue-600 text-white hover:bg-blue-700'
             } disabled:opacity-50`}
           >
-            {savingMetaTags ? t('config.saving') : savedMetaTagsFeedback ? t('config.saved') : t('config.save_metadata')}
+            {savingMetaTags ? 'Guardando...' : savedMetaTagsFeedback ? '✓ Guardado' : 'Guardar Metadatos'}
           </button>
         </div>
 
         {/* Sección de Footer */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">{t('config.footer_title')}</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Footer del Sitio</h2>
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
             Configura el footer que aparecerá en todas las páginas del sitio público.
           </p>
@@ -3018,7 +2472,7 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
               className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
             />
             <label htmlFor="footer-enabled" className="text-lg font-medium text-gray-900 dark:text-white">
-              {t('config.footer_enable')}
+              Mostrar footer
             </label>
           </div>
 
@@ -3026,34 +2480,19 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
             <div className="space-y-6 ml-7">
               {/* Link a página web */}
               <div className="pb-6 border-b border-gray-200 dark:border-gray-700">
-                <h3 className="text-base font-medium text-gray-900 dark:text-white mb-3">{t('config.footer_website_url')}</h3>
+                <h3 className="text-base font-medium text-gray-900 dark:text-white mb-3">Enlace a tu sitio web</h3>
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Texto del enlace
                     </label>
-                    <div className="space-y-2">
-                      <div>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">Español:</span>
-                        <input
-                          type="text"
-                          placeholder="Visita mi página web"
-                          value={footerConfig.website_text.es || ''}
-                          onChange={(e) => setFooterConfig({ ...footerConfig, website_text: { ...footerConfig.website_text, es: e.target.value } })}
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white mt-1"
-                        />
-                      </div>
-                      <div>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">English:</span>
-                        <input
-                          type="text"
-                          placeholder="Visit my website"
-                          value={footerConfig.website_text.en || ''}
-                          onChange={(e) => setFooterConfig({ ...footerConfig, website_text: { ...footerConfig.website_text, en: e.target.value } })}
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white mt-1"
-                        />
-                      </div>
-                    </div>
+                    <input
+                      type="text"
+                      placeholder="Visita mi página web"
+                      value={footerConfig.website_text}
+                      onChange={(e) => setFooterConfig({ ...footerConfig, website_text: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -3072,34 +2511,19 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
 
               {/* Redes sociales */}
               <div>
-                <h3 className="text-base font-medium text-gray-900 dark:text-white mb-3">{t('config.footer_social_text')}</h3>
+                <h3 className="text-base font-medium text-gray-900 dark:text-white mb-3">Redes Sociales</h3>
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Texto introductorio
                     </label>
-                    <div className="space-y-2">
-                      <div>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">Español:</span>
-                        <input
-                          type="text"
-                          placeholder="Seguime en mis redes sociales"
-                          value={footerConfig.social_text.es || ''}
-                          onChange={(e) => setFooterConfig({ ...footerConfig, social_text: { ...footerConfig.social_text, es: e.target.value } })}
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white mt-1"
-                        />
-                      </div>
-                      <div>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">English:</span>
-                        <input
-                          type="text"
-                          placeholder="Follow me on social media"
-                          value={footerConfig.social_text.en || ''}
-                          onChange={(e) => setFooterConfig({ ...footerConfig, social_text: { ...footerConfig.social_text, en: e.target.value } })}
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white mt-1"
-                        />
-                      </div>
-                    </div>
+                    <input
+                      type="text"
+                      placeholder="Seguime en mis redes sociales"
+                      value={footerConfig.social_text}
+                      onChange={(e) => setFooterConfig({ ...footerConfig, social_text: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -3157,7 +2581,7 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
                 : 'bg-blue-600 text-white hover:bg-blue-700'
             } disabled:opacity-50 ${footerConfig.enabled ? 'ml-7' : ''}`}
           >
-            {savingFooter ? t('config.saving') : savedFooterFeedback ? t('config.saved') : t('config.save_footer')}
+            {savingFooter ? 'Guardando...' : savedFooterFeedback ? '✓ Guardado' : 'Guardar Footer'}
           </button>
         </div>
       </div>

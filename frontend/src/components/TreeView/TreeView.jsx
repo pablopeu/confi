@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { useTranslation } from 'react-i18next'
 
 function TreeNode({ node, level = 0, selectedId, onSelect }) {
   const [isExpanded, setIsExpanded] = useState(level === 0)
@@ -92,9 +91,7 @@ function TreeNode({ node, level = 0, selectedId, onSelect }) {
   )
 }
 
-export default function TreeView({ categories, selectedId, onSelect, steelTypes, selectedSteel, onSteelSelect, steelGroupName }) {
-  const { t } = useTranslation('common')
-
+export default function TreeView({ categories, selectedId, onSelect, steelTypes, selectedSteel, onSteelSelect }) {
   return (
     <div className="h-full flex flex-col">
       <div className="flex-1 overflow-y-auto" role="tree" aria-label="Categorías">
@@ -111,7 +108,7 @@ export default function TreeView({ categories, selectedId, onSelect, steelTypes,
       {steelTypes && steelTypes.length > 0 && (
         <div className="border-t border-gray-200 dark:border-gray-700 pt-3 mt-3">
           <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-2 mb-2">
-            {steelGroupName || t('filters.steel_type')}
+            Tipo de Acero
           </h3>
           <div className="space-y-1">
             <button
@@ -124,7 +121,7 @@ export default function TreeView({ categories, selectedId, onSelect, steelTypes,
                 }
               `}
             >
-              {t('filters.all')}
+              Todos
             </button>
             {steelTypes.map((steel) => (
               <button

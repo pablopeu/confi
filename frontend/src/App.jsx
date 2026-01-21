@@ -1,7 +1,5 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import SearchBar from './components/SearchBar'
-import LanguageSwitcher from './components/LanguageSwitcher'
 import {
   getCategories,
   getPhotos,
@@ -23,9 +21,18 @@ const normalizeText = (str) => {
     .replace(/[\u0300-\u036f]/g, '')
 }
 
-function App() {
-  const { t, i18n } = useTranslation('app')
+// Tabs de tipos principales
+const TIPO_TABS = [
+  { id: 'cocina', label: 'Cocina' },
+  { id: 'asado', label: 'Asado' },
+  { id: 'japones', label: 'Japonés' },
+  { id: 'otros', label: 'Otros' }
+]
 
+// IDs que se consideran "Otros"
+const OTROS_TIPOS = ['outdoor', 'camping', 'caza']
+
+function App() {
   const [tagGroups, setTagGroups] = useState([])
   const [photos, setPhotos] = useState([])
   const [filteredPhotos, setFilteredPhotos] = useState([])
@@ -38,7 +45,6 @@ function App() {
   const [siteSubtitleMobile, setSiteSubtitleMobile] = useState('Buscador interactivo')
   const [siteSubtitleDesktop, setSiteSubtitleDesktop] = useState('Buscador interactivo de modelos y materiales')
   const [showConfigurador, setShowConfigurador] = useState(false)
-  const [enabledLanguages, setEnabledLanguages] = useState({ es: true, en: true })
 
   // Filtros
   const [activeTab, setActiveTab] = useState(null) // null = todos, o un id de tab
@@ -141,21 +147,12 @@ function App() {
   // Fotos seleccionadas del bucket activo (para compatibilidad)
   const selectedPhotos = buckets[activeBucket]?.selectedPhotos || []
 
-  // Detectar ?config= en URL al inicio
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search)
-    if (urlParams.has('config')) {
-      setShowConfigurador(true)
-    }
-  }, [])
-
-  // Cargar configuración (logo, whatsapp, telegram) según idioma
+  // Cargar configuración (logo, whatsapp, telegram) y detectar ?config= en URL
   useEffect(() => {
     async function loadConfig() {
       try {
         const API_BASE = import.meta.env.VITE_API_URL || './api/index.php'
-        const lang = i18n.language || 'es'
-        const response = await fetch(`${API_BASE}?route=config&lang=${lang}`)
+        const response = await fetch(`${API_BASE}?route=config`)
         if (response.ok) {
           const data = await response.json()
           setLogo(data.logo || null)
@@ -165,15 +162,19 @@ function App() {
           setSiteTitle(data.site_title || 'PEU Cuchillos Artesanales')
           setSiteSubtitleMobile(data.site_subtitle_mobile || 'Buscador interactivo')
           setSiteSubtitleDesktop(data.site_subtitle_desktop || 'Buscador interactivo de modelos y materiales')
-          console.log('[App] Received enabled_languages from backend:', data.enabled_languages)
-          setEnabledLanguages(data.enabled_languages || { es: true, en: true })
         }
       } catch (error) {
         // Error silencioso - no afecta funcionalidad principal
       }
     }
     loadConfig()
-  }, [i18n.language])
+
+    // Si la URL tiene ?config=, abrir el configurador automáticamente
+    const urlParams = new URLSearchParams(window.location.search)
+    if (urlParams.has('config')) {
+      setShowConfigurador(true)
+    }
+  }, [])
 
   // Cargar datos iniciales
   useEffect(() => {
@@ -188,7 +189,6 @@ function App() {
         setPhotos(photoData?.photos || [])
         setFilteredPhotos(photoData?.photos || [])
       } catch (error) {
-        console.error('Error loading data:', error)
         // Error silencioso - se muestra UI vacía
       } finally {
         setLoading(false)
@@ -197,69 +197,11 @@ function App() {
     loadData()
   }, [])
 
-  // Recargar categorías cuando cambia el idioma
-  useEffect(() => {
-    async function reloadCategories() {
-      try {
-        const catData = await getCategories()
-        setTagGroups(catData?.tag_groups || [])
-      } catch (error) {
-        console.error('Error reloading categories:', error)
-      }
-    }
-    // Solo recargar si ya hay datos cargados (evitar doble carga inicial)
-    if (tagGroups.length > 0) {
-      reloadCategories()
-    }
-  }, [i18n.language])
-
   // Obtener tags por grupo
   const getTagsByGroup = (groupId) => {
     const group = tagGroups.find(g => g.id === groupId)
     return group?.tags || []
   }
-
-  // Obtener nombre del grupo
-  // El backend ya transforma los nombres según el idioma en GET /tags
-  const getGroupName = (groupId) => {
-    const group = tagGroups.find(g => g.id === groupId)
-    if (!group) return groupId
-    return group.name || groupId
-  }
-
-  // Construir tabs dinámicamente desde el grupo "tipo"
-  // Los primeros 3 tags son tabs principales, el resto va a "Otros"
-  const TIPO_TABS = useMemo(() => {
-    const tipoGroup = tagGroups.find(g => g.id === 'tipo')
-    if (!tipoGroup || !tipoGroup.tags) return []
-
-    // Los primeros 3 tags del grupo "tipo" son los tabs principales
-    const mainTags = tipoGroup.tags.slice(0, 3)
-    const otrosTags = tipoGroup.tags.slice(3) // Todos los demás van a "Otros"
-
-    // Crear tabs para los primeros 3
-    const tabs = mainTags.map(tag => ({
-      id: tag.id,
-      label: tag.name
-    }))
-
-    // Siempre agregar el tab "Otros" si hay tags adicionales
-    if (otrosTags.length > 0) {
-      tabs.push({
-        id: 'otros',
-        label: t('tags.otros', { defaultValue: 'Otros' })
-      })
-    }
-
-    return tabs
-  }, [tagGroups, t])
-
-  // Obtener IDs de tags que van en "Otros" (a partir del índice 3)
-  const getOtrosTiposIds = useMemo(() => {
-    const tipoGroup = tagGroups.find(g => g.id === 'tipo')
-    if (!tipoGroup || !tipoGroup.tags) return []
-    return tipoGroup.tags.slice(3).map(tag => tag.id)
-  }, [tagGroups])
 
   // Filtrar fotos cuando cambian los filtros
   useEffect(() => {
@@ -268,10 +210,10 @@ function App() {
     // Filtrar por tab de tipo
     if (activeTab) {
       if (activeTab === 'otros') {
-        // Filtrar fotos que tengan algún tag de "otros" tipos (tags del índice 3+)
+        // Filtrar fotos que tengan algún tag de "otros" tipos
         result = result.filter(photo => {
           const photoTags = photo.tags || []
-          return getOtrosTiposIds.some(tipo => photoTags.includes(tipo))
+          return OTROS_TIPOS.some(tipo => photoTags.includes(tipo))
         })
       } else {
         result = result.filter(photo => {
@@ -333,7 +275,7 @@ function App() {
     }
 
     setFilteredPhotos(result)
-  }, [photos, activeTab, selectedEncabado, selectedAcero, selectedExtras, searchQuery, tagGroups, getOtrosTiposIds])
+  }, [photos, activeTab, selectedEncabado, selectedAcero, selectedExtras, searchQuery, tagGroups])
 
   // Handlers
   const handleResetFilters = useCallback(() => {
@@ -439,7 +381,6 @@ function App() {
       allPhotos={photos}
       onClose={() => setShowConfigurador(false)}
       logo={logo}
-      siteTitle={siteTitle}
       tagGroups={tagGroups}
       showBucketDelete={showBucketDelete}
       setShowBucketDelete={setShowBucketDelete}
@@ -472,25 +413,22 @@ function App() {
                   </p>
                 </div>
               </div>
-              {/* Icono de búsqueda y selector de idioma */}
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <LanguageSwitcher enabledLanguages={enabledLanguages} />
-                <button
-                  onClick={() => setShowMobileSearch(!showMobileSearch)}
-                  className="p-1.5 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                  aria-label={t('aria.search')}
-                >
-                  {showMobileSearch ? (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  ) : (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                  )}
-                </button>
-              </div>
+              {/* Icono de búsqueda */}
+              <button
+                onClick={() => setShowMobileSearch(!showMobileSearch)}
+                className="flex-shrink-0 p-1.5 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                aria-label="Buscar"
+              >
+                {showMobileSearch ? (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                )}
+              </button>
             </div>
 
             {/* Buscador expandible */}
@@ -499,6 +437,7 @@ function App() {
                 <SearchBar
                   value={searchQuery}
                   onChange={setSearchQuery}
+                  placeholder="Buscar..."
                 />
               </div>
             )}
@@ -513,7 +452,7 @@ function App() {
                     : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                 }`}
               >
-                {t('labels.all', { defaultValue: 'Todos', ns: 'common' })}
+                Todos
               </button>
               {TIPO_TABS.map(tab => (
                 <button
@@ -533,21 +472,21 @@ function App() {
             {/* Subheader2: Selectores - TODO EN UN RENGLÓN */}
             <div className="flex items-center gap-1 py-1 border-t border-gray-200 dark:border-gray-700">
               <MultiSelect
-                label={getGroupName('encabado')}
+                label="Encabado"
                 options={getTagsByGroup('encabado')}
                 selected={selectedEncabado}
                 onChange={setSelectedEncabado}
                 groupId="encabado"
               />
               <MultiSelect
-                label={getGroupName('acero')}
+                label="Acero"
                 options={getTagsByGroup('acero')}
                 selected={selectedAcero}
                 onChange={setSelectedAcero}
                 groupId="acero"
               />
               <MultiSelect
-                label={getGroupName('extras')}
+                label="Tipo de Cuchillo"
                 options={getTagsByGroup('extras')}
                 selected={selectedExtras}
                 onChange={setSelectedExtras}
@@ -561,7 +500,7 @@ function App() {
                 onClick={() => setShowConfigurador(true)}
                 className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors flex items-center gap-1"
               >
-                {t('configurator.open')}
+                Configurador
                 {selectedPhotos.length > 0 && (
                   <span className="bg-white text-green-600 rounded-full px-1.5 py-0.5 text-xs font-bold">
                     {selectedPhotos.length}
@@ -611,7 +550,7 @@ function App() {
                         onClick={() => setShowBucketDelete(null)}
                       />
                       <div className="absolute top-full mt-1 left-1/2 -translate-x-1/2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-2 z-50 whitespace-nowrap">
-                        <p className="text-xs text-gray-900 dark:text-white mb-2">{t('messages.delete_confirm', { ns: 'common' })}</p>
+                        <p className="text-xs text-gray-900 dark:text-white mb-2">¿Eliminar?</p>
                         <div className="flex gap-1">
                           <button
                             onClick={() => handleDeleteBucket(index)}
@@ -661,7 +600,7 @@ function App() {
                     : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                 }`}
               >
-                {t('labels.all', { defaultValue: 'Todos', ns: 'common' })}
+                Todos
               </button>
               {TIPO_TABS.map(tab => (
                 <button
@@ -681,21 +620,21 @@ function App() {
             {/* Selectboxes */}
             <div className="flex items-center gap-3 flex-shrink-0">
               <MultiSelect
-                label={getGroupName('encabado')}
+                label="Encabado"
                 options={getTagsByGroup('encabado')}
                 selected={selectedEncabado}
                 onChange={setSelectedEncabado}
                 groupId="encabado"
               />
               <MultiSelect
-                label={getGroupName('acero')}
+                label="Acero"
                 options={getTagsByGroup('acero')}
                 selected={selectedAcero}
                 onChange={setSelectedAcero}
                 groupId="acero"
               />
               <MultiSelect
-                label={getGroupName('extras')}
+                label="Tipo de Cuchillo"
                 options={getTagsByGroup('extras')}
                 selected={selectedExtras}
                 onChange={setSelectedExtras}
@@ -709,7 +648,7 @@ function App() {
                 onClick={handleResetFilters}
                 className="px-3 py-1.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors flex-shrink-0"
               >
-                {t('buttons.reset_filters', { ns: 'common' })}
+                Resetear filtros
               </button>
             )}
 
@@ -718,7 +657,7 @@ function App() {
               onClick={() => setShowConfigurador(true)}
               className="px-3 py-1.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-1 flex-shrink-0"
             >
-              {t('configurator.open')}
+              Configurador
               {selectedPhotos.length > 0 && (
                 <span className="bg-white text-green-600 rounded-full px-1.5 py-0.5 text-xs font-bold">
                   {selectedPhotos.length}
@@ -726,17 +665,12 @@ function App() {
               )}
             </button>
 
-            {/* Language Switcher */}
-            <div className="ml-auto">
-              <LanguageSwitcher />
-            </div>
-
-            {/* Buscador colapsable */}
-            <div className="w-auto">
+            {/* Buscador al final */}
+            <div className="w-48 ml-auto">
               <SearchBar
                 value={searchQuery}
                 onChange={setSearchQuery}
-                collapsible={true}
+                placeholder="Buscar..."
               />
             </div>
           </div>
@@ -785,7 +719,7 @@ function App() {
                         onClick={() => setShowBucketDelete(null)}
                       />
                       <div className="absolute top-full mt-1 left-1/2 -translate-x-1/2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-2 z-50 whitespace-nowrap">
-                        <p className="text-xs text-gray-900 dark:text-white mb-2">{t('messages.delete_confirm', { ns: 'common' })}</p>
+                        <p className="text-xs text-gray-900 dark:text-white mb-2">¿Eliminar?</p>
                         <div className="flex gap-1">
                           <button
                             onClick={() => handleDeleteBucket(index)}
@@ -851,7 +785,7 @@ function App() {
               target="_blank"
               rel="noopener noreferrer"
               className="w-14 h-14 rounded-full bg-[#0088cc] hover:bg-[#0077b3] text-white flex items-center justify-center shadow-lg transition-all hover:scale-110"
-              title={t('configurator.contact_telegram')}
+              title="Contactar por Telegram"
             >
               <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.295-.6.295-.002 0-.003 0-.005 0l.213-3.054 5.56-5.022c.24-.213-.054-.334-.373-.121l-6.869 4.326-2.96-.924c-.64-.203-.658-.64.135-.954l11.566-4.458c.538-.196 1.006.128.832.941z"/>
@@ -866,7 +800,7 @@ function App() {
               target="_blank"
               rel="noopener noreferrer"
               className="w-14 h-14 rounded-full bg-[#25D366] hover:bg-[#20BA5A] text-white flex items-center justify-center shadow-lg transition-all hover:scale-110"
-              title={t('configurator.contact_whatsapp')}
+              title="Contactar por WhatsApp"
             >
               <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
@@ -1232,7 +1166,6 @@ function Configurador({
   allPhotos,
   onClose,
   logo,
-  siteTitle,
   tagGroups,
   showBucketDelete,
   setShowBucketDelete,
@@ -1241,7 +1174,6 @@ function Configurador({
   setSavedCode,
   footerConfig
 }) {
-  const { t } = useTranslation('app')
   const [saving, setSaving] = useState(false)
   const [showShareButtons, setShowShareButtons] = useState(false)
   const [whatsappConfig, setWhatsappConfig] = useState(null)
@@ -1431,7 +1363,7 @@ function Configurador({
                   <img src={logo} alt="Logo" className="h-8 object-contain flex-shrink-0" />
                 )}
                 <h1 className="text-base font-bold text-gray-900 dark:text-white truncate">
-                  {t('configurator.open')}
+                  Configurador
                 </h1>
               </div>
 
@@ -1442,7 +1374,7 @@ function Configurador({
                   disabled={saving || showShareButtons}
                   className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors font-medium disabled:opacity-50"
                 >
-                  {saving ? t('configurator.saving') : showShareButtons ? t('configurator.saved') : savedCode ? t('configurator.save_config') : t('configurator.send_config')}
+                  {saving ? 'Guardando...' : showShareButtons ? 'Datos guardados' : savedCode ? 'Guardar configuración' : 'Enviar configuración'}
                 </button>
 
                 {/* Botones de compartir (visibles por 5 segundos después de guardar) */}
@@ -1455,7 +1387,7 @@ function Configurador({
                         rel="noopener noreferrer"
                         className="px-2 py-1 text-xs bg-[#25D366] text-white rounded hover:bg-[#20BA5A] transition-colors"
                       >
-                        {t('configurator.whatsapp')}
+                        WhatsApp
                       </a>
                     )}
                     {telegramConfig?.enabled && telegramConfig.username && (
@@ -1465,7 +1397,7 @@ function Configurador({
                         rel="noopener noreferrer"
                         className="px-2 py-1 text-xs bg-[#0088cc] text-white rounded hover:bg-[#0077b3] transition-colors"
                       >
-                        {t('configurator.telegram')}
+                        Telegram
                       </a>
                     )}
                   </>
@@ -1505,7 +1437,7 @@ function Configurador({
                         onClick={() => setShowBucketDelete(null)}
                       />
                       <div className="absolute top-full mt-1 left-1/2 -translate-x-1/2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-2 z-50 whitespace-nowrap">
-                        <p className="text-xs text-gray-900 dark:text-white mb-2">{t('messages.delete_confirm', { ns: 'common' })}</p>
+                        <p className="text-xs text-gray-900 dark:text-white mb-2">¿Eliminar?</p>
                         <div className="flex gap-1">
                           <button
                             onClick={() => handleDeleteBucket(index)}
@@ -1548,7 +1480,7 @@ function Configurador({
             {/* Título del configurador con buckets */}
             <div className="flex-1 flex items-center justify-center gap-2">
               <h2 className="text-base font-bold text-gray-900 dark:text-white">
-                {t('configurator.open')}
+                Configurador
               </h2>
               {/* Buckets */}
               <div className="flex items-center gap-1">
@@ -1582,7 +1514,7 @@ function Configurador({
                           onClick={() => setShowBucketDelete(null)}
                         />
                         <div className="absolute top-full mt-1 left-1/2 -translate-x-1/2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-2 z-50 whitespace-nowrap">
-                          <p className="text-xs text-gray-900 dark:text-white mb-2">{t('messages.delete_confirm', { ns: 'common' })}</p>
+                          <p className="text-xs text-gray-900 dark:text-white mb-2">¿Eliminar?</p>
                           <div className="flex gap-1">
                             <button
                               onClick={() => handleDeleteBucket(index)}
@@ -1728,7 +1660,7 @@ function Configurador({
                               onChange={() => handleCheckboxChange(photo.id, 'acero')}
                               className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                             />
-                            <span className="text-sm text-gray-700 dark:text-gray-300">{getGroupName('acero')}</span>
+                            <span className="text-sm text-gray-700 dark:text-gray-300">Acero</span>
                           </label>
 
                           <label className="flex items-center gap-2 cursor-pointer">
@@ -1738,7 +1670,7 @@ function Configurador({
                               onChange={() => handleCheckboxChange(photo.id, 'encabado')}
                               className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                             />
-                            <span className="text-sm text-gray-700 dark:text-gray-300">{getGroupName('encabado')}</span>
+                            <span className="text-sm text-gray-700 dark:text-gray-300">Encabado</span>
                           </label>
                         </div>
 

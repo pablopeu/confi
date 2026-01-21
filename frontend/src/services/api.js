@@ -1,22 +1,11 @@
-import i18n from '../i18n'
-
 const API_BASE = import.meta.env.VITE_API_URL || './api/index.php?route='
 
 async function fetchJSON(url, options = {}) {
   // Convertir /path a route=path
-  let route = url.startsWith('/') ? url.slice(1) : url
-
-  // Si la ruta tiene parámetros de query (?...), separarlos
-  const hasQueryParams = route.includes('?')
-  if (hasQueryParams) {
-    // Reemplazar el primer ? por & para que se concatene correctamente con API_BASE
-    route = route.replace('?', '&')
-  }
-
+  const route = url.startsWith('/') ? url.slice(1) : url
   const fullUrl = `${API_BASE}${route}`
 
   const response = await fetch(fullUrl, {
-    cache: 'no-store',
     headers: {
       'Content-Type': 'application/json',
       ...options.headers,
@@ -34,9 +23,7 @@ async function fetchJSON(url, options = {}) {
 
 // Tags (antes llamado Categorías)
 export async function getCategories() {
-  const lang = i18n.language || 'es'
-  const timestamp = Date.now()
-  return fetchJSON(`/tags?lang=${lang}&_t=${timestamp}`)
+  return fetchJSON('/tags')
 }
 
 // Fotos
