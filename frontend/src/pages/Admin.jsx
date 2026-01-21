@@ -1453,6 +1453,7 @@ function TagsManager({ tagGroups, authParams, onRefresh, showSuccess, showError,
   const [editingGroup, setEditingGroup] = useState(null)
   const [editingTag, setEditingTag] = useState(null) // { groupId, tagId, name }
   const [confirmingDelete, setConfirmingDelete] = useState(null) // { groupId, tagId, tagName }
+  const [draggedTag, setDraggedTag] = useState(null) // { groupId, tagId, index }
 
   // Manejar tecla Escape para cancelar confirmación
   useEffect(() => {
@@ -1556,6 +1557,44 @@ function TagsManager({ tagGroups, authParams, onRefresh, showSuccess, showError,
     }
   }
 
+  const handleDragStart = (groupId, tagId, index) => {
+    setDraggedTag({ groupId, tagId, index })
+  }
+
+  const handleDragOver = (e) => {
+    e.preventDefault()
+  }
+
+  const handleDrop = async (groupId, dropIndex) => {
+    if (!draggedTag || draggedTag.groupId !== groupId) return
+
+    const group = tagGroups.find(g => g.id === groupId)
+    if (!group) return
+
+    const tags = [...group.tags]
+    const [draggedItem] = tags.splice(draggedTag.index, 1)
+    tags.splice(dropIndex, 0, draggedItem)
+
+    try {
+      const params = new URLSearchParams(authParams)
+      const response = await fetch(apiUrl(`admin/tag-groups/${groupId}/reorder`) + '&' + params.toString(), {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tag_order: tags.map(t => t.id) })
+      })
+
+      if (response.ok) {
+        onRefresh()
+      } else {
+        showError('Error', 'Error al reordenar tags')
+      }
+    } catch (error) {
+      showError('Error', 'Error de conexión')
+    } finally {
+      setDraggedTag(null)
+    }
+  }
+
   return (
     <div className="h-full overflow-y-auto py-4 space-y-6">
       {/* Create Tag */}
@@ -1605,12 +1644,24 @@ function TagsManager({ tagGroups, authParams, onRefresh, showSuccess, showError,
               <p className="text-sm text-gray-500 italic">Sin tags</p>
             ) : (
               <div className="space-y-1 max-h-48 overflow-y-auto">
-                {[...group.tags].sort((a, b) => a.name.localeCompare(b.name)).map(tag => {
+                {(group.id === 'tipo' ? group.tags : [...group.tags].sort((a, b) => a.name.localeCompare(b.name))).map((tag, index) => {
                   const isConfirming = confirmingDelete?.tagId === tag.id && confirmingDelete?.groupId === group.id
+                  const isHeaderTag = group.id === 'tipo' && index < 3
+                  const isDragging = draggedTag?.tagId === tag.id
 
                   return (
-                    <div key={tag.id} className="flex items-center justify-between py-1 px-2 bg-gray-50 dark:bg-gray-700 rounded">
-                      <span className="text-sm text-gray-700 dark:text-gray-300">{capitalize(tag.name)}</span>
+                    <div
+                      key={tag.id}
+                      draggable={group.id === 'tipo'}
+                      onDragStart={() => handleDragStart(group.id, tag.id, index)}
+                      onDragOver={handleDragOver}
+                      onDrop={() => handleDrop(group.id, index)}
+                      className={`flex items-center justify-between py-1 px-2 bg-gray-50 dark:bg-gray-700 rounded ${isDragging ? 'opacity-50' : ''} ${group.id === 'tipo' ? 'cursor-move' : ''}`}
+                    >
+                      <span className={`text-sm text-gray-700 dark:text-gray-300 ${isHeaderTag ? 'font-bold' : ''}`}>
+                        {capitalize(tag.name)}
+                        {isHeaderTag && <span className="ml-1 text-xs text-blue-600">(header)</span>}
+                      </span>
                       {isConfirming ? (
                         <div className="flex items-center gap-1">
                           <button
