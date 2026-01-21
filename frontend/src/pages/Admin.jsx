@@ -1110,6 +1110,7 @@ function ManagePhotos({ photos, tagGroups, authParams, onRefresh, showSuccess, s
   const [arrowFeedback, setArrowFeedback] = useState(null)
   const [showOnlyUntagged, setShowOnlyUntagged] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [pinnedPhotoId, setPinnedPhotoId] = useState(null) // Mantener foto actual visible aunque tenga tags
 
   // Filtrar fotos por búsqueda y tags
   let filteredPhotos = photos
@@ -1145,12 +1146,21 @@ function ManagePhotos({ photos, tagGroups, authParams, onRefresh, showSuccess, s
   // Filtrar fotos sin tags si está activo el filtro
   if (showOnlyUntagged) {
     filteredPhotos = filteredPhotos.filter(p => {
+      // No filtrar la foto "pinneada" (la actual que se está editando)
+      if (p.id === pinnedPhotoId) return true
       const tags = photoTags[p.id] || p.tags || []
       return tags.length === 0
     })
   }
 
   const currentPhoto = filteredPhotos[currentIndex]
+
+  // Actualizar foto "pinneada" cuando cambia la foto actual
+  useEffect(() => {
+    if (currentPhoto) {
+      setPinnedPhotoId(currentPhoto.id)
+    }
+  }, [currentPhoto?.id])
 
   // Inicializar datos cuando cambian las fotos (sin sobrescribir los locales)
   useEffect(() => {
@@ -1284,6 +1294,8 @@ function ManagePhotos({ photos, tagGroups, authParams, onRefresh, showSuccess, s
     await handleSaveCurrentPhoto(false)
     setArrowFeedback('prev')
     setTimeout(() => setArrowFeedback(null), 500)
+    // Limpiar foto pinneada al cambiar explícitamente
+    setPinnedPhotoId(null)
     // Continuo: si está en la primera, va a la última
     setCurrentIndex(currentIndex === 0 ? filteredPhotos.length - 1 : currentIndex - 1)
   }
@@ -1292,6 +1304,8 @@ function ManagePhotos({ photos, tagGroups, authParams, onRefresh, showSuccess, s
     await handleSaveCurrentPhoto(false)
     setArrowFeedback('next')
     setTimeout(() => setArrowFeedback(null), 500)
+    // Limpiar foto pinneada al cambiar explícitamente
+    setPinnedPhotoId(null)
     // Continuo: si está en la última, va a la primera
     setCurrentIndex(currentIndex === filteredPhotos.length - 1 ? 0 : currentIndex + 1)
   }
@@ -1340,6 +1354,7 @@ function ManagePhotos({ photos, tagGroups, authParams, onRefresh, showSuccess, s
         currentIndex={currentIndex}
         onSelectPhoto={async (newIndex) => {
           await handleSaveCurrentPhoto(false)
+          setPinnedPhotoId(null) // Limpiar foto pinneada al cambiar explícitamente
           setCurrentIndex(newIndex)
         }}
       />
@@ -1389,6 +1404,7 @@ function ManagePhotos({ photos, tagGroups, authParams, onRefresh, showSuccess, s
                 onChange={(value) => {
                   setSearchQuery(value)
                   setCurrentIndex(0)
+                  setPinnedPhotoId(null) // Limpiar foto pinneada al cambiar búsqueda
                 }}
                 placeholder="Buscar..."
               />
@@ -1397,6 +1413,7 @@ function ManagePhotos({ photos, tagGroups, authParams, onRefresh, showSuccess, s
               onClick={() => {
                 setShowOnlyUntagged(!showOnlyUntagged)
                 setCurrentIndex(0)
+                setPinnedPhotoId(null) // Limpiar foto pinneada al cambiar filtro
               }}
               className={`px-3 py-1 text-sm rounded-lg transition-colors whitespace-nowrap ${
                 showOnlyUntagged
