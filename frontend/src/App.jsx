@@ -814,12 +814,13 @@ function App() {
           {instructionsConfig?.enabled && (
             <button
               onClick={() => setShowInstructions(true)}
-              className="h-14 px-6 rounded-lg bg-gray-800 hover:bg-gray-900 text-white flex items-center justify-center shadow-lg transition-all hover:scale-105 whitespace-nowrap"
+              className="w-14 h-14 rounded-full bg-gray-800 hover:bg-gray-900 text-white flex items-center justify-center shadow-lg transition-all hover:scale-110"
               title="Ver instrucciones"
             >
-              <span className="text-sm font-semibold">
-                instrucciones
-              </span>
+              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.323 5.477 5.477 10.323 5 10.323c0 5.618 0 10.077 2.53 10.622 5.707a9.96 9.96 0 011.658 5.228M9 20h6m-7 0h10m2-10v5m0 0a2 2 0 11-4 0 2 2 0 014 0zm-3-6a2 2 0 11-4 0 2 2 0 014 0" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 0h6m-3 3v-6" />
+              </svg>
             </button>
           )}
 
@@ -868,7 +869,7 @@ function App() {
           <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-auto">
             <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex justify-between items-center">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                {instructionsConfig.title || 'Instrucciones'}
+                Instrucciones
               </h2>
               <button
                 onClick={() => setShowInstructions(false)}

@@ -1462,7 +1462,6 @@ switch (true) {
         $config = getConfig();
         $instructions = $config['instructions'] ?? [
             'enabled' => false,
-            'title' => ['es' => 'Instrucciones', 'en' => 'Instructions'],
             'text' => ''
         ];
 

@@ -1807,7 +1807,6 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
   // Estado para instrucciones
   const [instructionsConfig, setInstructionsConfig] = useState({
     enabled: false,
-    title: 'Instrucciones',
     text: ''
   })
   const [savingInstructions, setSavingInstructions] = useState(false)
@@ -2019,7 +2018,6 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
         const data = await response.json()
         setInstructionsConfig(data.instructions || {
           enabled: false,
-          title: 'Instrucciones',
           text: ''
         })
       }
@@ -2700,20 +2698,6 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
           {instructionsConfig.enabled && (
             <div className="space-y-4">
               <div>
-                <label htmlFor="instructions-title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Título
-                </label>
-                <input
-                  type="text"
-                  id="instructions-title"
-                  value={instructionsConfig.title}
-                  onChange={(e) => setInstructionsConfig({ ...instructionsConfig, title: e.target.value })}
-                  placeholder="Instrucciones"
-                  className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                />
-              </div>
-
-              <div>
                 <label htmlFor="instructions-text" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Contenido (puedes usar saltos de línea)
                 </label>
@@ -2729,7 +2713,7 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
 
               <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
                 <p className="text-sm text-blue-800 dark:text-blue-200">
-                  💡 El botón flotante aparecerá arriba de WhatsApp y Telegram, con el texto vertical "INSTRUCCIONES" para ocupar poco espacio.
+                  💡 El botón flotante con ícono aparecerá arriba de WhatsApp y Telegram.
                 </p>
               </div>
             </div>
