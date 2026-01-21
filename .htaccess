@@ -36,3 +36,17 @@
    php_flag zlib.output_compression Off
 </IfModule>
 # END cPanel-generated php ini directives, do not edit
+
+# SPA Routing - Redirigir todas las peticiones no estáticas a index.html
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  # Base URL para el subdirectorio /confi/
+  RewriteBase /confi/
+
+  # Si es un archivo o directorio real, servirlo directamente
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+
+  # Si no es un archivo estático (assets, json, etc), redirigir a index.html
+  RewriteRule ^ index.html [L]
+</IfModule>

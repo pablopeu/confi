@@ -49,6 +49,8 @@ jobs:
           mkdir -p deploy/backups
           cp backups/.htaccess deploy/backups/.htaccess 2>/dev/null || echo "Deny from all" > deploy/backups/.htaccess
           mkdir -p deploy/uploads
+          # Copiar .htaccess principal para SPA routing
+          cp .htaccess deploy/.htaccess
           # NO copiar datos JSON - dejar los del servidor
           # NO copiar uploads - dejar los del servidor
 
