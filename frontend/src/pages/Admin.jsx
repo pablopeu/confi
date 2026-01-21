@@ -1656,6 +1656,7 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange }) {
   const [siteTitle, setSiteTitle] = useState('PEU Cuchillos Artesanales')
   const [siteSubtitleMobile, setSiteSubtitleMobile] = useState('Buscador interactivo')
   const [siteSubtitleDesktop, setSiteSubtitleDesktop] = useState('Buscador interactivo de modelos y materiales')
+  const [backendTitle, setBackendTitle] = useState('FotoCRM Admin')
   const [savingSiteInfo, setSavingSiteInfo] = useState(false)
   const [savedSiteInfoFeedback, setSavedSiteInfoFeedback] = useState(false)
 
@@ -1800,6 +1801,7 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange }) {
         setSiteTitle(data.site_title || 'PEU Cuchillos Artesanales')
         setSiteSubtitleMobile(data.site_subtitle_mobile || 'Buscador interactivo')
         setSiteSubtitleDesktop(data.site_subtitle_desktop || 'Buscador interactivo de modelos y materiales')
+        setBackendTitle(data.backend_title || 'FotoCRM Admin')
       }
     } catch (error) {
       // Error silencioso
@@ -1894,7 +1896,8 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange }) {
         body: JSON.stringify({
           site_title: siteTitle,
           site_subtitle_mobile: siteSubtitleMobile,
-          site_subtitle_desktop: siteSubtitleDesktop
+          site_subtitle_desktop: siteSubtitleDesktop,
+          backend_title: backendTitle
         })
       })
 
@@ -2166,6 +2169,19 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange }) {
                   value={siteSubtitleDesktop}
                   onChange={(e) => setSiteSubtitleDesktop(e.target.value)}
                   placeholder="Buscador interactivo de modelos y materiales"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Título del backend
+                </label>
+                <input
+                  type="text"
+                  value={backendTitle}
+                  onChange={(e) => setBackendTitle(e.target.value)}
+                  placeholder="FotoCRM Admin"
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 />
               </div>
