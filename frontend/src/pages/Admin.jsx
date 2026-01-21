@@ -54,11 +54,25 @@ export default function Admin() {
       if (response.ok) {
         setAuthenticated(true)
         loadData()
+        loadBackendTitle() // Cargar título del backend
       } else {
         showError('Error', 'Credenciales inválidas')
       }
     } catch (error) {
       showError('Error', 'No se pudo conectar con el servidor')
+    }
+  }
+
+  const loadBackendTitle = async () => {
+    try {
+      const params = new URLSearchParams(getAuthParams())
+      const response = await fetch(apiUrl('admin/config/site-info') + '&' + params.toString())
+      if (response.ok) {
+        const data = await response.json()
+        setBackendTitle(data.backend_title || 'FotoCRM Admin')
+      }
+    } catch (error) {
+      // Error silencioso, mantener el valor por defecto
     }
   }
 
@@ -168,7 +182,13 @@ export default function Admin() {
     <div className="h-screen bg-gray-100 dark:bg-gray-900 flex flex-col overflow-hidden">
       <header className="bg-white dark:bg-gray-800 shadow flex-shrink-0">
         <div className="max-w-7xl mx-auto px-4 py-2 flex justify-between items-center">
-          <h1 className="text-lg font-bold text-gray-900 dark:text-white">{backendTitle}</h1>
+          <button
+            onClick={() => handleTabChange('manage')}
+            className="text-lg font-bold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+            title="Ir a Administrar fotos"
+          >
+            {backendTitle}
+          </button>
 
           {/* Tabs en el header */}
           <div className="flex gap-1">
