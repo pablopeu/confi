@@ -694,11 +694,12 @@ function App() {
             </button>
 
             {/* Buscador al final */}
-            <div className="w-48 ml-auto">
+            <div className="ml-auto">
               <SearchBar
                 value={searchQuery}
                 onChange={setSearchQuery}
                 placeholder="Buscar..."
+                collapsed={true}
               />
             </div>
           </div>
