@@ -2197,33 +2197,27 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
   }
 
   return (
-    <div className="h-full overflow-y-auto py-6 px-4">
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Grid de 2 columnas para Logo y Mensaje del Configurador */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div className="h-full overflow-y-auto py-4 px-4">
+      <div className="max-w-7xl mx-auto">
+        {/* Grid de 3 columnas compactas */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
           {/* Sección de Logo y Títulos */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Logo y Títulos del Sitio</h2>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+            <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-3">Logo y Títulos</h2>
 
             {/* Logo */}
-            <div className="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                Sube un logo que se mostrará en el header. Formatos: JPG, PNG, SVG, WEBP (máx 2MB).
-              </p>
-
+            <div className="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
               {logo ? (
-                <div className="space-y-4">
-                  <div className="flex items-center gap-4">
-                    <img src={logo} alt="Logo" className="h-12 object-contain" />
-                    <button
-                      onClick={handleDeleteLogo}
-                      className="px-4 py-2 bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-200 dark:hover:bg-red-900"
-                    >
-                      Eliminar logo
-                    </button>
-                  </div>
-                  <label className="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer">
-                    Cambiar logo
+                <div className="flex items-center gap-2 mb-2">
+                  <img src={logo} alt="Logo" className="h-8 object-contain" />
+                  <button
+                    onClick={handleDeleteLogo}
+                    className="px-2 py-1 text-xs bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400 rounded hover:bg-red-200 dark:hover:bg-red-900"
+                  >
+                    Eliminar
+                  </button>
+                  <label className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 cursor-pointer">
+                    Cambiar
                     <input
                       type="file"
                       accept="image/*"
@@ -2234,7 +2228,7 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
                   </label>
                 </div>
               ) : (
-                <label className="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer">
+                <label className="block w-full text-center px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 cursor-pointer text-sm">
                   {uploadingLogo ? 'Subiendo...' : 'Subir logo'}
                   <input
                     type="file"
@@ -2247,140 +2241,110 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
               )}
             </div>
 
-            {/* Títulos */}
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Título del sitio
-                </label>
-                <input
-                  type="text"
-                  value={siteTitle}
-                  onChange={(e) => setSiteTitle(e.target.value)}
-                  placeholder="PEU Cuchillos Artesanales"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Subtítulo (móvil)
-                </label>
-                <input
-                  type="text"
-                  value={siteSubtitleMobile}
-                  onChange={(e) => setSiteSubtitleMobile(e.target.value)}
-                  placeholder="Buscador interactivo"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Subtítulo (escritorio)
-                </label>
-                <input
-                  type="text"
-                  value={siteSubtitleDesktop}
-                  onChange={(e) => setSiteSubtitleDesktop(e.target.value)}
-                  placeholder="Buscador interactivo de modelos y materiales"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Título del backend
-                </label>
-                <input
-                  type="text"
-                  value={backendTitle}
-                  onChange={(e) => setBackendTitle(e.target.value)}
-                  placeholder="FotoCRM Admin"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                />
-              </div>
-
+            {/* Títulos compactos */}
+            <div className="space-y-2">
+              <input
+                type="text"
+                value={siteTitle}
+                onChange={(e) => setSiteTitle(e.target.value)}
+                placeholder="Título del sitio"
+                className="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              />
+              <input
+                type="text"
+                value={siteSubtitleMobile}
+                onChange={(e) => setSiteSubtitleMobile(e.target.value)}
+                placeholder="Subtítulo móvil"
+                className="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              />
+              <input
+                type="text"
+                value={siteSubtitleDesktop}
+                onChange={(e) => setSiteSubtitleDesktop(e.target.value)}
+                placeholder="Subtítulo escritorio"
+                className="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              />
+              <input
+                type="text"
+                value={backendTitle}
+                onChange={(e) => setBackendTitle(e.target.value)}
+                placeholder="Título backend"
+                className="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              />
               <button
                 onClick={handleSaveSiteInfo}
                 disabled={savingSiteInfo}
-                className={`px-4 py-2 rounded-lg transition-all duration-300 ${
+                className={`w-full px-3 py-1.5 text-sm rounded transition-all duration-300 ${
                   savedSiteInfoFeedback
                     ? 'bg-green-500 text-white'
                     : 'bg-blue-600 text-white hover:bg-blue-700'
                 } disabled:opacity-50`}
               >
-                {savingSiteInfo ? 'Guardando...' : savedSiteInfoFeedback ? '✓ Guardado' : 'Guardar Títulos'}
+                {savingSiteInfo ? 'Guardando...' : savedSiteInfoFeedback ? '✓' : 'Guardar'}
               </button>
             </div>
           </div>
 
           {/* Sección de Mensaje del Configurador */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Mensaje del Configurador</h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              Mensaje que se enviará por WhatsApp/Telegram al compartir una configuración. Usa {'{link}'} donde quieras incluir el enlace.
-            </p>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+            <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-2">Mensaje Configurador</h2>
 
             <textarea
               value={configuratorMessage}
               onChange={(e) => setConfiguratorMessage(e.target.value)}
-              placeholder="Hola Pablo, te envío mi página del configurador de cuchillos: {link}"
-              rows={3}
+              placeholder="Mensaje al compartir configuración..."
+              rows={4}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none mb-4"
             />
 
             <button
               onClick={handleSaveConfiguratorMessage}
               disabled={savingConfiguratorMessage}
-              className={`px-4 py-2 rounded-lg transition-all duration-300 ${
+              className={`w-full px-3 py-1.5 text-sm rounded transition-all duration-300 ${
                 savedConfiguratorMessageFeedback
                   ? 'bg-green-500 text-white'
                   : 'bg-blue-600 text-white hover:bg-blue-700'
               } disabled:opacity-50`}
             >
-              {savingConfiguratorMessage ? 'Guardando...' : savedConfiguratorMessageFeedback ? '✓ Guardado' : 'Guardar Mensaje'}
+              {savingConfiguratorMessage ? 'Guardando...' : savedConfiguratorMessageFeedback ? '✓' : 'Guardar'}
             </button>
           </div>
         </div>
 
-        {/* Grid de Backups y Contacto */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Grid de Backups y Contacto - más compacto */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           {/* Sección de Backups */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Backups</h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              Los backups incluyen las carpetas /data y /uploads. Se conservan máximo 5 backups.
-            </p>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+            <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-2">Backups</h2>
 
-            <div className="flex items-center gap-4 mb-6">
+            <div className="flex items-center gap-2 mb-3">
               <button
                 onClick={handleCreateBackup}
                 disabled={creating || backups.length >= 5}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {creating ? 'Creando...' : 'Crear Backup'}
+                {creating ? '...' : 'Crear'}
               </button>
               {backups.length >= 5 && (
-                <span className="text-sm text-amber-600 dark:text-amber-400">
-                  Límite alcanzado. Elimina un backup para crear uno nuevo.
+                <span className="text-xs text-amber-600 dark:text-amber-400">
+                  Límite: 5 backups
                 </span>
               )}
             </div>
 
             {loading ? (
-              <p className="text-gray-500">Cargando backups...</p>
+              <p className="text-xs text-gray-500">Cargando...</p>
             ) : backups.length === 0 ? (
-              <p className="text-gray-500 dark:text-gray-400">No hay backups disponibles</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Sin backups</p>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-1">
                 {backups.map((backup) => {
                   const wasCreated = createdBackupFeedback === backup.filename
                   const isDeleting = deletingBackup === backup.filename
                   return (
                     <div
                       key={backup.filename}
-                      className={`flex items-center justify-between p-3 rounded-lg transition-all duration-400 ${
+                      className={`flex items-center justify-between p-2 rounded transition-all duration-400 ${
                         isDeleting
                           ? 'opacity-0 scale-95'
                           : wasCreated
@@ -2388,15 +2352,15 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
                           : 'bg-gray-50 dark:bg-gray-700'
                       }`}
                     >
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-gray-900 dark:text-white">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium text-gray-900 dark:text-white truncate">
                           {backup.filename}
                         </p>
                         <p className="text-xs text-gray-500 dark:text-gray-400">
                           {backup.created_at} • {formatFileSize(backup.size)}
                         </p>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1">
                         {backupToDelete === backup.filename ? (
                           <>
                             <span className="text-xs text-red-600 dark:text-red-400 mr-2">¿Eliminar?</span>
