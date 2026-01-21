@@ -65,8 +65,3 @@ jobs:
             **/.git*
             **/.git*/**
             **/node_modules/**
-            data/**
-            !data/.htaccess
-            uploads/**
-            backups/**
-            !backups/.htaccess
