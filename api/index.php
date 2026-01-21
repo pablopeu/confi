@@ -946,6 +946,14 @@ switch (true) {
         $publicConfig['configurator_message'] = transformConfigField($config['configurator_message'] ?? 'Hola Pablo, te envío mi página del configurador de cuchillos: {link}', $lang);
         // Idiomas habilitados
         $publicConfig['enabled_languages'] = $config['enabled_languages'] ?? ['es' => true, 'en' => true];
+        // Instrucciones flotantes
+        if (isset($config['instructions'])) {
+            $instructions = $config['instructions'];
+            if (isset($instructions['title'])) {
+                $instructions['title'] = transformConfigField($instructions['title'], $lang);
+            }
+            $publicConfig['instructions'] = $instructions;
+        }
         response($publicConfig);
         break;
 
@@ -1424,6 +1432,41 @@ switch (true) {
         ];
 
         response(['footer' => $footer]);
+        break;
+
+    // POST /admin/config/instructions - Configurar instrucciones
+    case $path === 'admin/config/instructions' && $method === 'POST':
+        checkAuth();
+
+        global $JSON_INPUT;
+        $input = $JSON_INPUT;
+        $config = getConfig();
+
+        if (!isset($input['instructions'])) {
+            response(['error' => 'instructions configuration is required'], 400);
+        }
+
+        $config['instructions'] = $input['instructions'];
+
+        if (!file_put_contents(CONFIG_FILE, json_encode($config, JSON_PRETTY_PRINT))) {
+            response(['error' => 'Failed to save instructions configuration'], 500);
+        }
+
+        response(['message' => 'Instructions updated']);
+        break;
+
+    // GET /admin/config/instructions - Obtener configuración de instrucciones
+    case $path === 'admin/config/instructions' && $method === 'GET':
+        checkAuth();
+
+        $config = getConfig();
+        $instructions = $config['instructions'] ?? [
+            'enabled' => false,
+            'title' => ['es' => 'Instrucciones', 'en' => 'Instructions'],
+            'text' => ''
+        ];
+
+        response(['instructions' => $instructions]);
         break;
 
     // POST /admin/config/site-info - Guardar información del sitio
