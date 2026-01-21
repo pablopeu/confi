@@ -182,21 +182,30 @@ function App() {
         const tipoGroup = groups.find(g => g.id === 'tipo')
         if (tipoGroup && tipoGroup.tags && tipoGroup.tags.length > 0) {
           const tipoTags = tipoGroup.tags
-          const mainTabs = tipoTags.slice(0, 4).map(tag => ({
+
+          // Excluir tag "otros" (si existe) de los tags principales
+          const otrosTag = tipoTags.find(tag => tag.name.toLowerCase() === 'otros')
+          const mainTipoTags = tipoTags.filter(tag => tag.name.toLowerCase() !== 'otros')
+
+          // Primeros 3 tags individuales
+          const mainTabs = mainTipoTags.slice(0, 3).map(tag => ({
             id: tag.id,
             label: capitalize(tag.name),
             isOtros: false
           }))
-          const otrosTags = tipoTags.slice(4)
-          const otrosTagsIds = otrosTags.map(tag => tag.id)
 
-          // Solo agregar tab "Otros" si hay tags para mostrar
-          const tabs = otrosTags.length > 0
-            ? [
-                ...mainTabs,
-                { id: 'otros', label: 'Otros', isOtros: true, otrosIds: otrosTagsIds }
-              ]
-            : mainTabs
+          // Resto de tags (4to en adelante) + el tag "otros" si existe
+          const restTags = mainTipoTags.slice(3)
+          const otrosTagsIds = [
+            ...restTags.map(tag => tag.id),
+            ...(otrosTag ? [otrosTag.id] : [])
+          ]
+
+          // Siempre crear tab "Otros" con los tags restantes
+          const tabs = [
+            ...mainTabs,
+            { id: 'otros', label: 'Otros', isOtros: true, otrosIds: otrosTagsIds }
+          ]
 
           setTipoTabs(tabs)
         }
