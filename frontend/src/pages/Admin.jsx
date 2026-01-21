@@ -1804,6 +1804,15 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
   const [savingFooter, setSavingFooter] = useState(false)
   const [savedFooterFeedback, setSavedFooterFeedback] = useState(false)
 
+  // Estado para instrucciones
+  const [instructionsConfig, setInstructionsConfig] = useState({
+    enabled: false,
+    title: 'Instrucciones',
+    text: ''
+  })
+  const [savingInstructions, setSavingInstructions] = useState(false)
+  const [savedInstructionsFeedback, setSavedInstructionsFeedback] = useState(false)
+
   useEffect(() => {
     loadBackups()
     loadConfig()
@@ -1811,6 +1820,7 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
     loadMetaTags()
     loadConfiguratorMessage()
     loadFooterConfig()
+    loadInstructionsConfig()
     loadSiteInfo()
   }, [])
 
@@ -1998,6 +2008,49 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
       showError('Error', 'Error de conexión')
     } finally {
       setSavingFooter(false)
+    }
+  }
+
+  const loadInstructionsConfig = async () => {
+    try {
+      const params = new URLSearchParams(authParams)
+      const response = await fetch(apiUrl('admin/config/instructions') + '&' + params.toString())
+      if (response.ok) {
+        const data = await response.json()
+        setInstructionsConfig(data.instructions || {
+          enabled: false,
+          title: 'Instrucciones',
+          text: ''
+        })
+      }
+    } catch (error) {
+      // Error silencioso
+    }
+  }
+
+  const handleSaveInstructions = async () => {
+    setSavingInstructions(true)
+    try {
+      const params = new URLSearchParams(authParams)
+      const response = await fetch(apiUrl('admin/config/instructions') + '&' + params.toString(), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ instructions: instructionsConfig })
+      })
+
+      if (response.ok) {
+        setSavedInstructionsFeedback(true)
+        setTimeout(() => setSavedInstructionsFeedback(false), 2000)
+      } else if (response.status === 401) {
+        showError('Sesión expirada', 'Por favor, vuelve a iniciar sesión')
+      } else {
+        const error = await response.json()
+        showError('Error', error.error || 'Error al guardar instrucciones')
+      }
+    } catch (error) {
+      showError('Error', 'Error de conexión')
+    } finally {
+      setSavingInstructions(false)
     }
   }
 
@@ -2622,6 +2675,80 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
               } disabled:opacity-50`}
             >
               {savingFooter ? 'Guardando...' : savedFooterFeedback ? '✓' : 'Guardar'}
+            </button>
+          </div>
+        </div>
+
+        {/* Sección de Instrucciones */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Instrucciones Flotantes</h2>
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="instructions-enabled"
+                checked={instructionsConfig.enabled}
+                onChange={(e) => setInstructionsConfig({ ...instructionsConfig, enabled: e.target.checked })}
+                className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+              />
+              <label htmlFor="instructions-enabled" className="text-sm font-medium text-gray-900 dark:text-white">
+                Mostrar
+              </label>
+            </div>
+          </div>
+
+          {instructionsConfig.enabled && (
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="instructions-title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Título
+                </label>
+                <input
+                  type="text"
+                  id="instructions-title"
+                  value={instructionsConfig.title}
+                  onChange={(e) => setInstructionsConfig({ ...instructionsConfig, title: e.target.value })}
+                  placeholder="Instrucciones"
+                  className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="instructions-text" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Contenido (puedes usar saltos de línea)
+                </label>
+                <textarea
+                  id="instructions-text"
+                  value={instructionsConfig.text}
+                  onChange={(e) => setInstructionsConfig({ ...instructionsConfig, text: e.target.value })}
+                  placeholder="Escribe aquí las instrucciones..."
+                  rows={8}
+                  className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-y"
+                />
+              </div>
+
+              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+                <p className="text-sm text-blue-800 dark:text-blue-200">
+                  💡 El botón flotante aparecerá arriba de WhatsApp y Telegram, con el texto vertical "INSTRUCCIONES" para ocupar poco espacio.
+                </p>
+              </div>
+            </div>
+          )}
+
+          <div className="flex items-center justify-between mt-4">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {instructionsConfig.enabled ? 'El botón flotante se muestra en la página principal' : ''}
+            </p>
+            <button
+              onClick={handleSaveInstructions}
+              disabled={savingInstructions}
+              className={`px-3 py-2 text-sm rounded transition-all duration-300 ${
+                savedInstructionsFeedback
+                  ? 'bg-green-500 text-white'
+                  : 'bg-blue-600 text-white hover:bg-blue-700'
+              } disabled:opacity-50`}
+            >
+              {savingInstructions ? 'Guardando...' : savedInstructionsFeedback ? '✓' : 'Guardar'}
             </button>
           </div>
         </div>

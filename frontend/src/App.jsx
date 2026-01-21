@@ -30,6 +30,8 @@ function App() {
   const [whatsappConfig, setWhatsappConfig] = useState(null)
   const [telegramConfig, setTelegramConfig] = useState(null)
   const [footerConfig, setFooterConfig] = useState(null)
+  const [instructionsConfig, setInstructionsConfig] = useState(null)
+  const [showInstructions, setShowInstructions] = useState(false)
   const [siteTitle, setSiteTitle] = useState('PEU Cuchillos Artesanales')
   const [siteSubtitleMobile, setSiteSubtitleMobile] = useState('Buscador interactivo')
   const [siteSubtitleDesktop, setSiteSubtitleDesktop] = useState('Buscador interactivo de modelos y materiales')
@@ -149,6 +151,7 @@ function App() {
           setWhatsappConfig(data.whatsapp || null)
           setTelegramConfig(data.telegram || null)
           setFooterConfig(data.footer || null)
+          setInstructionsConfig(data.instructions || null)
           setSiteTitle(data.site_title || 'PEU Cuchillos Artesanales')
           setSiteSubtitleMobile(data.site_subtitle_mobile || 'Buscador interactivo')
           setSiteSubtitleDesktop(data.site_subtitle_desktop || 'Buscador interactivo de modelos y materiales')
@@ -805,9 +808,22 @@ function App() {
       <Footer footerConfig={footerConfig} whatsappConfig={whatsappConfig} telegramConfig={telegramConfig} />
 
       {/* Botones flotantes de contacto */}
-      {(whatsappConfig?.enabled || telegramConfig?.enabled) && (
+      {(whatsappConfig?.enabled || telegramConfig?.enabled || instructionsConfig?.enabled) && (
         <div className="fixed bottom-6 right-6 flex flex-col gap-3 z-50">
-          {/* Telegram - arriba */}
+          {/* Instrucciones - arriba de todo */}
+          {instructionsConfig?.enabled && (
+            <button
+              onClick={() => setShowInstructions(true)}
+              className="w-14 h-14 rounded-full bg-purple-600 hover:bg-purple-700 text-white flex items-center justify-center shadow-lg transition-all hover:scale-110"
+              title="Ver instrucciones"
+            >
+              <span className="text-xs font-bold" style={{ writingMode: 'vertical-rl', textOrientation: 'mixed', transform: 'rotate(180deg)' }}>
+                INSTRUCCIONES
+              </span>
+            </button>
+          )}
+
+          {/* Telegram - abajo de instrucciones */}
           {telegramConfig?.enabled && telegramConfig.username && (
             <a
               href={`https://t.me/${telegramConfig.username}?text=${encodeURIComponent(telegramConfig.message || '')}`}
@@ -836,6 +852,42 @@ function App() {
               </svg>
             </a>
           )}
+        </div>
+      )}
+
+      {/* Modal de Instrucciones */}
+      {showInstructions && instructionsConfig?.text && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Overlay */}
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setShowInstructions(false)}
+          />
+
+          {/* Modal */}
+          <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-auto">
+            <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex justify-between items-center">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                {instructionsConfig.title || 'Instrucciones'}
+              </h2>
+              <button
+                onClick={() => setShowInstructions(false)}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                aria-label="Cerrar"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="p-6">
+              <div
+                className="prose dark:prose-invert max-w-none"
+                dangerouslySetInnerHTML={{ __html: instructionsConfig.text.replace(/\n/g, '<br>') }}
+              />
+            </div>
+          </div>
         </div>
       )}
     </div>
