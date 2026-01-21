@@ -975,9 +975,9 @@ function App() {
           {/* Modal */}
           <div
             onClick={() => setShowInstructions(false)}
-            className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-[80vw] lg:max-w-[80vw] max-h-[80vh] overflow-auto cursor-pointer"
+            className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-[80vw] lg:max-w-[80vw] max-h-[95vh] lg:max-h-[95vh] overflow-y-auto cursor-pointer"
           >
-            <div className="p-6">
+            <div className="p-4 lg:p-6">
               <div
                 className="prose dark:prose-invert max-w-none"
                 dangerouslySetInnerHTML={{ __html: parseMarkdown(instructionsConfig.text) }}
