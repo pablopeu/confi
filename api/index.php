@@ -1542,6 +1542,7 @@ switch (true) {
         $config = getConfig();
         $instructions = $config['instructions'] ?? [
             'enabled' => false,
+            'title' => 'Instrucciones',
             'text' => ''
         ];
 
