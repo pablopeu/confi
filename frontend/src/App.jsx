@@ -48,7 +48,7 @@ const parseMarkdown = (text) => {
         inList = false
       }
       const content = line.replace(/^#\s+/, '').trim()
-      result.push(`<h1 class="text-2xl font-bold text-gray-900 dark:text-white mt-6 mb-3">${parseInlineMarkdown(content)}</h1>`)
+      result.push(`<h1 class="text-2xl font-bold text-gray-900 dark:text-white mt-2 mb-3">${parseInlineMarkdown(content)}</h1>`)
     }
     // Encabezado ## (h2)
     else if (line.startsWith('## ')) {
@@ -66,7 +66,7 @@ const parseMarkdown = (text) => {
         inList = false
       }
       const content = line.substring(4).trim()
-      result.push(`<h3 class="text-lg font-semibold text-gray-900 dark:text-white mt-5 mb-2">${parseInlineMarkdown(content)}</h3>`)
+      result.push(`<h3 class="text-lg font-semibold text-gray-900 dark:text-white mt-2 mb-2">${parseInlineMarkdown(content)}</h3>`)
     }
     // Línea horizontal (--- o ***)
     else if (line.match(/^[\s\-\*]{3,}$/)) {
@@ -74,7 +74,7 @@ const parseMarkdown = (text) => {
         result.push('</ul>')
         inList = false
       }
-      result.push('<hr class="my-4 border-t border-gray-300 dark:border-gray-600" />')
+      result.push('<hr class="my-2 border-t border-gray-300 dark:border-gray-600" />')
     }
     // Lista con * o -
     else if (line.match(/^\s*[\*\-]\s+/)) {
