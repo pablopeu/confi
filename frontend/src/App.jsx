@@ -21,17 +21,6 @@ const normalizeText = (str) => {
     .replace(/[\u0300-\u036f]/g, '')
 }
 
-// Tabs de tipos principales
-const TIPO_TABS = [
-  { id: 'cocina', label: 'Cocina' },
-  { id: 'asado', label: 'Asado' },
-  { id: 'japones', label: 'Japonés' },
-  { id: 'otros', label: 'Otros' }
-]
-
-// IDs que se consideran "Otros"
-const OTROS_TIPOS = ['outdoor', 'camping', 'caza']
-
 function App() {
   const [tagGroups, setTagGroups] = useState([])
   const [photos, setPhotos] = useState([])
@@ -45,6 +34,7 @@ function App() {
   const [siteSubtitleMobile, setSiteSubtitleMobile] = useState('Buscador interactivo')
   const [siteSubtitleDesktop, setSiteSubtitleDesktop] = useState('Buscador interactivo de modelos y materiales')
   const [showConfigurador, setShowConfigurador] = useState(false)
+  const [tipoTabs, setTipoTabs] = useState([]) // Tabs dinámicos de tipo
 
   // Filtros
   const [activeTab, setActiveTab] = useState(null) // null = todos, o un id de tab
@@ -185,7 +175,27 @@ function App() {
           getCategories(),
           getPhotos()
         ])
-        setTagGroups(catData?.tag_groups || [])
+        const groups = catData?.tag_groups || []
+        setTagGroups(groups)
+
+        // Generar tabs de tipo dinámicamente desde el grupo 'tipo'
+        const tipoGroup = groups.find(g => g.id === 'tipo')
+        if (tipoGroup && tipoGroup.tags && tipoGroup.tags.length > 0) {
+          const tipoTags = tipoGroup.tags
+          const mainTabs = tipoTags.slice(0, 3).map(tag => ({
+            id: tag.id,
+            label: capitalize(tag.name),
+            isOtros: false
+          }))
+          const otrosTagsIds = tipoTags.slice(3).map(tag => tag.id)
+
+          const tabs = [
+            ...mainTabs,
+            { id: 'otros', label: 'Otros', isOtros: true, otrosIds: otrosTagsIds }
+          ]
+          setTipoTabs(tabs)
+        }
+
         setPhotos(photoData?.photos || [])
         setFilteredPhotos(photoData?.photos || [])
       } catch (error) {
@@ -209,11 +219,12 @@ function App() {
 
     // Filtrar por tab de tipo
     if (activeTab) {
-      if (activeTab === 'otros') {
+      const currentTab = tipoTabs.find(t => t.id === activeTab)
+      if (currentTab?.isOtros) {
         // Filtrar fotos que tengan algún tag de "otros" tipos
         result = result.filter(photo => {
           const photoTags = photo.tags || []
-          return OTROS_TIPOS.some(tipo => photoTags.includes(tipo))
+          return currentTab.otrosIds.some(tipo => photoTags.includes(tipo))
         })
       } else {
         result = result.filter(photo => {
@@ -454,7 +465,7 @@ function App() {
               >
                 Todos
               </button>
-              {TIPO_TABS.map(tab => (
+              {tipoTabs.map(tab => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
@@ -602,7 +613,7 @@ function App() {
               >
                 Todos
               </button>
-              {TIPO_TABS.map(tab => (
+              {tipoTabs.map(tab => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
