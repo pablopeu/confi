@@ -884,7 +884,7 @@ function ZoomableImage({ src, alt }) {
 // ==================
 // Photo Carousel - Carrusel de fotos
 // ==================
-function PhotoCarousel({ photos, currentIndex, onSelectPhoto }) {
+function PhotoCarousel({ photos, currentIndex, onSelectPhoto, disableRepeat = false }) {
   const carouselRef = useRef(null)
   const [scrollPosition, setScrollPosition] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
@@ -936,8 +936,8 @@ function PhotoCarousel({ photos, currentIndex, onSelectPhoto }) {
     return null
   }
 
-  // Solo triplicar si hay suficientes fotos para scroll continuo
-  const displayPhotos = photos.length >= 5
+  // Solo triplicar si hay suficientes fotos para scroll continuo y no está deshabilitada la repetición
+  const displayPhotos = !disableRepeat && photos.length >= 5
     ? [...photos, ...photos, ...photos]
     : photos
 
@@ -1352,6 +1352,7 @@ function ManagePhotos({ photos, tagGroups, authParams, onRefresh, showSuccess, s
       <PhotoCarousel
         photos={filteredPhotos}
         currentIndex={currentIndex}
+        disableRepeat={showOnlyUntagged} // No repetir fotos en modo "sin tag"
         onSelectPhoto={async (newIndex) => {
           await handleSaveCurrentPhoto(false)
           setPinnedPhotoId(null) // Limpiar foto pinneada al cambiar explícitamente
