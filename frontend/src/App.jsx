@@ -814,11 +814,11 @@ function App() {
           {instructionsConfig?.enabled && (
             <button
               onClick={() => setShowInstructions(true)}
-              className="w-14 h-14 rounded-full bg-purple-600 hover:bg-purple-700 text-white flex items-center justify-center shadow-lg transition-all hover:scale-110"
+              className="h-14 px-6 rounded-lg bg-gray-800 hover:bg-gray-900 text-white flex items-center justify-center shadow-lg transition-all hover:scale-105 whitespace-nowrap"
               title="Ver instrucciones"
             >
-              <span className="text-xs font-bold" style={{ writingMode: 'vertical-rl', textOrientation: 'mixed', transform: 'rotate(180deg)' }}>
-                INSTRUCCIONES
+              <span className="text-sm font-semibold">
+                instrucciones
               </span>
             </button>
           )}
