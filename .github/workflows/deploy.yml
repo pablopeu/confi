@@ -43,11 +43,12 @@ jobs:
           mkdir -p deploy/api
           cp -r api/* deploy/api/
           cp api/.htaccess deploy/api/ 2>/dev/null || true
-          # Copiar SOLO los .htaccess de protección (no el contenido)
+          # Crear carpetas vacías con .htaccess de protección
           mkdir -p deploy/data
-          cp data/.htaccess deploy/data/.htaccess 2>/dev/null || true
+          cp data/.htaccess deploy/data/.htaccess 2>/dev/null || echo "Deny from all" > deploy/data/.htaccess
           mkdir -p deploy/backups
-          cp backups/.htaccess deploy/backups/.htaccess 2>/dev/null || true
+          cp backups/.htaccess deploy/backups/.htaccess 2>/dev/null || echo "Deny from all" > deploy/backups/.htaccess
+          mkdir -p deploy/uploads
           # NO copiar datos JSON - dejar los del servidor
           # NO copiar uploads - dejar los del servidor
 
