@@ -2285,16 +2285,15 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
             </div>
           </div>
 
-          {/* Sección de Mensaje del Configurador */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+          {/* Sección de Mensaje del Configurador - con flex */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 flex flex-col">
             <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-2">Mensaje Configurador</h2>
 
             <textarea
               value={configuratorMessage}
               onChange={(e) => setConfiguratorMessage(e.target.value)}
               placeholder="Mensaje al compartir configuración..."
-              rows={4}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none mb-4"
+              className="flex-1 w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
             />
 
             <button
@@ -2407,113 +2406,92 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
             )}
           </div>
 
-          {/* Sección de Contacto - WhatsApp y Telegram */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Contacto</h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-              Configura botones flotantes de WhatsApp y Telegram en el sitio público.
-            </p>
+          {/* Sección de Contacto - 2 columnas compactas */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+            <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-3">Contacto</h2>
 
-            {/* WhatsApp */}
-            <div className="mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
-              <div className="flex items-center gap-3 mb-4">
-                <input
-                  type="checkbox"
-                  id="whatsapp-enabled"
-                  checked={whatsappConfig.enabled}
-                  onChange={(e) => setWhatsappConfig({ ...whatsappConfig, enabled: e.target.checked })}
-                  className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
-                />
-                <label htmlFor="whatsapp-enabled" className="text-lg font-medium text-gray-900 dark:text-white">
-                  WhatsApp
-                </label>
-              </div>
+            <div className="grid grid-cols-2 gap-4">
+              {/* WhatsApp */}
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <input
+                    type="checkbox"
+                    id="whatsapp-enabled"
+                    checked={whatsappConfig.enabled}
+                    onChange={(e) => setWhatsappConfig({ ...whatsappConfig, enabled: e.target.checked })}
+                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                  />
+                  <label htmlFor="whatsapp-enabled" className="text-sm font-medium text-gray-900 dark:text-white">
+                    WhatsApp
+                  </label>
+                </div>
 
-              {whatsappConfig.enabled && (
-                <div className="space-y-3 ml-7">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Número de WhatsApp (con código de país, sin +)
-                    </label>
+                {whatsappConfig.enabled && (
+                  <div className="space-y-2">
                     <input
                       type="text"
-                      placeholder="5491112345678"
+                      placeholder="Número (sin +)"
                       value={whatsappConfig.number}
                       onChange={(e) => setWhatsappConfig({ ...whatsappConfig, number: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      className="w-full px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Mensaje predeterminado
-                    </label>
                     <textarea
-                      placeholder="Hola, me interesan tus productos..."
+                      placeholder="Mensaje predeterminado..."
                       value={whatsappConfig.message}
                       onChange={(e) => setWhatsappConfig({ ...whatsappConfig, message: e.target.value })}
-                      rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
+                      rows={2}
+                      className="w-full px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
                     />
                   </div>
-                </div>
-              )}
-            </div>
-
-            {/* Telegram */}
-            <div className="mb-6">
-              <div className="flex items-center gap-3 mb-4">
-                <input
-                  type="checkbox"
-                  id="telegram-enabled"
-                  checked={telegramConfig.enabled}
-                  onChange={(e) => setTelegramConfig({ ...telegramConfig, enabled: e.target.checked })}
-                  className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
-                />
-                <label htmlFor="telegram-enabled" className="text-lg font-medium text-gray-900 dark:text-white">
-                  Telegram
-                </label>
+                )}
               </div>
 
-              {telegramConfig.enabled && (
-                <div className="space-y-3 ml-7">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Usuario de Telegram (sin @)
-                    </label>
+              {/* Telegram */}
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <input
+                    type="checkbox"
+                    id="telegram-enabled"
+                    checked={telegramConfig.enabled}
+                    onChange={(e) => setTelegramConfig({ ...telegramConfig, enabled: e.target.checked })}
+                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                  />
+                  <label htmlFor="telegram-enabled" className="text-sm font-medium text-gray-900 dark:text-white">
+                    Telegram
+                  </label>
+                </div>
+
+                {telegramConfig.enabled && (
+                  <div className="space-y-2">
                     <input
                       type="text"
-                      placeholder="miusuario"
+                      placeholder="Usuario (sin @)"
                       value={telegramConfig.username}
                       onChange={(e) => setTelegramConfig({ ...telegramConfig, username: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      className="w-full px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Mensaje predeterminado
-                    </label>
                     <textarea
-                      placeholder="Hola, me interesan tus productos..."
+                      placeholder="Mensaje predeterminado..."
                       value={telegramConfig.message}
                       onChange={(e) => setTelegramConfig({ ...telegramConfig, message: e.target.value })}
-                      rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
+                      rows={2}
+                      className="w-full px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
                     />
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
 
             <button
               onClick={handleSaveContactConfig}
               disabled={savingContact}
-              className={`px-4 py-2 rounded-lg transition-all duration-300 ${
+              className={`w-full px-3 py-1.5 text-sm rounded transition-all duration-300 ${
                 savedContactFeedback
                   ? 'bg-green-500 text-white'
                   : 'bg-blue-600 text-white hover:bg-blue-700'
               } disabled:opacity-50`}
             >
-              {savingContact ? 'Guardando...' : savedContactFeedback ? '✓ Guardado' : 'Guardar Configuración'}
+              {savingContact ? 'Guardando...' : savedContactFeedback ? '✓' : 'Guardar'}
             </button>
           </div>
         </div>
@@ -2550,134 +2528,102 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
           </button>
         </div>
 
-        {/* Sección de Footer */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Footer del Sitio</h2>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-            Configura el footer que aparecerá en todas las páginas del sitio público.
-          </p>
-
-          {/* Checkbox para habilitar */}
-          <div className="flex items-center gap-3 mb-6">
-            <input
-              type="checkbox"
-              id="footer-enabled"
-              checked={footerConfig.enabled}
-              onChange={(e) => setFooterConfig({ ...footerConfig, enabled: e.target.checked })}
-              className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
-            />
-            <label htmlFor="footer-enabled" className="text-lg font-medium text-gray-900 dark:text-white">
-              Mostrar footer
-            </label>
+        {/* Sección de Footer - compacta 2 columnas */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base font-semibold text-gray-900 dark:text-white">Footer</h2>
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="footer-enabled"
+                checked={footerConfig.enabled}
+                onChange={(e) => setFooterConfig({ ...footerConfig, enabled: e.target.checked })}
+                className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+              />
+              <label htmlFor="footer-enabled" className="text-sm font-medium text-gray-900 dark:text-white">
+                Mostrar
+              </label>
+            </div>
           </div>
 
           {footerConfig.enabled && (
-            <div className="space-y-6 ml-7">
+            <div className="grid grid-cols-2 gap-4">
               {/* Link a página web */}
-              <div className="pb-6 border-b border-gray-200 dark:border-gray-700">
-                <h3 className="text-base font-medium text-gray-900 dark:text-white mb-3">Enlace a tu sitio web</h3>
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Texto del enlace
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Visita mi página web"
-                      value={footerConfig.website_text}
-                      onChange={(e) => setFooterConfig({ ...footerConfig, website_text: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      URL de tu sitio web
-                    </label>
-                    <input
-                      type="url"
-                      placeholder="https://ejemplo.com"
-                      value={footerConfig.website_url}
-                      onChange={(e) => setFooterConfig({ ...footerConfig, website_url: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    />
-                  </div>
+              <div>
+                <h3 className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Sitio Web</h3>
+                <div className="space-y-2">
+                  <input
+                    type="text"
+                    placeholder="Texto del enlace"
+                    value={footerConfig.website_text}
+                    onChange={(e) => setFooterConfig({ ...footerConfig, website_text: e.target.value })}
+                    className="w-full px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                  <input
+                    type="url"
+                    placeholder="https://..."
+                    value={footerConfig.website_url}
+                    onChange={(e) => setFooterConfig({ ...footerConfig, website_url: e.target.value })}
+                    className="w-full px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
                 </div>
               </div>
 
               {/* Redes sociales */}
               <div>
-                <h3 className="text-base font-medium text-gray-900 dark:text-white mb-3">Redes Sociales</h3>
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Texto introductorio
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Seguime en mis redes sociales"
-                      value={footerConfig.social_text}
-                      onChange={(e) => setFooterConfig({ ...footerConfig, social_text: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Instagram (usuario sin @)
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="miusuario"
-                        value={footerConfig.instagram}
-                        onChange={(e) => setFooterConfig({ ...footerConfig, instagram: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        X / Twitter (usuario sin @)
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="miusuario"
-                        value={footerConfig.twitter}
-                        onChange={(e) => setFooterConfig({ ...footerConfig, twitter: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                      />
-                    </div>
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Facebook (usuario o página)
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="mipagina"
-                        value={footerConfig.facebook}
-                        onChange={(e) => setFooterConfig({ ...footerConfig, facebook: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                      />
-                    </div>
-                  </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
-                    Nota: WhatsApp y Telegram usan la configuración de los botones flotantes (sección Contacto)
-                  </p>
+                <h3 className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Redes Sociales</h3>
+                <div className="space-y-1 mb-2">
+                  <input
+                    type="text"
+                    placeholder="Texto intro"
+                    value={footerConfig.social_text}
+                    onChange={(e) => setFooterConfig({ ...footerConfig, social_text: e.target.value })}
+                    className="w-full px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    type="text"
+                    placeholder="Instagram"
+                    value={footerConfig.instagram}
+                    onChange={(e) => setFooterConfig({ ...footerConfig, instagram: e.target.value })}
+                    className="w-full px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                  <input
+                    type="text"
+                    placeholder="X / Twitter"
+                    value={footerConfig.twitter}
+                    onChange={(e) => setFooterConfig({ ...footerConfig, twitter: e.target.value })}
+                    className="w-full px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Facebook"
+                    value={footerConfig.facebook}
+                    onChange={(e) => setFooterConfig({ ...footerConfig, facebook: e.target.value })}
+                    className="col-span-2 w-full px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
                 </div>
               </div>
             </div>
           )}
 
-          <button
-            onClick={handleSaveFooter}
-            disabled={savingFooter}
-            className={`px-4 py-2 rounded-lg transition-all duration-300 ${
-              savedFooterFeedback
-                ? 'bg-green-500 text-white'
-                : 'bg-blue-600 text-white hover:bg-blue-700'
-            } disabled:opacity-50 ${footerConfig.enabled ? 'ml-7' : ''}`}
-          >
-            {savingFooter ? 'Guardando...' : savedFooterFeedback ? '✓ Guardado' : 'Guardar Footer'}
-          </button>
+          <div className="flex items-center justify-between mt-3">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              {footerConfig.enabled ? 'Nota: WhatsApp y Telegram en "Contacto"' : ''}
+            </p>
+            <button
+              onClick={handleSaveFooter}
+              disabled={savingFooter}
+              className={`px-3 py-1.5 text-xs rounded transition-all duration-300 ${
+                savedFooterFeedback
+                  ? 'bg-green-500 text-white'
+                  : 'bg-blue-600 text-white hover:bg-blue-700'
+              } disabled:opacity-50`}
+            >
+              {savingFooter ? 'Guardando...' : savedFooterFeedback ? '✓' : 'Guardar'}
+            </button>
+          </div>
         </div>
       </div>
     </div>
