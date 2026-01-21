@@ -1332,12 +1332,13 @@ function Configurador({
         const data = await response.json()
         setSavedCode(data.code)
 
-        // Actualizar URL sin recargar (solo si no estaba ya)
+        // Recargar página con el código en la URL (solo si no estaba ya)
         if (!savedCode) {
-          window.history.pushState({}, '', `?config=${data.code}`)
+          window.location.href = `?config=${data.code}`
+          return
         }
 
-        // Mostrar botones de compartir por 5 segundos
+        // Si ya tenía código, solo mostrar botones de compartir
         setShowShareButtons(true)
         setTimeout(() => {
           setShowShareButtons(false)
