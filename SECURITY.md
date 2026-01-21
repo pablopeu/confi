@@ -1,4 +1,4 @@
-# Seguridad del Sistema FotoCRM
+# Seguridad del Sistema
 
 Este documento describe las medidas de seguridad implementadas en el sistema.
 
@@ -72,61 +72,3 @@ Si ya tienes el sistema instalado:
    - La mayoría de hostings cPanel lo soportan
    - Si usas Nginx, necesitarás configuración equivalente
 
-## Verificación de Seguridad
-
-### 1. Verificar Protección de Carpetas
-
-Intenta acceder a estas URLs (deberías recibir 403 Forbidden):
-- `https://tudominio.com/data/config.json`
-- `https://tudominio.com/data/categories.json`
-- `https://tudominio.com/backups/`
-
-### 2. Verificar Hashing de Contraseñas
-
-Revisa tu archivo `data/config.json`:
-
-```json
-{
-  "user": "admin",
-  "pass": "$2y$10$abcdefghijklmnopqrstuvwxyz..." // ✅ Hash (seguro)
-}
-```
-
-**NO debe verse así:**
-```json
-{
-  "user": "admin",
-  "pass": "admin123" // ❌ Plaintext (inseguro)
-}
-```
-
-## Configuración para Nginx (Opcional)
-
-Si tu hosting usa Nginx en lugar de Apache, agrega esto a tu configuración:
-
-```nginx
-# Bloquear acceso a /data/
-location /data/ {
-    deny all;
-    return 403;
-}
-
-# Bloquear acceso a /backups/
-location /backups/ {
-    deny all;
-    return 403;
-}
-```
-
-## Reportar Vulnerabilidades
-
-Si encuentras una vulnerabilidad de seguridad, por favor:
-
-1. **NO la publiques públicamente**
-2. Crea un issue privado en GitHub o contacta al mantenedor
-3. Proporciona detalles sobre la vulnerabilidad y pasos para reproducirla
-
-## Historial de Cambios
-
-- **v1.1.0** (2026-01-18): Implementación de hashing de contraseñas + protección de carpetas sensibles
-- **v1.0.0**: Lanzamiento inicial (contraseñas en plaintext)
