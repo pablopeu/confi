@@ -1,5 +1,4 @@
-# Configurador Interactivo PEU - Sistema de Catálogo y Configurador de Cuchillos Artesanales
-
+# Configurador Interactivo PEU - 
 Sistema web completo para gestionar un catálogo de cuchillos artesanales con sistema de configuración interactivo y compartición de diseños personalizados.
 
 ## Características Principales
