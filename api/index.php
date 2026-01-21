@@ -481,6 +481,55 @@ switch (true) {
         response(['message' => t('bucket.deleted')]);
         break;
 
+    // DELETE /admin/buckets/{id}/photos - Eliminar bucket y todas sus fotos del sistema
+    case preg_match('/^admin\/buckets\/([a-zA-Z0-9-]+)\/photos$/', $path, $matches) && $method === 'DELETE':
+        checkAuth();
+
+        $bucketId = $matches[1];
+        $bucketsData = readJSON('buckets.json');
+
+        // Buscar el bucket
+        $bucketIndex = null;
+        $bucket = null;
+        foreach ($bucketsData['buckets'] as $i => $b) {
+            if ($b['id'] === $bucketId) {
+                $bucketIndex = $i;
+                $bucket = $b;
+                break;
+            }
+        }
+
+        if ($bucket === null) {
+            response(['error' => t('bucket.not_found')], 404);
+        }
+
+        // Obtener IDs de fotos del bucket
+        $photoIds = array_map(fn($p) => $p['id'], $bucket['photos']);
+
+        // Eliminar archivos físicos de las fotos
+        foreach ($bucket['photos'] as $photo) {
+            $filePath = UPLOADS_DIR . '/' . basename($photo['url']);
+            if (file_exists($filePath)) {
+                @unlink($filePath);
+            }
+        }
+
+        // Eliminar fotos del archivo photos.json
+        $photosData = readJSON('photos.json');
+        $originalPhotoCount = count($photosData['photos']);
+        $photosData['photos'] = array_values(array_filter($photosData['photos'], fn($p) => !in_array($p['id'], $photoIds)));
+        writeJSON('photos.json', $photosData);
+
+        // Eliminar el bucket
+        $bucketsData['buckets'] = array_values(array_filter($bucketsData['buckets'], fn($b) => $b['id'] !== $bucketId));
+        writeJSON('buckets.json', $bucketsData);
+
+        response([
+            'message' => 'Bucket y fotos eliminadas del sistema',
+            'photos_deleted' => $originalPhotoCount - count($photosData['photos'])
+        ]);
+        break;
+
     // GET /photos/{id}
     case preg_match('/^photos\/([a-zA-Z0-9-]+)$/', $path, $matches) && $method === 'GET':
         $data = readJSON('photos.json');

@@ -293,6 +293,7 @@ function UploadPhotos({ tagGroups, authParams, onRefresh, showSuccess, showError
   const [arrowFeedback, setArrowFeedback] = useState(null) // 'prev' | 'next' | null
   const [bucketToDelete, setBucketToDelete] = useState(null) // ID del bucket esperando confirmación
   const [deletedBucketFeedback, setDeletedBucketFeedback] = useState(null) // ID del bucket recién eliminado
+  const [bucketAndPhotosToDelete, setBucketAndPhotosToDelete] = useState(null) // ID del bucket para borrar todo (bucket + fotos)
 
   const currentPhoto = uploadedPhotos[currentIndex]
 
@@ -606,6 +607,40 @@ function UploadPhotos({ tagGroups, authParams, onRefresh, showSuccess, showError
     }
   }
 
+  const handleDeleteBucketAndPhotos = async (bucketId) => {
+    try {
+      const params = new URLSearchParams(authParams)
+      const response = await fetch(apiUrl(`admin/buckets/${bucketId}/photos`) + '&' + params.toString(), {
+        method: 'DELETE'
+      })
+
+      if (response.ok) {
+        showSuccess('Éxito', 'Bucket y fotos eliminadas del sistema')
+
+        // Si el bucket eliminado es el activo, limpiar la vista
+        if (activeBucketId === bucketId) {
+          setActiveBucketId(null)
+          setUploadedPhotos([])
+          setCurrentIndex(0)
+          setPhotoTags({})
+          setPhotoTexts({})
+        }
+
+        // Recargar buckets
+        await loadBuckets()
+        setBucketAndPhotosToDelete(null)
+        onRefresh() // Refrescar la lista de fotos en el admin
+      } else if (response.status === 401) {
+        showError('Sesión expirada', 'Por favor, vuelve a iniciar sesión')
+      } else {
+        const error = await response.json()
+        showError('Error', error.error || 'Error al eliminar bucket y fotos')
+      }
+    } catch (error) {
+      showError('Error', 'Error de conexión')
+    }
+  }
+
   const currentTags = currentPhoto ? (photoTags[currentPhoto.id] || []) : []
   const currentText = currentPhoto ? (photoTexts[currentPhoto.id] || '') : ''
 
@@ -661,7 +696,7 @@ function UploadPhotos({ tagGroups, authParams, onRefresh, showSuccess, showError
                     setBucketToDelete(bucket.id)
                   }}
                   className="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
-                  title="Eliminar bucket"
+                  title="Vaciar bucket (las fotos subidas no se eliminan)"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -672,6 +707,39 @@ function UploadPhotos({ tagGroups, authParams, onRefresh, showSuccess, showError
           </div>
         )
       })}
+      {/* Botón para eliminar bucket activo y todas sus fotos del sistema */}
+      {activeBucketId && (
+        <div className="relative">
+          {bucketAndPhotosToDelete === activeBucketId ? (
+            <div className="flex items-center gap-1 bg-red-100 dark:bg-red-900/50 px-2 py-1 rounded-lg">
+              <span className="text-xs text-red-600 dark:text-red-400">¿Eliminar todo?</span>
+              <button
+                onClick={() => handleDeleteBucketAndPhotos(activeBucketId)}
+                className="text-xs px-2 py-0.5 bg-red-600 text-white rounded hover:bg-red-700"
+              >
+                Sí
+              </button>
+              <button
+                onClick={() => setBucketAndPhotosToDelete(null)}
+                className="text-xs px-2 py-0.5 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded hover:bg-gray-400 dark:hover:bg-gray-500"
+              >
+                No
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setBucketAndPhotosToDelete(activeBucketId)}
+              className="px-3 py-2 text-sm font-medium rounded-lg bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors flex items-center gap-1"
+              title="Eliminar bucket y todas las fotos del sistema"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              Eliminar todo
+            </button>
+          )}
+        </div>
+      )}
     </div>
   )
 
