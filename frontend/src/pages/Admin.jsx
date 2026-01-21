@@ -118,7 +118,7 @@ export default function Admin() {
       <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center p-4">
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-md">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 text-center">
-            FotoCRM Admin
+            {backendTitle}
           </h1>
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
@@ -167,7 +167,7 @@ export default function Admin() {
     <div className="h-screen bg-gray-100 dark:bg-gray-900 flex flex-col overflow-hidden">
       <header className="bg-white dark:bg-gray-800 shadow flex-shrink-0">
         <div className="max-w-7xl mx-auto px-4 py-2 flex justify-between items-center">
-          <h1 className="text-lg font-bold text-gray-900 dark:text-white">FotoCRM Admin</h1>
+          <h1 className="text-lg font-bold text-gray-900 dark:text-white">{backendTitle}</h1>
 
           {/* Tabs en el header */}
           <div className="flex gap-1">
