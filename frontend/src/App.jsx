@@ -399,6 +399,7 @@ function App() {
       savedCode={savedCode}
       setSavedCode={setSavedCode}
       footerConfig={footerConfig}
+      siteTitle={siteTitle}
     />
   }
 
@@ -1183,7 +1184,8 @@ function Configurador({
   handleDeleteBucket,
   savedCode,
   setSavedCode,
-  footerConfig
+  footerConfig,
+  siteTitle
 }) {
   const [saving, setSaving] = useState(false)
   const [showShareButtons, setShowShareButtons] = useState(false)
