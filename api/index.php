@@ -1030,6 +1030,10 @@ switch (true) {
             }
             $publicConfig['instructions'] = $instructions;
         }
+        // Título del login del backend
+        if (isset($config['login_title'])) {
+            $publicConfig['login_title'] = $config['login_title'];
+        }
         response($publicConfig);
         break;
 

@@ -34,8 +34,9 @@ export default function Admin() {
   const [showPasswordModal, setShowPasswordModal] = useState(false)
   const [newPassword, setNewPassword] = useState('')
   const [pendingSave, setPendingSave] = useState(null) // Función para guardar antes de cambiar tab
-  const [backendTitle, setBackendTitle] = useState('FotoCRM Admin')
-  const [loginTitle, setLoginTitle] = useState('FotoCRM Admin')
+  const [backendTitle, setBackendTitle] = useState(null)
+  const [loginTitle, setLoginTitle] = useState(null)
+  const [titlesLoaded, setTitlesLoaded] = useState(false)
 
   const { isOpen, modalProps, closeModal, showSuccess, showError, showConfirm } = useModal()
 
@@ -43,6 +44,28 @@ export default function Admin() {
     auth_user: credentials.user,
     auth_pass: credentials.pass
   })
+
+  // Cargar títulos públicos al montar (sin autenticación)
+  useEffect(() => {
+    const loadPublicTitles = async () => {
+      try {
+        const response = await fetch(apiUrl('config'))
+        if (response.ok) {
+          const data = await response.json()
+          if (data.login_title) {
+            setLoginTitle(data.login_title)
+          }
+          setTitlesLoaded(true)
+        }
+      } catch (error) {
+        // Error silencioso, usar fallback
+        setLoginTitle('Admin')
+        setTitlesLoaded(true)
+      }
+    }
+
+    loadPublicTitles()
+  }, [])
 
   const handleLogin = async (e) => {
     e.preventDefault()
@@ -70,11 +93,11 @@ export default function Admin() {
       const response = await fetch(apiUrl('admin/config/site-info') + '&' + params.toString())
       if (response.ok) {
         const data = await response.json()
-        setBackendTitle(data.backend_title || 'FotoCRM Admin')
-        setLoginTitle(data.login_title || data.backend_title || 'FotoCRM Admin')
+        setBackendTitle(data.backend_title || 'Admin')
+        setLoginTitle(data.login_title || data.backend_title || 'Admin')
       }
     } catch (error) {
-      // Error silencioso, mantener el valor por defecto
+      // Error silencioso, mantener el valor actual
     }
   }
 
@@ -135,7 +158,7 @@ export default function Admin() {
       <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center p-4">
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-md">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 text-center">
-            {loginTitle}
+            {!titlesLoaded ? 'Cargando...' : loginTitle || 'Admin'}
           </h1>
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
@@ -189,7 +212,7 @@ export default function Admin() {
             className="text-lg font-bold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
             title="Ir a Administrar fotos"
           >
-            {backendTitle}
+            {backendTitle || 'Admin'}
           </button>
 
           {/* Tabs en el header */}
@@ -2101,8 +2124,8 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
         setSiteTitle(data.site_title || 'PEU Cuchillos Artesanales')
         setSiteSubtitleMobile(data.site_subtitle_mobile || 'Buscador interactivo')
         setSiteSubtitleDesktop(data.site_subtitle_desktop || 'Buscador interactivo de modelos y materiales')
-        setBackendTitle(data.backend_title || 'FotoCRM Admin')
-        setLoginTitle(data.login_title || data.backend_title || 'FotoCRM Admin')
+        setBackendTitle(data.backend_title || 'Admin')
+        setLoginTitle(data.login_title || data.backend_title || 'Admin')
       }
     } catch (error) {
       // Error silencioso
