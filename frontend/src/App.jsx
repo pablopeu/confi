@@ -1387,6 +1387,9 @@ function Configurador({
         const newUrl = `${window.location.origin}${window.location.pathname}?config=${data.code}`
         window.history.pushState({}, '', newUrl)
 
+        // Copiar link al portapapeles
+        copyToClipboard(newUrl)
+
         // Actualizar estado y mostrar botones de compartir
         setSavedCode(data.code)
         setShowShareButtons(true)
@@ -1400,6 +1403,33 @@ function Configurador({
       console.error('Error al guardar configuración:', error)
     } finally {
       setSaving(false)
+    }
+  }
+
+  const copyToClipboard = async (text) => {
+    try {
+      // Usar la API moderna de clipboard
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text)
+      } else {
+        // Fallback para navegadores antiguos o no HTTPS
+        const textArea = document.createElement('textarea')
+        textArea.value = text
+        textArea.style.position = 'fixed'
+        textArea.style.left = '-999999px'
+        textArea.style.top = '-999999px'
+        document.body.appendChild(textArea)
+        textArea.focus()
+        textArea.select()
+        try {
+          document.execCommand('copy')
+        } catch (err) {
+          console.error('Error al copiar:', err)
+        }
+        document.body.removeChild(textArea)
+      }
+    } catch (error) {
+      console.error('Error al copiar al portapapeles:', error)
     }
   }
 
