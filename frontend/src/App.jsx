@@ -187,12 +187,17 @@ function App() {
             label: capitalize(tag.name),
             isOtros: false
           }))
-          const otrosTagsIds = tipoTags.slice(4).map(tag => tag.id)
+          const otrosTags = tipoTags.slice(4)
+          const otrosTagsIds = otrosTags.map(tag => tag.id)
 
-          const tabs = [
-            ...mainTabs,
-            { id: 'otros', label: 'Otros', isOtros: true, otrosIds: otrosTagsIds }
-          ]
+          // Solo agregar tab "Otros" si hay tags para mostrar
+          const tabs = otrosTags.length > 0
+            ? [
+                ...mainTabs,
+                { id: 'otros', label: 'Otros', isOtros: true, otrosIds: otrosTagsIds }
+              ]
+            : mainTabs
+
           setTipoTabs(tabs)
         }
 
