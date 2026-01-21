@@ -1434,14 +1434,16 @@ switch (true) {
         $input = $JSON_INPUT;
         $config = getConfig();
 
-        if (!isset($input['site_title']) || !isset($input['site_subtitle_mobile']) || !isset($input['site_subtitle_desktop']) || !isset($input['backend_title'])) {
+        if (!isset($input['site_title']) || !isset($input['site_subtitle_mobile']) || !isset($input['site_subtitle_desktop'])) {
             response(['error' => t('site_info.missing_params')], 400);
         }
 
         $config['site_title'] = $input['site_title'];
         $config['site_subtitle_mobile'] = $input['site_subtitle_mobile'];
         $config['site_subtitle_desktop'] = $input['site_subtitle_desktop'];
-        $config['backend_title'] = $input['backend_title'];
+        if (isset($input['backend_title'])) {
+            $config['backend_title'] = $input['backend_title'];
+        }
 
         if (!file_put_contents(CONFIG_FILE, json_encode($config, JSON_PRETTY_PRINT))) {
             response(['error' => t('site_info.save_error')], 500);
@@ -1459,9 +1461,11 @@ switch (true) {
         $siteInfo = [
             'site_title' => $config['site_title'] ?? ['es' => 'PEU Cuchillos Artesanales', 'en' => 'PEU Artisan Knives'],
             'site_subtitle_mobile' => $config['site_subtitle_mobile'] ?? ['es' => 'Buscador interactivo', 'en' => 'Interactive search'],
-            'site_subtitle_desktop' => $config['site_subtitle_desktop'] ?? ['es' => 'Buscador interactivo de modelos y materiales', 'en' => 'Interactive search for models and materials'],
-            'backend_title' => $config['backend_title'] ?? ['es' => 'FotoCRM Admin', 'en' => 'FotoCRM Admin']
+            'site_subtitle_desktop' => $config['site_subtitle_desktop'] ?? ['es' => 'Buscador interactivo de modelos y materiales', 'en' => 'Interactive search for models and materials']
         ];
+        if (isset($config['backend_title'])) {
+            $siteInfo['backend_title'] = $config['backend_title'];
+        }
 
         response($siteInfo);
         break;
