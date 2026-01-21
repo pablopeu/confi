@@ -239,6 +239,8 @@ export default function Admin() {
               showSuccess={showSuccess}
               showError={showError}
               onLogoChange={loadData}
+              backendTitle={backendTitle}
+              setBackendTitle={setBackendTitle}
             />
           )}
         </div>
@@ -1643,7 +1645,7 @@ function TagsManager({ tagGroups, authParams, onRefresh, showSuccess, showError,
 // ==================
 // Configuration - Configuración del sistema (backups, logo)
 // ==================
-function Configuration({ authParams, showSuccess, showError, onLogoChange }) {
+function Configuration({ authParams, showSuccess, showError, onLogoChange, backendTitle, setBackendTitle }) {
   const [backups, setBackups] = useState([])
   const [loading, setLoading] = useState(false)
   const [creating, setCreating] = useState(false)
