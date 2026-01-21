@@ -886,50 +886,33 @@ function ZoomableImage({ src, alt }) {
 // ==================
 function PhotoCarousel({ photos, currentIndex, onSelectPhoto, disableRepeat = false }) {
   const carouselRef = useRef(null)
-  const [scrollPosition, setScrollPosition] = useState(0)
-  const [isDragging, setIsDragging] = useState(false)
-  const [dragStartX, setDragStartX] = useState(0)
-  const [dragStartScroll, setDragStartScroll] = useState(0)
 
   const THUMBNAIL_SIZE = 120
 
-  // Aplicar scroll position sin límites (continuo)
-  useEffect(() => {
-    if (carouselRef.current) {
-      carouselRef.current.scrollLeft = scrollPosition
-    }
-  }, [scrollPosition])
-
   const handlePrevious = () => {
-    const containerWidth = carouselRef.current.offsetWidth
-    setScrollPosition(prev => prev - containerWidth * 0.8)
+    // Navegar a la foto anterior en ciclo
+    const newIndex = currentIndex === 0 ? photos.length - 1 : currentIndex - 1
+    onSelectPhoto(newIndex)
+    // Scroll para centrar la foto seleccionada
+    setTimeout(() => {
+      if (carouselRef.current) {
+        const targetPosition = newIndex * THUMBNAIL_SIZE - carouselRef.current.offsetWidth / 2 + THUMBNAIL_SIZE / 2
+        carouselRef.current.scrollTo({ left: targetPosition, behavior: 'smooth' })
+      }
+    }, 0)
   }
 
   const handleNext = () => {
-    if (!carouselRef.current) return
-    const containerWidth = carouselRef.current.offsetWidth
-    setScrollPosition(prev => prev + containerWidth * 0.8)
-  }
-
-  const handleMouseDown = (e) => {
-    setIsDragging(true)
-    setDragStartX(e.clientX)
-    setDragStartScroll(scrollPosition)
-  }
-
-  const handleMouseMove = (e) => {
-    if (!isDragging) return
-    const deltaX = dragStartX - e.clientX
-    // Sin límites, se queda donde lo sueltes
-    setScrollPosition(dragStartScroll + deltaX)
-  }
-
-  const handleMouseUp = () => {
-    setIsDragging(false)
-  }
-
-  const handleMouseLeave = () => {
-    setIsDragging(false)
+    // Navegar a la foto siguiente en ciclo
+    const newIndex = currentIndex === photos.length - 1 ? 0 : currentIndex + 1
+    onSelectPhoto(newIndex)
+    // Scroll para centrar la foto seleccionada
+    setTimeout(() => {
+      if (carouselRef.current) {
+        const targetPosition = newIndex * THUMBNAIL_SIZE - carouselRef.current.offsetWidth / 2 + THUMBNAIL_SIZE / 2
+        carouselRef.current.scrollTo({ left: targetPosition, behavior: 'smooth' })
+      }
+    }, 0)
   }
 
   if (!photos || photos.length === 0) {
@@ -956,23 +939,14 @@ function PhotoCarousel({ photos, currentIndex, onSelectPhoto, disableRepeat = fa
       {/* Container del carrusel */}
       <div
         ref={carouselRef}
-        className="flex overflow-x-hidden cursor-grab active:cursor-grabbing select-none"
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseLeave}
+        className="flex overflow-x-auto scrollbar-thin scrollbar-thumb-gray-400 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent"
       >
         {displayPhotos.map((photo, idx) => {
           const originalIdx = idx % photos.length
           return (
             <button
               key={`${photo.id}-${idx}`}
-              onClick={(e) => {
-                if (!isDragging) {
-                  onSelectPhoto(originalIdx)
-                }
-                e.preventDefault()
-              }}
+              onClick={() => onSelectPhoto(originalIdx)}
               className={`flex-shrink-0 overflow-hidden border-2 transition-all ${
                 originalIdx === currentIndex
                   ? 'border-blue-500 ring-2 ring-blue-300 dark:ring-blue-700'
