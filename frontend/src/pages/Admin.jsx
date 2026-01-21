@@ -2203,7 +2203,7 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
           {/* Sección de Logo y Títulos */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-            <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-3">Logo y Títulos</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Logo y Títulos</h2>
 
             {/* Logo */}
             <div className="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
@@ -2287,7 +2287,7 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
 
           {/* Sección de Mensaje del Configurador - con flex */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 flex flex-col">
-            <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-2">Mensaje Configurador</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">Mensaje Configurador</h2>
 
             <textarea
               value={configuratorMessage}
@@ -2299,7 +2299,7 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
             <button
               onClick={handleSaveConfiguratorMessage}
               disabled={savingConfiguratorMessage}
-              className={`w-full px-3 py-1.5 text-sm rounded transition-all duration-300 ${
+              className={`w-full px-3 py-2 text-sm rounded transition-all duration-300 ${
                 savedConfiguratorMessageFeedback
                   ? 'bg-green-500 text-white'
                   : 'bg-blue-600 text-white hover:bg-blue-700'
@@ -2308,35 +2308,32 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
               {savingConfiguratorMessage ? 'Guardando...' : savedConfiguratorMessageFeedback ? '✓' : 'Guardar'}
             </button>
           </div>
-        </div>
 
-        {/* Grid de Backups y Contacto - más compacto */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           {/* Sección de Backups */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-            <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-2">Backups</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">Backups</h2>
 
             <div className="flex items-center gap-2 mb-3">
               <button
                 onClick={handleCreateBackup}
                 disabled={creating || backups.length >= 5}
-                className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {creating ? '...' : 'Crear'}
               </button>
               {backups.length >= 5 && (
-                <span className="text-xs text-amber-600 dark:text-amber-400">
+                <span className="text-sm text-amber-600 dark:text-amber-400">
                   Límite: 5 backups
                 </span>
               )}
             </div>
 
             {loading ? (
-              <p className="text-xs text-gray-500">Cargando...</p>
+              <p className="text-sm text-gray-500">Cargando...</p>
             ) : backups.length === 0 ? (
-              <p className="text-xs text-gray-500 dark:text-gray-400">Sin backups</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Sin backups</p>
             ) : (
-              <div className="space-y-1">
+              <div className="space-y-2">
                 {backups.map((backup) => {
                   const wasCreated = createdBackupFeedback === backup.filename
                   const isDeleting = deletingBackup === backup.filename
@@ -2352,26 +2349,26 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
                       }`}
                     >
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-medium text-gray-900 dark:text-white truncate">
+                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
                           {backup.filename}
                         </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
                           {backup.created_at} • {formatFileSize(backup.size)}
                         </p>
                       </div>
                       <div className="flex items-center gap-1">
                         {backupToDelete === backup.filename ? (
                           <>
-                            <span className="text-xs text-red-600 dark:text-red-400 mr-2">¿Eliminar?</span>
+                            <span className="text-sm text-red-600 dark:text-red-400 mr-2">¿Eliminar?</span>
                             <button
                               onClick={() => handleDeleteBackup(backup.filename)}
-                              className="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700"
+                              className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
                             >
                               Sí
                             </button>
                             <button
                               onClick={() => setBackupToDelete(null)}
-                              className="px-3 py-1 text-xs bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded hover:bg-gray-400 dark:hover:bg-gray-500"
+                              className="px-3 py-1 text-sm bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded hover:bg-gray-400 dark:hover:bg-gray-500"
                             >
                               No
                             </button>
@@ -2405,10 +2402,13 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
               </div>
             )}
           </div>
+        </div>
 
+        {/* Grid de Contacto */}
+        <div className="grid grid-cols-1 gap-4 mb-4">
           {/* Sección de Contacto - 2 columnas compactas */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-            <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-3">Contacto</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Contacto</h2>
 
             <div className="grid grid-cols-2 gap-4">
               {/* WhatsApp */}
@@ -2433,14 +2433,14 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
                       placeholder="Número (sin +)"
                       value={whatsappConfig.number}
                       onChange={(e) => setWhatsappConfig({ ...whatsappConfig, number: e.target.value })}
-                      className="w-full px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     />
                     <textarea
                       placeholder="Mensaje predeterminado..."
                       value={whatsappConfig.message}
                       onChange={(e) => setWhatsappConfig({ ...whatsappConfig, message: e.target.value })}
                       rows={2}
-                      className="w-full px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
+                      className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
                     />
                   </div>
                 )}
@@ -2468,14 +2468,14 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
                       placeholder="Usuario (sin @)"
                       value={telegramConfig.username}
                       onChange={(e) => setTelegramConfig({ ...telegramConfig, username: e.target.value })}
-                      className="w-full px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     />
                     <textarea
                       placeholder="Mensaje predeterminado..."
                       value={telegramConfig.message}
                       onChange={(e) => setTelegramConfig({ ...telegramConfig, message: e.target.value })}
                       rows={2}
-                      className="w-full px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
+                      className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
                     />
                   </div>
                 )}
@@ -2485,7 +2485,7 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
             <button
               onClick={handleSaveContactConfig}
               disabled={savingContact}
-              className={`w-full px-3 py-1.5 text-sm rounded transition-all duration-300 ${
+              className={`w-full px-3 py-2 text-sm rounded transition-all duration-300 mt-3 ${
                 savedContactFeedback
                   ? 'bg-green-500 text-white'
                   : 'bg-blue-600 text-white hover:bg-blue-700'
@@ -2530,8 +2530,8 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
 
         {/* Sección de Footer - compacta 2 columnas */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-base font-semibold text-gray-900 dark:text-white">Footer</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Footer</h2>
             <div className="flex items-center gap-2">
               <input
                 type="checkbox"
@@ -2550,35 +2550,35 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
             <div className="grid grid-cols-2 gap-4">
               {/* Link a página web */}
               <div>
-                <h3 className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Sitio Web</h3>
+                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sitio Web</h3>
                 <div className="space-y-2">
                   <input
                     type="text"
                     placeholder="Texto del enlace"
                     value={footerConfig.website_text}
                     onChange={(e) => setFooterConfig({ ...footerConfig, website_text: e.target.value })}
-                    className="w-full px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
                   <input
                     type="url"
                     placeholder="https://..."
                     value={footerConfig.website_url}
                     onChange={(e) => setFooterConfig({ ...footerConfig, website_url: e.target.value })}
-                    className="w-full px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
                 </div>
               </div>
 
               {/* Redes sociales */}
               <div>
-                <h3 className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Redes Sociales</h3>
-                <div className="space-y-1 mb-2">
+                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Redes Sociales</h3>
+                <div className="space-y-2 mb-2">
                   <input
                     type="text"
                     placeholder="Texto intro"
                     value={footerConfig.social_text}
                     onChange={(e) => setFooterConfig({ ...footerConfig, social_text: e.target.value })}
-                    className="w-full px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-2">
@@ -2587,35 +2587,35 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
                     placeholder="Instagram"
                     value={footerConfig.instagram}
                     onChange={(e) => setFooterConfig({ ...footerConfig, instagram: e.target.value })}
-                    className="w-full px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
                   <input
                     type="text"
                     placeholder="X / Twitter"
                     value={footerConfig.twitter}
                     onChange={(e) => setFooterConfig({ ...footerConfig, twitter: e.target.value })}
-                    className="w-full px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
                   <input
                     type="text"
                     placeholder="Facebook"
                     value={footerConfig.facebook}
                     onChange={(e) => setFooterConfig({ ...footerConfig, facebook: e.target.value })}
-                    className="col-span-2 w-full px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    className="col-span-2 w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
                 </div>
               </div>
             </div>
           )}
 
-          <div className="flex items-center justify-between mt-3">
-            <p className="text-xs text-gray-500 dark:text-gray-400">
+          <div className="flex items-center justify-between mt-4">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               {footerConfig.enabled ? 'Nota: WhatsApp y Telegram en "Contacto"' : ''}
             </p>
             <button
               onClick={handleSaveFooter}
               disabled={savingFooter}
-              className={`px-3 py-1.5 text-xs rounded transition-all duration-300 ${
+              className={`px-3 py-2 text-sm rounded transition-all duration-300 ${
                 savedFooterFeedback
                   ? 'bg-green-500 text-white'
                   : 'bg-blue-600 text-white hover:bg-blue-700'
