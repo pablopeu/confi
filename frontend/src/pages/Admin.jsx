@@ -35,6 +35,7 @@ export default function Admin() {
   const [newPassword, setNewPassword] = useState('')
   const [pendingSave, setPendingSave] = useState(null) // Función para guardar antes de cambiar tab
   const [backendTitle, setBackendTitle] = useState('FotoCRM Admin')
+  const [loginTitle, setLoginTitle] = useState('FotoCRM Admin')
 
   const { isOpen, modalProps, closeModal, showSuccess, showError, showConfirm } = useModal()
 
@@ -70,6 +71,7 @@ export default function Admin() {
       if (response.ok) {
         const data = await response.json()
         setBackendTitle(data.backend_title || 'FotoCRM Admin')
+        setLoginTitle(data.login_title || data.backend_title || 'FotoCRM Admin')
       }
     } catch (error) {
       // Error silencioso, mantener el valor por defecto
@@ -133,7 +135,7 @@ export default function Admin() {
       <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center p-4">
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-md">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 text-center">
-            {backendTitle}
+            {loginTitle}
           </h1>
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
@@ -261,6 +263,8 @@ export default function Admin() {
               onLogoChange={loadData}
               backendTitle={backendTitle}
               setBackendTitle={setBackendTitle}
+              loginTitle={loginTitle}
+              setLoginTitle={setLoginTitle}
             />
           )}
         </div>
@@ -1930,7 +1934,7 @@ function TagsManager({ tagGroups, authParams, onRefresh, showSuccess, showError,
 // ==================
 // Configuration - Configuración del sistema (backups, logo)
 // ==================
-function Configuration({ authParams, showSuccess, showError, onLogoChange, backendTitle, setBackendTitle }) {
+function Configuration({ authParams, showSuccess, showError, onLogoChange, backendTitle, setBackendTitle, loginTitle, setLoginTitle }) {
   const [backups, setBackups] = useState([])
   const [loading, setLoading] = useState(false)
   const [creating, setCreating] = useState(false)
@@ -2098,6 +2102,7 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
         setSiteSubtitleMobile(data.site_subtitle_mobile || 'Buscador interactivo')
         setSiteSubtitleDesktop(data.site_subtitle_desktop || 'Buscador interactivo de modelos y materiales')
         setBackendTitle(data.backend_title || 'FotoCRM Admin')
+        setLoginTitle(data.login_title || data.backend_title || 'FotoCRM Admin')
       }
     } catch (error) {
       // Error silencioso
@@ -2235,7 +2240,8 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
           site_title: siteTitle,
           site_subtitle_mobile: siteSubtitleMobile,
           site_subtitle_desktop: siteSubtitleDesktop,
-          backend_title: backendTitle
+          backend_title: backendTitle,
+          login_title: loginTitle
         })
       })
 
@@ -2491,7 +2497,14 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
                 type="text"
                 value={backendTitle}
                 onChange={(e) => setBackendTitle(e.target.value)}
-                placeholder="Título backend"
+                placeholder="Título backend (header)"
+                className="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              />
+              <input
+                type="text"
+                value={loginTitle}
+                onChange={(e) => setLoginTitle(e.target.value)}
+                placeholder="Título login (página de inicio)"
                 className="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               />
               <button

@@ -1562,6 +1562,9 @@ switch (true) {
         if (isset($input['backend_title'])) {
             $config['backend_title'] = $input['backend_title'];
         }
+        if (isset($input['login_title'])) {
+            $config['login_title'] = $input['login_title'];
+        }
 
         if (!file_put_contents(CONFIG_FILE, json_encode($config, JSON_PRETTY_PRINT))) {
             response(['error' => t('site_info.save_error')], 500);
@@ -1583,6 +1586,9 @@ switch (true) {
         ];
         if (isset($config['backend_title'])) {
             $siteInfo['backend_title'] = $config['backend_title'];
+        }
+        if (isset($config['login_title'])) {
+            $siteInfo['login_title'] = $config['login_title'];
         }
 
         response($siteInfo);
