@@ -1895,9 +1895,14 @@ function TagsManager({ tagGroups, authParams, onRefresh, showSuccess, showError,
                   )
                 })}
                 {group.id === 'tipo' && group.tags.length > 0 && (
-                  <p className="text-xs text-gray-500 italic mt-2">
-                    Los tags en negrita aparecen en el header del frontend (primeras 3 posiciones)
-                  </p>
+                  <>
+                    <p className="text-xs text-gray-500 italic mt-2">
+                      Los tags se pueden reordenar arrastrándolos a la posición deseada.
+                    </p>
+                    <p className="text-xs text-gray-500 italic">
+                      Los tags en negrita aparecen en el header del frontend (primeras 3 posiciones)
+                    </p>
+                  </>
                 )}
               </div>
             )}
