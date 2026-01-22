@@ -1828,7 +1828,7 @@ function TagsManager({ tagGroups, authParams, onRefresh, showSuccess, showError,
       {/* Tag Groups */}
       <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
         {tagGroups.map(group => (
-          <div key={group.id} className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+          <div key={group.id} className="bg-white dark:bg-gray-800 rounded-lg shadow p-7">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold text-gray-900 dark:text-white">{group.name}</h3>
               <button
