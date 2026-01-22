@@ -611,7 +611,6 @@ function UploadPhotos({ tagGroups, authParams, onRefresh, showSuccess, showError
     // Cambiar al nuevo bucket
     const bucket = buckets.find(b => b.id === bucketId)
     if (bucket) {
-      console.log('Bucket seleccionado:', bucket)
       setActiveBucketId(bucketId)
 
       // Obtener información actualizada de las fotos desde el servidor
@@ -619,13 +618,10 @@ function UploadPhotos({ tagGroups, authParams, onRefresh, showSuccess, showError
         const response = await fetch(apiUrl('photos'))
         const photosData = await response.json()
         const allPhotos = photosData.photos || []
-        console.log('Total fotos en photos.json:', allPhotos.length)
 
         // Mapear IDs del bucket a fotos actualizadas
         const photoIds = bucket.photos.map(p => p.id)
-        console.log('IDs de fotos del bucket:', photoIds)
         const updatedPhotos = allPhotos.filter(p => photoIds.includes(p.id))
-        console.log('Fotos filtradas encontradas:', updatedPhotos.length)
 
         setUploadedPhotos(updatedPhotos)
         setCurrentIndex(0)
@@ -640,7 +636,6 @@ function UploadPhotos({ tagGroups, authParams, onRefresh, showSuccess, showError
         setPhotoTags(newTags)
         setPhotoTexts(newTexts)
       } catch (error) {
-        console.error('Error cargando fotos del bucket, usando fallback:', error)
         // Fallback: usar las fotos del bucket
         setUploadedPhotos(bucket.photos || [])
         setCurrentIndex(0)
