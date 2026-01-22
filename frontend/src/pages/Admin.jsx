@@ -1855,7 +1855,7 @@ function TagsManager({ tagGroups, authParams, onRefresh, showSuccess, showError,
                       onDragStart={() => handleDragStart(group.id, tag.id, index)}
                       onDragOver={handleDragOver}
                       onDrop={() => handleDrop(group.id, index)}
-                      className={`flex items-center justify-between py-[7px] px-2 bg-gray-50 dark:bg-gray-700 rounded ${isDragging ? 'opacity-50' : ''} ${group.id === 'tipo' ? 'cursor-move' : ''}`}
+                      className={`flex items-center justify-between py-1 px-2 bg-gray-50 dark:bg-gray-700 rounded ${isDragging ? 'opacity-50' : ''} ${group.id === 'tipo' ? 'cursor-move' : ''}`}
                     >
                       <span className={`text-sm text-gray-700 dark:text-gray-300 ${isHeaderTag ? 'font-bold' : ''}`}>
                         {capitalize(tag.name)}
