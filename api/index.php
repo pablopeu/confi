@@ -1425,10 +1425,36 @@ switch (true) {
                 // Remover metadatos anteriores si existen
                 $html = preg_replace('/<!-- DYNAMIC META START -->.*?<!-- DYNAMIC META END -->/s', '', $html);
 
+                // Construir metadatos a inyectar
+                $metaTagsToInject = trim($input['meta_tags']);
+
+                // Agregar og:image y twitter:image si hay carátula
+                if (isset($config['caratula'])) {
+                    $caratulaUrl = $config['caratula'];
+                    // Convertir a URL absoluta si es relativa
+                    if (!preg_match('/^https?:\/\//', $caratulaUrl)) {
+                        $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
+                        $host = $_SERVER['HTTP_HOST'];
+                        $caratulaUrl = "$protocol://$host/$caratulaUrl";
+                    }
+
+                    // Remover og:image y twitter:image existentes si los hay
+                    $metaTagsToInject = preg_replace('/<meta[^>]*property=["\']og:image["\'][^>]*>/i', '', $metaTagsToInject);
+                    $metaTagsToInject = preg_replace('/<meta[^>]*property=["\']twitter:image["\'][^>]*>/i', '', $metaTagsToInject);
+                    $metaTagsToInject = preg_replace('/<meta[^>]*name=["\']twitter:image["\'][^>]*>/i', '', $metaTagsToInject);
+                    $metaTagsToInject = trim($metaTagsToInject);
+
+                    // Agregar og:image y twitter:image
+                    $metaTagsToInject .= "\n<meta property=\"og:image\" content=\"$caratulaUrl\">";
+                    $metaTagsToInject .= "\n<meta property=\"og:image:width\" content=\"1200\">";
+                    $metaTagsToInject .= "\n<meta property=\"og:image:height\" content=\"630\">";
+                    $metaTagsToInject .= "\n<meta name=\"twitter:image\" content=\"$caratulaUrl\">";
+                }
+
                 // Insertar nuevos metadatos antes de </head>
-                if (!empty($input['meta_tags'])) {
+                if (!empty($metaTagsToInject)) {
                     $metaBlock = "\n    <!-- DYNAMIC META START -->\n    " .
-                                 str_replace("\n", "\n    ", trim($input['meta_tags'])) .
+                                 str_replace("\n", "\n    ", $metaTagsToInject) .
                                  "\n    <!-- DYNAMIC META END -->\n  ";
                     $html = str_replace('</head>', $metaBlock . '</head>', $html);
                 }
