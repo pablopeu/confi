@@ -1034,6 +1034,10 @@ switch (true) {
         if (isset($config['login_title'])) {
             $publicConfig['login_title'] = $config['login_title'];
         }
+        // Carátula para previews
+        if (isset($config['caratula'])) {
+            $publicConfig['caratula'] = $config['caratula'];
+        }
         response($publicConfig);
         break;
 
@@ -1259,6 +1263,71 @@ switch (true) {
         file_put_contents(CONFIG_FILE, json_encode($config, JSON_PRETTY_PRINT));
 
         response(['message' => t('logo.deleted')]);
+        break;
+
+    // POST /admin/config/caratula - Subir carátula para previews
+    case $path === 'admin/config/caratula' && $method === 'POST':
+        checkAuth();
+
+        if (empty($_FILES['caratula'])) {
+            response(['error' => 'No se subió ningún archivo'], 400);
+        }
+
+        $file = $_FILES['caratula'];
+        $allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+
+        if (!in_array($file['type'], $allowedTypes)) {
+            response(['error' => 'Tipo de archivo no permitido. Use JPG, PNG o WebP'], 400);
+        }
+
+        if ($file['size'] > 5 * 1024 * 1024) { // 5MB max
+            response(['error' => 'El archivo es demasiado grande (máx 5MB)'], 400);
+        }
+
+        $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+        $filename = 'caratula.' . strtolower($ext);
+        $destination = UPLOADS_DIR . '/' . $filename;
+
+        // Eliminar carátula anterior si existe
+        $config = getConfig();
+        if (isset($config['caratula'])) {
+            $oldCaratulaPath = UPLOADS_DIR . '/' . basename($config['caratula']);
+            if (file_exists($oldCaratulaPath)) {
+                unlink($oldCaratulaPath);
+            }
+        }
+
+        if (!move_uploaded_file($file['tmp_name'], $destination)) {
+            response(['error' => 'Error al guardar la carátula'], 500);
+        }
+
+        // Actualizar config
+        $config['caratula'] = 'uploads/' . $filename;
+        if (!file_put_contents(CONFIG_FILE, json_encode($config, JSON_PRETTY_PRINT))) {
+            response(['error' => 'Error al guardar configuración'], 500);
+        }
+
+        response(['message' => 'Carátula actualizada', 'caratula' => $config['caratula']], 201);
+        break;
+
+    // DELETE /admin/config/caratula - Eliminar carátula
+    case $path === 'admin/config/caratula' && $method === 'DELETE':
+        checkAuth();
+
+        $config = getConfig();
+        if (!isset($config['caratula'])) {
+            response(['error' => 'No hay carátula configurada'], 404);
+        }
+
+        $caratulaPath = UPLOADS_DIR . '/' . basename($config['caratula']);
+        if (file_exists($caratulaPath)) {
+            unlink($caratulaPath);
+        }
+
+        unset($config['caratula']);
+        file_put_contents(CONFIG_FILE, json_encode($config, JSON_PRETTY_PRINT));
+
+        response(['message' => 'Carátula eliminada']);
         break;
 
     // POST /admin/config/contact - Configurar WhatsApp y Telegram

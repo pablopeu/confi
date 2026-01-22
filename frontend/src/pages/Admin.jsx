@@ -1971,6 +1971,8 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
   const [createdBackupFeedback, setCreatedBackupFeedback] = useState(null) // Filename del backup recién creado
   const [logo, setLogo] = useState(null)
   const [uploadingLogo, setUploadingLogo] = useState(false)
+  const [caratula, setCaratula] = useState(null)
+  const [uploadingCaratula, setUploadingCaratula] = useState(false)
 
   // Estado para título y subtítulo del sitio
   const [siteTitle, setSiteTitle] = useState('PEU Cuchillos Artesanales')
@@ -2051,6 +2053,7 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
       if (response.ok) {
         const data = await response.json()
         setLogo(data.logo || null)
+        setCaratula(data.caratula || null)
       }
     } catch (error) {
       // Error silencioso
@@ -2418,6 +2421,56 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
     }
   }
 
+  const handleUploadCaratula = async (file) => {
+    if (!file) return
+
+    setUploadingCaratula(true)
+    try {
+      const formData = new FormData()
+      formData.append('caratula', file)
+      formData.append('auth_user', authParams.auth_user)
+      formData.append('auth_pass', authParams.auth_pass)
+
+      const response = await fetch(apiUrl('admin/config/caratula'), {
+        method: 'POST',
+        body: formData
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setCaratula(data.caratula)
+      } else if (response.status === 401) {
+        showError('Sesión expirada', 'Por favor, vuelve a iniciar sesión')
+      } else {
+        const error = await response.json()
+        showError('Error', error.error || 'Error al subir carátula')
+      }
+    } catch (error) {
+      showError('Error', 'Error de conexión')
+    } finally {
+      setUploadingCaratula(false)
+    }
+  }
+
+  const handleDeleteCaratula = async () => {
+    try {
+      const params = new URLSearchParams(authParams)
+      const response = await fetch(apiUrl('admin/config/caratula') + '&' + params.toString(), {
+        method: 'DELETE'
+      })
+
+      if (response.ok) {
+        setCaratula(null)
+      } else if (response.status === 401) {
+        showError('Sesión expirada', 'Por favor, vuelve a iniciar sesión')
+      } else {
+        showError('Error', 'Error al eliminar carátula')
+      }
+    } catch (error) {
+      showError('Error', 'Error de conexión')
+    }
+  }
+
   const handleSaveContactConfig = async () => {
     setSavingContact(true)
     try {
@@ -2766,6 +2819,44 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
             Etiquetas meta que se inyectarán en el &lt;head&gt; del HTML. Incluye Open Graph, Twitter Cards, etc.
           </p>
+
+          {/* Carátula para previews */}
+          <div className="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Carátula para Previews</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">Imagen que se mostrará en los preview de configuración</p>
+            {caratula ? (
+              <div className="flex items-center gap-2 mb-2">
+                <img src={caratula} alt="Carátula" className="h-12 object-cover rounded border border-gray-200 dark:border-gray-600" />
+                <button
+                  onClick={handleDeleteCaratula}
+                  className="px-2 py-1 text-xs bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400 rounded hover:bg-red-200 dark:hover:bg-red-900"
+                >
+                  Eliminar
+                </button>
+                <label className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 cursor-pointer">
+                  Cambiar
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => handleUploadCaratula(e.target.files[0])}
+                    disabled={uploadingCaratula}
+                  />
+                </label>
+              </div>
+            ) : (
+              <label className="block w-full text-center px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 cursor-pointer text-sm">
+                {uploadingCaratula ? 'Subiendo...' : 'Subir carátula'}
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => handleUploadCaratula(e.target.files[0])}
+                  disabled={uploadingCaratula}
+                />
+              </label>
+            )}
+          </div>
 
           <textarea
             value={metaTags}
