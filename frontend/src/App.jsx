@@ -815,26 +815,14 @@ function App() {
                 collapsed={true}
               />
             </div>
-          </div>
-        </div>
-      </header>
 
-      {/* Main content */}
-      <main className="flex-1 overflow-y-auto p-4 lg:p-6">
-        <div className="max-w-7xl mx-auto">
-          {/* Info de resultados y buckets - SOLO DESKTOP */}
-          <div className="hidden lg:flex mb-4 items-center justify-between gap-4">
-            <div className="text-sm text-gray-500 dark:text-gray-400">
-              {filteredPhotos.length} foto{filteredPhotos.length !== 1 ? 's' : ''} encontrada{filteredPhotos.length !== 1 ? 's' : ''}
-            </div>
-
-            {/* Buckets */}
-            <div className="flex items-center gap-1">
+            {/* Buckets de cuchillos - Desktop */}
+            <div className="flex items-center gap-1 flex-shrink-0">
               {buckets.map((bucket, index) => (
                 <div key={index} className="relative">
                   <button
                     onClick={() => setActiveBucket(index)}
-                    className={`px-2 py-1 text-xs rounded transition-colors ${
+                    className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
                       activeBucket === index
                         ? 'bg-blue-600 text-white'
                         : bucket.selectedPhotos.length > 0
@@ -882,6 +870,16 @@ function App() {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Main content */}
+      <main className="flex-1 overflow-y-auto p-4 lg:p-6">
+        <div className="max-w-7xl mx-auto">
+          {/* Info de resultados - SOLO DESKTOP */}
+          <div className="hidden lg:flex mb-4 text-sm text-gray-500 dark:text-gray-400">
+            {filteredPhotos.length} foto{filteredPhotos.length !== 1 ? 's' : ''} encontrada{filteredPhotos.length !== 1 ? 's' : ''}
           </div>
 
           {/* Grid de fotos */}
