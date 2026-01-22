@@ -457,9 +457,6 @@ function App() {
               forma: false,
               acero: false,
               encabado: false,
-              detalle1: false,
-              detalle2: false,
-              detalle3: false,
               comentarios: ''
             }
           }
@@ -1865,8 +1862,8 @@ function Configurador({
 
                     {/* Formulario */}
                     <div className="p-4 space-y-3">
-                      <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-                        {/* Columna izquierda */}
+                      <div className="grid grid-cols-[1fr_2fr] gap-4">
+                        {/* Columna izquierda - 3 checkboxes */}
                         <div className="space-y-2">
                           <label className="flex items-center gap-2 cursor-pointer">
                             <input
@@ -1899,52 +1896,16 @@ function Configurador({
                           </label>
                         </div>
 
-                        {/* Columna derecha */}
-                        <div className="space-y-2">
-                          <label className="flex items-center gap-2 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={photoConfigs[photo.id]?.detalle1 || false}
-                              onChange={() => handleCheckboxChange(photo.id, 'detalle1')}
-                              className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                            />
-                            <span className="text-sm text-gray-700 dark:text-gray-300">Detalle 1</span>
-                          </label>
-
-                          <label className="flex items-center gap-2 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={photoConfigs[photo.id]?.detalle2 || false}
-                              onChange={() => handleCheckboxChange(photo.id, 'detalle2')}
-                              className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                            />
-                            <span className="text-sm text-gray-700 dark:text-gray-300">Detalle 2</span>
-                          </label>
-
-                          <label className="flex items-center gap-2 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={photoConfigs[photo.id]?.detalle3 || false}
-                              onChange={() => handleCheckboxChange(photo.id, 'detalle3')}
-                              className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                            />
-                            <span className="text-sm text-gray-700 dark:text-gray-300">Detalle 3</span>
-                          </label>
+                        {/* Columna derecha - Campo de comentarios */}
+                        <div>
+                          <textarea
+                            value={photoConfigs[photo.id]?.comentarios || ''}
+                            onChange={(e) => handleComentarioChange(photo.id, e.target.value)}
+                            placeholder="Agrega comentarios o instrucciones especiales..."
+                            rows={5}
+                            className="w-full h-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm"
+                          />
                         </div>
-                      </div>
-
-                      {/* Campo de comentarios */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          Comentarios
-                        </label>
-                        <textarea
-                          value={photoConfigs[photo.id]?.comentarios || ''}
-                          onChange={(e) => handleComentarioChange(photo.id, e.target.value)}
-                          placeholder="Agrega comentarios o instrucciones especiales..."
-                          rows={3}
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm"
-                        />
                       </div>
                     </div>
                   </div>
