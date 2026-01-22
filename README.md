@@ -1,4 +1,6 @@
 # Configurador Interactivo PEU
+## Acceder al configurador online: https://peu.net/confi/
+
 ## Instrucciones de Uso
 
 Este configurador **[no es mi página web](https://peu.net)**, sino una herramienta para ayudarte a **personalizar tu cuchillo** usando detalles de otros modelos.
