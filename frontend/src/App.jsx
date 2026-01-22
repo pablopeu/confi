@@ -815,9 +815,11 @@ function App() {
                 collapsed={true}
               />
             </div>
+          </div>
 
-            {/* Buckets de cuchillos - Desktop */}
-            <div className="flex items-center gap-1 flex-shrink-0">
+          {/* Buckets de cuchillos - Desktop (subheader dentro del header) */}
+          <div className="hidden lg:block border-t border-gray-200 dark:border-gray-700">
+            <div className="flex items-center gap-1 py-2">
               {buckets.map((bucket, index) => (
                 <div key={index} className="relative">
                   <button
