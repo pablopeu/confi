@@ -1422,6 +1422,15 @@ function Configurador({
 
   // Función para actualizar meta tags de imagen (OpenGraph y Twitter)
   const updateMetaImageTags = (imageUrl) => {
+    console.log('Actualizando meta tags de imagen:', imageUrl)
+
+    // Construir URL completa si es relativa
+    const fullImageUrl = imageUrl.startsWith('http')
+      ? imageUrl
+      : `${window.location.origin}/${imageUrl}`
+
+    console.log('URL completa para meta tags:', fullImageUrl)
+
     // Actualizar o crear og:image
     let ogImage = document.querySelector('meta[property="og:image"]')
     if (!ogImage) {
@@ -1429,7 +1438,7 @@ function Configurador({
       ogImage.setAttribute('property', 'og:image')
       document.head.appendChild(ogImage)
     }
-    ogImage.setAttribute('content', imageUrl)
+    ogImage.setAttribute('content', fullImageUrl)
 
     // Actualizar o crear twitter:image
     let twitterImage = document.querySelector('meta[name="twitter:image"]')
@@ -1438,7 +1447,12 @@ function Configurador({
       twitterImage.setAttribute('name', 'twitter:image')
       document.head.appendChild(twitterImage)
     }
-    twitterImage.setAttribute('content', imageUrl)
+    twitterImage.setAttribute('content', fullImageUrl)
+
+    console.log('Meta tags actualizados:', {
+      ogImage: ogImage.getAttribute('content'),
+      twitterImage: twitterImage.getAttribute('content')
+    })
   }
 
   const loadConfiguratorMessage = async () => {

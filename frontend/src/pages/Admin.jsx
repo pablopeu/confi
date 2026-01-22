@@ -2153,6 +2153,8 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
       if (response.ok) {
         setSavedMetaTagsFeedback(true)
         setTimeout(() => setSavedMetaTagsFeedback(false), 2000)
+        // Recargar metadatos para actualizar el estado y limpiar avisos de conflicto
+        await loadMetaTags()
       } else if (response.status === 401) {
         showError('Sesión expirada', 'Por favor, vuelve a iniciar sesión')
       } else {
