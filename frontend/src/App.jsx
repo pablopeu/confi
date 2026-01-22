@@ -1897,13 +1897,13 @@ function Configurador({
                         </div>
 
                         {/* Columna derecha - Campo de comentarios */}
-                        <div>
+                        <div className="flex flex-col justify-center">
                           <textarea
                             value={photoConfigs[photo.id]?.comentarios || ''}
                             onChange={(e) => handleComentarioChange(photo.id, e.target.value)}
                             placeholder="Agrega comentarios o instrucciones especiales..."
-                            rows={5}
-                            className="w-full h-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm"
+                            rows={3}
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm"
                           />
                         </div>
                       </div>
