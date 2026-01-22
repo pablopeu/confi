@@ -1409,10 +1409,36 @@ function Configurador({
         const data = await response.json()
         setWhatsappConfig(data.whatsapp || null)
         setTelegramConfig(data.telegram || null)
+
+        // Actualizar meta tags de imagen si hay carátula
+        if (data.caratula) {
+          updateMetaImageTags(data.caratula)
+        }
       }
     } catch (error) {
       console.error('Error al cargar config de contacto:', error)
     }
+  }
+
+  // Función para actualizar meta tags de imagen (OpenGraph y Twitter)
+  const updateMetaImageTags = (imageUrl) => {
+    // Actualizar o crear og:image
+    let ogImage = document.querySelector('meta[property="og:image"]')
+    if (!ogImage) {
+      ogImage = document.createElement('meta')
+      ogImage.setAttribute('property', 'og:image')
+      document.head.appendChild(ogImage)
+    }
+    ogImage.setAttribute('content', imageUrl)
+
+    // Actualizar o crear twitter:image
+    let twitterImage = document.querySelector('meta[name="twitter:image"]')
+    if (!twitterImage) {
+      twitterImage = document.createElement('meta')
+      twitterImage.setAttribute('name', 'twitter:image')
+      document.head.appendChild(twitterImage)
+    }
+    twitterImage.setAttribute('content', imageUrl)
   }
 
   const loadConfiguratorMessage = async () => {
