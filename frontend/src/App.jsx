@@ -819,58 +819,69 @@ function App() {
 
           {/* Buckets de cuchillos - Desktop (subheader dentro del header) */}
           <div className="hidden lg:block border-t border-gray-200 dark:border-gray-700">
-            <div className="flex items-center gap-1 py-2">
-              {buckets.map((bucket, index) => (
-                <div key={index} className="relative">
-                  <button
-                    onClick={() => setActiveBucket(index)}
-                    className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
-                      activeBucket === index
-                        ? 'bg-blue-600 text-white'
-                        : bucket.selectedPhotos.length > 0
-                        ? 'bg-gray-200 dark:bg-gray-600 text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-500'
-                        : 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-600'
-                    }`}
-                  >
-                    Cuchillo {index + 1}
-                  </button>
-                  {bucket.selectedPhotos.length > 0 && (
+            <div className="flex items-center justify-between gap-4 py-2">
+              {/* Contador de fotos a la izquierda */}
+              <div className="text-sm text-gray-500 dark:text-gray-400">
+                {filteredPhotos.length} foto{filteredPhotos.length !== 1 ? 's' : ''} encontrada{filteredPhotos.length !== 1 ? 's' : ''}
+              </div>
+
+              {/* Buckets centrados */}
+              <div className="flex items-center gap-1">
+                {buckets.map((bucket, index) => (
+                  <div key={index} className="relative">
                     <button
-                      onClick={() => setShowBucketDelete(index)}
-                      className="absolute -top-1 -right-1 w-4 h-4 bg-red-600 text-white rounded-full flex items-center justify-center hover:bg-red-700 text-xs"
+                      onClick={() => setActiveBucket(index)}
+                      className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
+                        activeBucket === index
+                          ? 'bg-blue-600 text-white'
+                          : bucket.selectedPhotos.length > 0
+                          ? 'bg-gray-200 dark:bg-gray-600 text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-500'
+                          : 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-600'
+                      }`}
                     >
-                      ×
+                      Cuchillo {index + 1}
                     </button>
-                  )}
-                  {/* Confirmación de eliminación inline */}
-                  {showBucketDelete === index && (
-                    <>
-                      {/* Overlay invisible para cerrar al hacer click fuera */}
-                      <div
-                        className="fixed inset-0 z-40"
-                        onClick={() => setShowBucketDelete(null)}
-                      />
-                      <div className="absolute top-full mt-1 left-1/2 -translate-x-1/2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-2 z-50 whitespace-nowrap">
-                        <p className="text-xs text-gray-900 dark:text-white mb-2">¿Eliminar?</p>
-                        <div className="flex gap-1">
-                          <button
-                            onClick={() => handleDeleteBucket(index)}
-                            className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700"
-                          >
-                            Sí
-                          </button>
-                          <button
-                            onClick={() => setShowBucketDelete(null)}
-                            className="px-2 py-1 text-xs bg-gray-200 dark:bg-gray-600 text-gray-900 dark:text-white rounded hover:bg-gray-300 dark:hover:bg-gray-500"
-                          >
-                            No
-                          </button>
+                    {bucket.selectedPhotos.length > 0 && (
+                      <button
+                        onClick={() => setShowBucketDelete(index)}
+                        className="absolute -top-1 -right-1 w-4 h-4 bg-red-600 text-white rounded-full flex items-center justify-center hover:bg-red-700 text-xs"
+                      >
+                        ×
+                      </button>
+                    )}
+                    {/* Confirmación de eliminación inline */}
+                    {showBucketDelete === index && (
+                      <>
+                        {/* Overlay invisible para cerrar al hacer click fuera */}
+                        <div
+                          className="fixed inset-0 z-40"
+                          onClick={() => setShowBucketDelete(null)}
+                        />
+                        <div className="absolute top-full mt-1 left-1/2 -translate-x-1/2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-2 z-50 whitespace-nowrap">
+                          <p className="text-xs text-gray-900 dark:text-white mb-2">¿Eliminar?</p>
+                          <div className="flex gap-1">
+                            <button
+                              onClick={() => handleDeleteBucket(index)}
+                              className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700"
+                            >
+                              Sí
+                            </button>
+                            <button
+                              onClick={() => setShowBucketDelete(null)}
+                              className="px-2 py-1 text-xs bg-gray-200 dark:bg-gray-600 text-gray-900 dark:text-white rounded hover:bg-gray-300 dark:hover:bg-gray-500"
+                            >
+                              No
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    </>
-                  )}
-                </div>
-              ))}
+                      </>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Espacio vacío a la derecha para balancear */}
+              <div className="w-auto"></div>
             </div>
           </div>
         </div>
