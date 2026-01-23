@@ -1038,6 +1038,17 @@ switch (true) {
         if (isset($config['caratula'])) {
             $publicConfig['caratula'] = $config['caratula'];
         }
+        // Instrucciones del configurador
+        if (isset($config['configurator_instructions'])) {
+            $configuratorInstructions = $config['configurator_instructions'];
+            if (isset($configuratorInstructions['title'])) {
+                $configuratorInstructions['title'] = transformConfigField($configuratorInstructions['title'], $lang);
+            }
+            if (isset($configuratorInstructions['text'])) {
+                $configuratorInstructions['text'] = transformConfigField($configuratorInstructions['text'], $lang);
+            }
+            $publicConfig['configurator_instructions'] = $configuratorInstructions;
+        }
         response($publicConfig);
         break;
 
@@ -1642,6 +1653,34 @@ switch (true) {
         ];
 
         response(['instructions' => $instructions]);
+        break;
+
+    // GET /admin/config/configurator-instructions - Obtener instrucciones del configurador
+    case $path === 'admin/config/configurator-instructions' && $method === 'GET':
+        checkAuth();
+        $config = getConfig();
+        $configuratorInstructions = $config['configurator_instructions'] ?? [
+            'enabled' => false,
+            'title' => 'Instrucciones del Configurador',
+            'text' => ''
+        ];
+        response(['configurator_instructions' => $configuratorInstructions]);
+        break;
+
+    // POST /admin/config/configurator-instructions - Guardar instrucciones del configurador
+    case $path === 'admin/config/configurator-instructions' && $method === 'POST':
+        checkAuth();
+        global $JSON_INPUT;
+        $input = $JSON_INPUT;
+        $config = getConfig();
+
+        if (!isset($input['configurator_instructions'])) {
+            response(['error' => 'configurator_instructions configuration is required'], 400);
+        }
+
+        $config['configurator_instructions'] = $input['configurator_instructions'];
+        saveConfig($config);
+        response(['message' => 'Configurator instructions updated']);
         break;
 
     // POST /admin/config/site-info - Guardar información del sitio

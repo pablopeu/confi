@@ -139,6 +139,8 @@ function App() {
   const [footerConfig, setFooterConfig] = useState(null)
   const [instructionsConfig, setInstructionsConfig] = useState(null)
   const [showInstructions, setShowInstructions] = useState(false)
+  const [configuratorInstructionsConfig, setConfiguratorInstructionsConfig] = useState(null)
+  const [showConfiguratorInstructions, setShowConfiguratorInstructions] = useState(false)
   const [siteTitle, setSiteTitle] = useState('PEU Cuchillos Artesanales')
   const [siteSubtitleMobile, setSiteSubtitleMobile] = useState('Buscador interactivo')
   const [siteSubtitleDesktop, setSiteSubtitleDesktop] = useState('Buscador interactivo de modelos y materiales')
@@ -214,11 +216,14 @@ function App() {
         if (showInstructions) {
           setShowInstructions(false)
         }
+        if (showConfiguratorInstructions) {
+          setShowConfiguratorInstructions(false)
+        }
       }
     }
     window.addEventListener('keydown', handleEscape)
     return () => window.removeEventListener('keydown', handleEscape)
-  }, [showBucketDelete, showMobileSearch, showInstructions])
+  }, [showBucketDelete, showMobileSearch, showInstructions, showConfiguratorInstructions])
 
   // Guardar buckets en cookies cuando cambien
   useEffect(() => {
@@ -262,6 +267,7 @@ function App() {
           setTelegramConfig(data.telegram || null)
           setFooterConfig(data.footer || null)
           setInstructionsConfig(data.instructions || null)
+          setConfiguratorInstructionsConfig(data.configurator_instructions || null)
           setSiteTitle(data.site_title || 'PEU Cuchillos Artesanales')
           setSiteSubtitleMobile(data.site_subtitle_mobile || 'Buscador interactivo')
           setSiteSubtitleDesktop(data.site_subtitle_desktop || 'Buscador interactivo de modelos y materiales')
@@ -1542,6 +1548,49 @@ function Configurador({
     return configuratorMessage.replace('{link}', link)
   }
 
+  const handleDirectShare = async (platform) => {
+    // Primero guardar la configuración
+    setSaving(true)
+    try {
+      const API_BASE = import.meta.env.VITE_API_URL || './api/index.php'
+      const response = await fetch(`${API_BASE}?route=configurator/save`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          buckets,
+          code: savedCode
+        })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+
+        // Actualizar la URL
+        const newUrl = `${window.location.origin}${window.location.pathname}?config=${data.code}`
+        window.history.pushState({}, '', newUrl)
+
+        // Actualizar estado
+        setSavedCode(data.code)
+
+        // Generar link y mensaje
+        const shareLink = newUrl
+        const shareMessage = configuratorMessage.replace('{link}', shareLink)
+        const encodedMessage = encodeURIComponent(shareMessage)
+
+        // Abrir WhatsApp o Telegram directamente
+        if (platform === 'whatsapp' && whatsappConfig?.enabled && whatsappConfig.number) {
+          window.open(`https://wa.me/${whatsappConfig.number}?text=${encodedMessage}`, '_blank')
+        } else if (platform === 'telegram' && telegramConfig?.enabled && telegramConfig.username) {
+          window.open(`https://t.me/${telegramConfig.username}?text=${encodedMessage}`, '_blank')
+        }
+      }
+    } catch (error) {
+      console.error('Error al guardar y compartir:', error)
+    } finally {
+      setSaving(false)
+    }
+  }
+
   const getPhotoTags = (photo) => {
     const photoTags = photo.tags || []
     const tagNames = []
@@ -1586,41 +1635,38 @@ function Configurador({
                 </div>
               </div>
 
-              {/* Botón de guardar o botones de compartir */}
+              {/* Botones de compartir */}
               <div className="flex items-center gap-1 flex-shrink-0">
+                {/* Botones de compartir directos */}
+                {whatsappConfig?.enabled && whatsappConfig.number && (
+                  <button
+                    onClick={() => handleDirectShare('whatsapp')}
+                    disabled={saving}
+                    className="px-2 py-1 text-xs bg-[#25D366] text-white rounded hover:bg-[#20BA5A] transition-colors disabled:opacity-50 font-medium"
+                    title="Guardar y compartir por WhatsApp"
+                  >
+                    {saving ? 'Guardando...' : 'WhatsApp'}
+                  </button>
+                )}
+                {telegramConfig?.enabled && telegramConfig.username && (
+                  <button
+                    onClick={() => handleDirectShare('telegram')}
+                    disabled={saving}
+                    className="px-2 py-1 text-xs bg-[#0088cc] text-white rounded hover:bg-[#0077b3] transition-colors disabled:opacity-50 font-medium"
+                    title="Guardar y compartir por Telegram"
+                  >
+                    {saving ? 'Guardando...' : 'Telegram'}
+                  </button>
+                )}
+                {/* Botón de guardar (opcional) */}
                 <button
                   onClick={handleSaveConfiguration}
-                  disabled={saving || showShareButtons}
+                  disabled={saving}
                   className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors font-medium disabled:opacity-50"
+                  title="Guardar configuración"
                 >
-                  {saving ? 'Guardando...' : showShareButtons ? 'Datos guardados' : savedCode ? 'Guardar configuración' : 'Enviar configuración'}
+                  {saving ? 'Guardando...' : 'Guardar'}
                 </button>
-
-                {/* Botones de compartir (visibles por 5 segundos después de guardar) */}
-                {showShareButtons && savedCode && (
-                  <>
-                    {whatsappConfig?.enabled && whatsappConfig.number && (
-                      <a
-                        href={`https://wa.me/${whatsappConfig.number}?text=${encodeURIComponent(getShareMessage())}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-2 py-1 text-xs bg-[#25D366] text-white rounded hover:bg-[#20BA5A] transition-colors"
-                      >
-                        WhatsApp
-                      </a>
-                    )}
-                    {telegramConfig?.enabled && telegramConfig.username && (
-                      <a
-                        href={`https://t.me/${telegramConfig.username}?text=${encodeURIComponent(getShareMessage())}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-2 py-1 text-xs bg-[#0088cc] text-white rounded hover:bg-[#0077b3] transition-colors"
-                      >
-                        Telegram
-                      </a>
-                    )}
-                  </>
-                )}
               </div>
             </div>
 
@@ -1768,40 +1814,36 @@ function Configurador({
                 Volver
               </button>
 
-              {/* Botón de guardar (siempre visible) */}
+              {/* Botones de compartir directos */}
+              {whatsappConfig?.enabled && whatsappConfig.number && (
+                <button
+                  onClick={() => handleDirectShare('whatsapp')}
+                  disabled={saving}
+                  className="px-2 py-1 text-xs bg-[#25D366] text-white rounded hover:bg-[#20BA5A] transition-colors disabled:opacity-50 font-medium"
+                  title="Guardar y compartir por WhatsApp"
+                >
+                  {saving ? 'Guardando...' : 'WhatsApp'}
+                </button>
+              )}
+              {telegramConfig?.enabled && telegramConfig.username && (
+                <button
+                  onClick={() => handleDirectShare('telegram')}
+                  disabled={saving}
+                  className="px-2 py-1 text-xs bg-[#0088cc] text-white rounded hover:bg-[#0077b3] transition-colors disabled:opacity-50 font-medium"
+                  title="Guardar y compartir por Telegram"
+                >
+                  {saving ? 'Guardando...' : 'Telegram'}
+                </button>
+              )}
+              {/* Botón de guardar (opcional) */}
               <button
                 onClick={handleSaveConfiguration}
-                disabled={saving || showShareButtons}
+                disabled={saving}
                 className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors font-medium disabled:opacity-50"
+                title="Guardar configuración"
               >
-                {saving ? 'Guardando...' : showShareButtons ? 'Datos guardados' : savedCode ? 'Guardar configuración' : 'Enviar configuración'}
+                {saving ? 'Guardando...' : 'Guardar'}
               </button>
-
-              {/* Botones de compartir (visibles por 5 segundos después de guardar) */}
-              {showShareButtons && savedCode && (
-                <>
-                  {whatsappConfig?.enabled && whatsappConfig.number && (
-                    <a
-                      href={`https://wa.me/${whatsappConfig.number}?text=${encodeURIComponent(getShareMessage())}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-2 py-1 text-xs bg-[#25D366] text-white rounded hover:bg-[#20BA5A] transition-colors"
-                    >
-                      WhatsApp
-                    </a>
-                  )}
-                  {telegramConfig?.enabled && telegramConfig.username && (
-                    <a
-                      href={`https://t.me/${telegramConfig.username}?text=${encodeURIComponent(getShareMessage())}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-2 py-1 text-xs bg-[#0088cc] text-white rounded hover:bg-[#0077b3] transition-colors"
-                    >
-                      Telegram
-                    </a>
-                  )}
-                </>
-              )}
             </div>
           </div>
         </div>
@@ -1809,6 +1851,18 @@ function Configurador({
 
       {/* Contenido */}
       <main className="flex-1 overflow-y-auto p-4 lg:p-6">
+        {/* Botón de instrucciones flotantes - SOLO CONFIGURADOR */}
+        {configuratorInstructionsConfig?.enabled && (
+          <button
+            onClick={() => setShowConfiguratorInstructions(true)}
+            className="fixed bottom-4 right-4 z-50 p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg transition-all duration-300 hover:scale-110"
+            title="Instrucciones"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </button>
+        )}
         <div className="max-w-7xl mx-auto">
           {currentPhotos.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-64 text-gray-500 dark:text-gray-400">
@@ -1915,6 +1969,39 @@ function Configurador({
           )}
         </div>
       </main>
+
+      {/* Modal de Instrucciones del Configurador */}
+      {showConfiguratorInstructions && configuratorInstructionsConfig && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+          onClick={() => setShowConfiguratorInstructions(false)}
+        >
+          <div
+            className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700 relative">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white pr-8">
+                {parseMarkdown(configuratorInstructionsConfig.title || 'Instrucciones')}
+              </h2>
+              <button
+                onClick={() => setShowConfiguratorInstructions(false)}
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 overflow-y-auto prose dark:prose-invert max-w-none">
+              {parseMarkdown(configuratorInstructionsConfig.text || '')}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Footer */}
       <Footer footerConfig={footerConfig} whatsappConfig={whatsappConfig} telegramConfig={telegramConfig} />

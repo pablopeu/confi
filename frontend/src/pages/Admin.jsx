@@ -2018,6 +2018,15 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
   const [savingInstructions, setSavingInstructions] = useState(false)
   const [savedInstructionsFeedback, setSavedInstructionsFeedback] = useState(false)
 
+  // Estado para instrucciones del configurador
+  const [configuratorInstructions, setConfiguratorInstructions] = useState({
+    enabled: false,
+    title: 'Instrucciones del Configurador',
+    text: ''
+  })
+  const [savingConfiguratorInstructions, setSavingConfiguratorInstructions] = useState(false)
+  const [savedConfiguratorInstructionsFeedback, setSavedConfiguratorInstructionsFeedback] = useState(false)
+
   useEffect(() => {
     loadBackups()
     loadConfig()
@@ -2026,6 +2035,7 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
     loadConfiguratorMessage()
     loadFooterConfig()
     loadInstructionsConfig()
+    loadConfiguratorInstructionsConfig()
     loadSiteInfo()
   }, [])
 
@@ -2259,6 +2269,45 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
       showError('Error', 'Error de conexión')
     } finally {
       setSavingInstructions(false)
+    }
+  }
+
+  const loadConfiguratorInstructionsConfig = async () => {
+    try {
+      const params = new URLSearchParams(authParams)
+      const response = await fetch(apiUrl('admin/config/configurator-instructions') + '&' + params.toString())
+      if (response.ok) {
+        const data = await response.json()
+        setConfiguratorInstructions(data.configurator_instructions)
+      }
+    } catch (error) {
+      // Error silencioso
+    }
+  }
+
+  const handleSaveConfiguratorInstructions = async () => {
+    setSavingConfiguratorInstructions(true)
+    try {
+      const params = new URLSearchParams(authParams)
+      const response = await fetch(apiUrl('admin/config/configurator-instructions') + '&' + params.toString(), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ configurator_instructions: configuratorInstructions })
+      })
+
+      if (response.ok) {
+        setSavedConfiguratorInstructionsFeedback(true)
+        setTimeout(() => setSavedConfiguratorInstructionsFeedback(false), 2000)
+      } else if (response.status === 401) {
+        showError('Sesión expirada', 'Por favor, vuelve a iniciar sesión')
+      } else {
+        const error = await response.json()
+        showError('Error', error.error || 'Error al guardar instrucciones')
+      }
+    } catch (error) {
+      showError('Error', 'Error de conexión')
+    } finally {
+      setSavingConfiguratorInstructions(false)
     }
   }
 
@@ -3056,6 +3105,85 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
               } disabled:opacity-50`}
             >
               {savingInstructions ? 'Guardando...' : savedInstructionsFeedback ? '✓' : 'Guardar'}
+            </button>
+          </div>
+        </div>
+
+        {/* Sección de Instrucciones del Configurador */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Instrucciones del Configurador</h2>
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="configurator-instructions-enabled"
+                checked={configuratorInstructions.enabled}
+                onChange={(e) => setConfiguratorInstructions({ ...configuratorInstructions, enabled: e.target.checked })}
+                className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+              />
+              <label htmlFor="configurator-instructions-enabled" className="text-sm font-medium text-gray-900 dark:text-white">
+                Mostrar
+              </label>
+            </div>
+          </div>
+
+          {configuratorInstructions.enabled && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Título
+                </label>
+                <input
+                  type="text"
+                  value={configuratorInstructions.title}
+                  onChange={(e) => setConfiguratorInstructions({ ...configuratorInstructions, title: e.target.value })}
+                  placeholder="Instrucciones del Configurador"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Contenido (Markdown)
+                </label>
+                <textarea
+                  value={configuratorInstructions.text}
+                  onChange={(e) => setConfiguratorInstructions({ ...configuratorInstructions, text: e.target.value })}
+                  placeholder="# Título
+
+## Sección
+
+- Lista item 1
+- Lista item 2
+
+**Negrita** e *itálica*"
+                  rows={8}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-sm resize-none"
+                />
+              </div>
+
+              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+                <p className="text-sm text-blue-800 dark:text-blue-200">
+                  💡 El botón flotante aparecerá solo en la página del configurador.
+                </p>
+              </div>
+            </div>
+          )}
+
+          <div className="flex items-center justify-between mt-4">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {configuratorInstructions.enabled ? 'El botón flotante se muestra en el configurador' : ''}
+            </p>
+            <button
+              onClick={handleSaveConfiguratorInstructions}
+              disabled={savingConfiguratorInstructions}
+              className={`px-3 py-2 text-sm rounded transition-all duration-300 ${
+                savedConfiguratorInstructionsFeedback
+                  ? 'bg-green-500 text-white'
+                  : 'bg-blue-600 text-white hover:bg-blue-700'
+              } disabled:opacity-50`}
+            >
+              {savingConfiguratorInstructions ? 'Guardando...' : savedConfiguratorInstructionsFeedback ? '✓' : 'Guardar'}
             </button>
           </div>
         </div>
