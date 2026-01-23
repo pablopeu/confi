@@ -532,6 +532,9 @@ function App() {
       siteTitle={siteTitle}
       siteSubtitleMobile={siteSubtitleMobile}
       siteSubtitleDesktop={siteSubtitleDesktop}
+      configuratorInstructionsConfig={configuratorInstructionsConfig}
+      showConfiguratorInstructions={showConfiguratorInstructions}
+      setShowConfiguratorInstructions={setShowConfiguratorInstructions}
     />
   }
 
@@ -1361,7 +1364,10 @@ function Configurador({
   footerConfig,
   siteTitle,
   siteSubtitleMobile,
-  siteSubtitleDesktop
+  siteSubtitleDesktop,
+  configuratorInstructionsConfig,
+  showConfiguratorInstructions,
+  setShowConfiguratorInstructions
 }) {
   const [saving, setSaving] = useState(false)
   const [showShareButtons, setShowShareButtons] = useState(false)
