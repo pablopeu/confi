@@ -1443,7 +1443,9 @@ switch (true) {
                     if (!preg_match('/^https?:\/\//', $caratulaUrl)) {
                         $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
                         $host = $_SERVER['HTTP_HOST'];
-                        $caratulaUrl = "$protocol://$host/$caratulaUrl";
+                        // Obtener el path base (por ejemplo /confi)
+                        $basePath = rtrim(dirname($_SERVER['SCRIPT_NAME'], 2), '/');
+                        $caratulaUrl = rtrim("$protocol://$host/$basePath", '/') . "/$caratulaUrl";
                     }
 
                     // Remover og:image y twitter:image existentes si los hay
