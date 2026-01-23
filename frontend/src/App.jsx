@@ -1269,7 +1269,7 @@ function PhotoCard({ photo, tagGroups, isSelected, onToggleSelection, selectedCo
             {/* Overlay de feedback */}
             {scale === 1 && (
               <div className={`absolute inset-0 transition-colors flex items-center justify-center pointer-events-none ${
-                imageCopied ? 'bg-green-500/40' : ''
+                isSelected ? 'bg-green-500/30' : imageCopied ? 'bg-green-500/40' : ''
               }`}>
                 {imageCopied && (
                   <span className="text-white text-sm font-medium px-3 py-1 rounded bg-green-600">
