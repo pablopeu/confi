@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faInfoCircle } from '@fortawesome/free-solid-svg-icons'
+import { faInfoCircle, faQuestionCircle } from '@fortawesome/free-solid-svg-icons'
 import SearchBar from './components/SearchBar'
 import {
   getCategories,
@@ -2072,7 +2072,7 @@ function Configurador({
                   }}
                 />
               </svg>
-              <FontAwesomeIcon icon={faInfoCircle} className="text-3xl relative z-10" />
+              <FontAwesomeIcon icon={faQuestionCircle} className="text-3xl relative z-10" />
             </button>
           )}
 
