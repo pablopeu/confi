@@ -145,6 +145,7 @@ function App() {
   const [siteSubtitleMobile, setSiteSubtitleMobile] = useState('Buscador interactivo')
   const [siteSubtitleDesktop, setSiteSubtitleDesktop] = useState('Buscador interactivo de modelos y materiales')
   const [showConfigurador, setShowConfigurador] = useState(false)
+  const [configuratorButtonAnimationKey, setConfiguratorButtonAnimationKey] = useState(0)
   const [tipoTabs, setTipoTabs] = useState([]) // Tabs dinámicos de tipo
 
   // Filtros
@@ -232,6 +233,13 @@ function App() {
     // Abrir el configurador (con o sin cambio de bucket)
     setShowConfigurador(true)
   }, [buckets, activeBucket])
+
+  // Reiniciar animación del botón del configurador cuando se abre
+  useEffect(() => {
+    if (showConfigurador) {
+      setConfiguratorButtonAnimationKey(prev => prev + 1)
+    }
+  }, [showConfigurador])
 
   // Cerrar confirmación con Escape
   useEffect(() => {
@@ -1021,7 +1029,7 @@ function App() {
                   }}
                 />
               </svg>
-              <FontAwesomeIcon icon={faInfoCircle} className="text-3xl relative z-10" />
+              <FontAwesomeIcon icon={faQuestionCircle} className="text-3xl relative z-10" />
             </button>
           )}
 
@@ -2053,6 +2061,7 @@ function Configurador({
             >
               {/* SVG animado - círculo que se dibuja */}
               <svg
+                key={configuratorButtonAnimationKey}
                 viewBox="0 0 56 56"
                 className="absolute inset-0 w-full h-full pointer-events-none"
                 style={{ animation: 'drawCircle 1.5s ease-out forwards' }}
