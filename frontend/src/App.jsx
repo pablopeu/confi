@@ -512,38 +512,12 @@ function App() {
     }
   }, [activeBucket, savedCode, buckets])
 
-  // Si estamos en el configurador, mostrar esa vista
-  if (showConfigurador) {
-    return <Configurador
-      buckets={buckets}
-      setBuckets={setBuckets}
-      activeBucket={activeBucket}
-      setActiveBucket={setActiveBucket}
-      allPhotos={photos}
-      onClose={() => setShowConfigurador(false)}
-      logo={logo}
-      tagGroups={tagGroups}
-      showBucketDelete={showBucketDelete}
-      setShowBucketDelete={setShowBucketDelete}
-      handleDeleteBucket={handleDeleteBucket}
-      savedCode={savedCode}
-      setSavedCode={setSavedCode}
-      footerConfig={footerConfig}
-      siteTitle={siteTitle}
-      siteSubtitleMobile={siteSubtitleMobile}
-      siteSubtitleDesktop={siteSubtitleDesktop}
-      configuratorInstructionsConfig={configuratorInstructionsConfig}
-      showConfiguratorInstructions={showConfiguratorInstructions}
-      setShowConfiguratorInstructions={setShowConfiguratorInstructions}
-      whatsappConfig={whatsappConfig}
-      telegramConfig={telegramConfig}
-    />
-  }
-
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex flex-col">
-      {/* Header unificado */}
-      <header className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-40">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex flex-col page-container">
+      {/* Slide del frontend */}
+      <div className={`page-slide ${showConfigurador ? 'page-slide-left' : 'page-slide-visible'}`}>
+        {/* Header del frontend */}
+        <header className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-40">
         <div className="px-4 py-2">
           {/* Mobile: Layout vertical con headers fijos */}
           <div className="lg:hidden">
@@ -928,10 +902,7 @@ function App() {
         </div>
       </main>
 
-      {/* Footer */}
-      <Footer footerConfig={footerConfig} whatsappConfig={whatsappConfig} telegramConfig={telegramConfig} />
-
-      {/* Botones flotantes de contacto */}
+      {/* Botones flotantes de contacto del frontend */}
       {(whatsappConfig?.enabled || telegramConfig?.enabled || instructionsConfig?.enabled) && (
         <div className="fixed bottom-6 right-6 flex flex-col gap-3 z-50">
           {/* Instrucciones - arriba de todo */}
@@ -1021,6 +992,38 @@ function App() {
           </div>
         </div>
       )}
+      </div>
+
+      {/* Slide del configurador */}
+      <div className={`page-slide ${showConfigurador ? 'page-slide-visible' : 'page-slide-right'}`}>
+        <Configurador
+          buckets={buckets}
+          setBuckets={setBuckets}
+          activeBucket={activeBucket}
+          setActiveBucket={setActiveBucket}
+          allPhotos={photos}
+          onClose={() => setShowConfigurador(false)}
+          logo={logo}
+          tagGroups={tagGroups}
+          showBucketDelete={showBucketDelete}
+          setShowBucketDelete={setShowBucketDelete}
+          handleDeleteBucket={handleDeleteBucket}
+          savedCode={savedCode}
+          setSavedCode={setSavedCode}
+          footerConfig={footerConfig}
+          siteTitle={siteTitle}
+          siteSubtitleMobile={siteSubtitleMobile}
+          siteSubtitleDesktop={siteSubtitleDesktop}
+          configuratorInstructionsConfig={configuratorInstructionsConfig}
+          showConfiguratorInstructions={showConfiguratorInstructions}
+          setShowConfiguratorInstructions={setShowConfiguratorInstructions}
+          whatsappConfig={whatsappConfig}
+          telegramConfig={telegramConfig}
+        />
+      </div>
+
+      {/* Footer compartido */}
+      <Footer footerConfig={footerConfig} whatsappConfig={whatsappConfig} telegramConfig={telegramConfig} />
     </div>
   )
 }
@@ -2067,9 +2070,6 @@ function Configurador({
           )}
         </div>
       )}
-
-      {/* Footer */}
-      <Footer footerConfig={footerConfig} whatsappConfig={whatsappConfig} telegramConfig={telegramConfig} />
     </div>
   )
 }
