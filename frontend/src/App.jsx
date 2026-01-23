@@ -938,10 +938,31 @@ function App() {
           {instructionsConfig?.enabled && (
             <button
               onClick={() => setShowInstructions(true)}
-              className="w-14 h-14 rounded-full bg-gray-800 hover:bg-gray-900 text-white flex items-center justify-center shadow-lg transition-all hover:scale-110"
+              className="w-14 h-14 rounded-full bg-gray-800 hover:bg-gray-900 text-white flex items-center justify-center shadow-lg transition-all hover:scale-110 relative"
               title="Ver instrucciones"
             >
-              <FontAwesomeIcon icon={faInfoCircle} className="text-3xl" />
+              {/* SVG animado - círculo que se dibuja */}
+              <svg
+                viewBox="0 0 56 56"
+                className="absolute inset-0 w-full h-full pointer-events-none"
+                style={{ animation: 'drawCircle 1.5s ease-out forwards' }}
+              >
+                <circle
+                  cx="28"
+                  cy="28"
+                  r="26"
+                  fill="none"
+                  stroke="#FACC15"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeDasharray="163.36" // 2 * PI * 26
+                  strokeDashoffset="163.36"
+                  style={{
+                    animation: 'drawStroke 1.5s ease-out forwards, fadeOut 0.5s ease-out 2s forwards'
+                  }}
+                />
+              </svg>
+              <FontAwesomeIcon icon={faInfoCircle} className="text-3xl relative z-10" />
             </button>
           )}
 

@@ -5,3 +5,22 @@
 body {
   @apply min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100;
 }
+
+/* Animaciones para el botón de instrucciones */
+@keyframes drawStroke {
+  from {
+    stroke-dashoffset: 163.36;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
