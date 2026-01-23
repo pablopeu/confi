@@ -1960,32 +1960,23 @@ function Configurador({
 
       {/* Modal de Instrucciones del Configurador */}
       {showConfiguratorInstructions && configuratorInstructionsConfig && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-          onClick={() => setShowConfiguratorInstructions(false)}
-        >
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Overlay */}
           <div
-            className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Header */}
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700 relative">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white pr-8">
-                {parseMarkdown(configuratorInstructionsConfig.title || 'Instrucciones')}
-              </h2>
-              <button
-                onClick={() => setShowConfiguratorInstructions(false)}
-                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setShowConfiguratorInstructions(false)}
+          />
 
-            {/* Content */}
-            <div className="p-6 overflow-y-auto prose dark:prose-invert max-w-none">
-              {parseMarkdown(configuratorInstructionsConfig.text || '')}
+          {/* Modal */}
+          <div
+            onClick={() => setShowConfiguratorInstructions(false)}
+            className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-[80vw] lg:max-w-[80vw] max-h-[95vh] lg:max-h-[95vh] overflow-y-auto cursor-pointer"
+          >
+            <div className="p-4 lg:p-6">
+              <div
+                className="prose dark:prose-invert max-w-none"
+                dangerouslySetInnerHTML={{ __html: parseMarkdown(configuratorInstructionsConfig.text) }}
+              />
             </div>
           </div>
         </div>

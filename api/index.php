@@ -1041,9 +1041,6 @@ switch (true) {
         // Instrucciones del configurador
         if (isset($config['configurator_instructions'])) {
             $configuratorInstructions = $config['configurator_instructions'];
-            if (isset($configuratorInstructions['title'])) {
-                $configuratorInstructions['title'] = transformConfigField($configuratorInstructions['title'], $lang);
-            }
             if (isset($configuratorInstructions['text'])) {
                 $configuratorInstructions['text'] = transformConfigField($configuratorInstructions['text'], $lang);
             }
@@ -1661,7 +1658,6 @@ switch (true) {
         $config = getConfig();
         $configuratorInstructions = $config['configurator_instructions'] ?? [
             'enabled' => false,
-            'title' => 'Instrucciones del Configurador',
             'text' => ''
         ];
         response(['configurator_instructions' => $configuratorInstructions]);

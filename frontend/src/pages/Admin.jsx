@@ -2021,7 +2021,6 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
   // Estado para instrucciones del configurador
   const [configuratorInstructions, setConfiguratorInstructions] = useState({
     enabled: false,
-    title: 'Instrucciones del Configurador',
     text: ''
   })
   const [savingConfiguratorInstructions, setSavingConfiguratorInstructions] = useState(false)
@@ -3129,19 +3128,6 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
 
           {configuratorInstructions.enabled && (
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Título
-                </label>
-                <input
-                  type="text"
-                  value={configuratorInstructions.title}
-                  onChange={(e) => setConfiguratorInstructions({ ...configuratorInstructions, title: e.target.value })}
-                  placeholder="Instrucciones del Configurador"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                />
-              </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Contenido (Markdown)
