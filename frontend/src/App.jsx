@@ -953,12 +953,12 @@ function App() {
                   r="26"
                   fill="none"
                   stroke="#FACC15"
-                  strokeWidth="2"
+                  strokeWidth="4"
                   strokeLinecap="round"
                   strokeDasharray="163.36" // 2 * PI * 26
                   strokeDashoffset="163.36"
                   style={{
-                    animation: 'drawStroke 1.5s ease-out forwards, fadeOut 0.5s ease-out 2s forwards'
+                    animation: 'drawStrokeTwoLoops 1.5s ease-out forwards, fadeOut 0.5s ease-out 2s forwards'
                   }}
                 />
               </svg>
