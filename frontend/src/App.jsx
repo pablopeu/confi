@@ -1074,6 +1074,7 @@ function App() {
           setSaving={setSavingConfigurator}
           handleDirectShare={handleDirectShare}
           loadConfiguration={loadConfiguration}
+          configuratorMessage={configuratorMessage}
         />
       </div>
       </div>
@@ -1589,7 +1590,8 @@ function Configurador({
   saving,
   setSaving,
   handleDirectShare,
-  loadConfiguration
+  loadConfiguration,
+  configuratorMessage
 }) {
   const [showShareButtons, setShowShareButtons] = useState(false)
 
@@ -1716,6 +1718,11 @@ function Configurador({
     } catch (error) {
       console.error('Error al copiar al portapapeles:', error)
     }
+  }
+
+  const getShareMessage = () => {
+    const link = `${window.location.origin}${window.location.pathname}?config=${savedCode}`
+    return configuratorMessage.replace('{link}', link)
   }
 
   const getPhotoTags = (photo) => {
