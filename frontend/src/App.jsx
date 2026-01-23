@@ -1071,6 +1071,7 @@ function App() {
           telegramConfig={telegramConfig}
           configuratorButtonAnimationKey={configuratorButtonAnimationKey}
           saving={savingConfigurator}
+          setSaving={setSavingConfigurator}
           handleDirectShare={handleDirectShare}
           loadConfiguration={loadConfiguration}
         />
@@ -1586,6 +1587,7 @@ function Configurador({
   telegramConfig,
   configuratorButtonAnimationKey,
   saving,
+  setSaving,
   handleDirectShare,
   loadConfiguration
 }) {
