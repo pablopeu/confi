@@ -994,6 +994,7 @@ function App() {
           setShowConfiguratorInstructions={setShowConfiguratorInstructions}
           whatsappConfig={whatsappConfig}
           telegramConfig={telegramConfig}
+          configuratorButtonAnimationKey={configuratorButtonAnimationKey}
         />
       </div>
       </div>
@@ -1438,7 +1439,8 @@ function Configurador({
   showConfiguratorInstructions,
   setShowConfiguratorInstructions,
   whatsappConfig,
-  telegramConfig
+  telegramConfig,
+  configuratorButtonAnimationKey
 }) {
   const [saving, setSaving] = useState(false)
   const [showShareButtons, setShowShareButtons] = useState(false)
