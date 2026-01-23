@@ -1444,8 +1444,13 @@ switch (true) {
                         $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
                         $host = $_SERVER['HTTP_HOST'];
                         // Obtener el path base (por ejemplo /confi)
-                        $basePath = rtrim(dirname($_SERVER['SCRIPT_NAME'], 2), '/');
-                        $caratulaUrl = "$protocol://$host" . ($basePath ? "/$basePath" : "") . "/$caratulaUrl";
+                        $basePath = dirname($_SERVER['SCRIPT_NAME'], 2);
+                        // Construir URL sin dobles barras
+                        if (!empty($basePath)) {
+                            $caratulaUrl = "$protocol://$host$basePath/$caratulaUrl";
+                        } else {
+                            $caratulaUrl = "$protocol://$host/$caratulaUrl";
+                        }
                     }
 
                     // Remover og:image y twitter:image existentes si los hay
