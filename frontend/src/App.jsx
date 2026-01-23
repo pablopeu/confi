@@ -203,6 +203,36 @@ function App() {
     return null
   })
 
+  // Función para abrir el configurador, cambiando a un bucket con fotos si el actual está vacío
+  const handleOpenConfigurador = useCallback(() => {
+    // Verificar si el bucket activo tiene fotos configuradas
+    const currentBucket = buckets[activeBucket]
+    const hasPhotosInCurrentBucket = currentBucket &&
+      (currentBucket.selectedPhotos?.length > 0 ||
+       (currentBucket.photoConfigs && Object.keys(currentBucket.photoConfigs).length > 0))
+
+    if (hasPhotosInCurrentBucket) {
+      // El bucket actual tiene fotos, abrir directamente
+      setShowConfigurador(true)
+      return
+    }
+
+    // El bucket actual está vacío, buscar el primero que tenga fotos
+    const bucketWithPhotosIndex = buckets.findIndex(bucket =>
+      bucket &&
+      (bucket.selectedPhotos?.length > 0 ||
+       (bucket.photoConfigs && Object.keys(bucket.photoConfigs).length > 0))
+    )
+
+    if (bucketWithPhotosIndex !== -1) {
+      // Encontramos un bucket con fotos, cambiar a ese
+      setActiveBucket(bucketWithPhotosIndex)
+    }
+
+    // Abrir el configurador (con o sin cambio de bucket)
+    setShowConfigurador(true)
+  }, [buckets, activeBucket])
+
   // Cerrar confirmación con Escape
   useEffect(() => {
     const handleEscape = (e) => {
@@ -281,7 +311,10 @@ function App() {
     // Si la URL tiene ?config=, abrir el configurador automáticamente
     const urlParams = new URLSearchParams(window.location.search)
     if (urlParams.has('config')) {
-      setShowConfigurador(true)
+      // Usar setTimeout para que los buckets estén cargados
+      setTimeout(() => {
+        handleOpenConfigurador()
+      }, 100)
     }
   }, [])
 
@@ -621,7 +654,7 @@ function App() {
             {/* Subheader3: Configurador y Reset - TODO EN UN RENGLÓN */}
             <div className="flex items-center justify-between gap-2 py-1 border-t border-gray-200 dark:border-gray-700">
               <button
-                onClick={() => setShowConfigurador(true)}
+                onClick={handleOpenConfigurador}
                 className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors flex items-center gap-1"
               >
                 Configurador
@@ -778,7 +811,7 @@ function App() {
 
             {/* Botón Configurador */}
             <button
-              onClick={() => setShowConfigurador(true)}
+              onClick={handleOpenConfigurador}
               className="px-3 py-1.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-1 flex-shrink-0"
             >
               Configurador
