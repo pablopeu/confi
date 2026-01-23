@@ -30,9 +30,8 @@ body {
 .page-container {
   position: relative;
   width: 100%;
-  min-height: 100vh;
+  height: 100vh;
   overflow: hidden;
-  flex: 1;
 }
 
 .page-slide {
@@ -40,7 +39,9 @@ body {
   top: 0;
   left: 0;
   width: 100%;
-  min-height: 100vh;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
   transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   background-color: rgb(243 244 246); /* gray-100 */
 }

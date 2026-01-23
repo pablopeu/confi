@@ -905,7 +905,7 @@ function App() {
 
       {/* Botones flotantes de contacto del frontend */}
       {(whatsappConfig?.enabled || telegramConfig?.enabled || instructionsConfig?.enabled) && (
-        <div className="fixed bottom-6 right-6 flex flex-col gap-3 z-50">
+        <div className="fixed bottom-6 right-6 flex flex-col gap-3 z-[100]">
           {/* Instrucciones - arriba de todo */}
           {instructionsConfig?.enabled && (
             <button
@@ -2010,7 +2010,7 @@ function Configurador({
 
       {/* Botones flotantes - Igual que página principal pero con compartir directo */}
       {(whatsappConfig?.enabled || telegramConfig?.enabled || configuratorInstructionsConfig?.enabled) && (
-        <div className="fixed bottom-6 right-6 flex flex-col gap-3 z-50">
+        <div className="fixed bottom-6 right-6 flex flex-col gap-3 z-[100]">
           {/* Instrucciones del configurador - arriba de todo */}
           {configuratorInstructionsConfig?.enabled && (
             <button
