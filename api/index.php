@@ -1445,7 +1445,7 @@ switch (true) {
                         $host = $_SERVER['HTTP_HOST'];
                         // Obtener el path base (por ejemplo /confi)
                         $basePath = rtrim(dirname($_SERVER['SCRIPT_NAME'], 2), '/');
-                        $caratulaUrl = rtrim("$protocol://$host/$basePath", '/') . "/$caratulaUrl";
+                        $caratulaUrl = "$protocol://$host" . ($basePath ? "/$basePath" : "") . "/$caratulaUrl";
                     }
 
                     // Remover og:image y twitter:image existentes si los hay
