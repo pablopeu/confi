@@ -513,9 +513,10 @@ function App() {
   }, [activeBucket, savedCode, buckets])
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex flex-col page-container">
-      {/* Slide del frontend */}
-      <div className={`page-slide ${showConfigurador ? 'page-slide-left' : 'page-slide-visible'}`}>
+    <>
+      <div className="page-container">
+        {/* Slide del frontend */}
+        <div className={`page-slide ${showConfigurador ? 'page-slide-left' : 'page-slide-visible'}`}>
         {/* Header del frontend */}
         <header className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-40">
         <div className="px-4 py-2">
@@ -1021,10 +1022,11 @@ function App() {
           telegramConfig={telegramConfig}
         />
       </div>
+      </div>
 
-      {/* Footer compartido */}
+      {/* Footer compartido - fuera del page-container */}
       <Footer footerConfig={footerConfig} whatsappConfig={whatsappConfig} telegramConfig={telegramConfig} />
-    </div>
+    </>
   )
 }
 
