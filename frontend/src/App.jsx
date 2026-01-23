@@ -1072,6 +1072,7 @@ function App() {
           configuratorButtonAnimationKey={configuratorButtonAnimationKey}
           saving={savingConfigurator}
           handleDirectShare={handleDirectShare}
+          loadConfiguration={loadConfiguration}
         />
       </div>
       </div>
@@ -1585,7 +1586,8 @@ function Configurador({
   telegramConfig,
   configuratorButtonAnimationKey,
   saving,
-  handleDirectShare
+  handleDirectShare,
+  loadConfiguration
 }) {
   const [showShareButtons, setShowShareButtons] = useState(false)
 
@@ -1608,9 +1610,7 @@ function Configurador({
     if (code) {
       loadConfiguration(code)
     }
-
-    loadConfiguratorMessage()
-  }, [])
+  }, [loadConfiguration])
 
   // Estado para guardar la configuración de cada foto del bucket activo
   const currentBucket = buckets[activeBucket]
