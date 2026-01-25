@@ -271,12 +271,13 @@ function App() {
   }, [showBucketDelete, showMobileSearch, showInstructions, showConfiguratorInstructions])
 
   // Guardar buckets en cookies cuando cambien
-  useEffect(() => {
-    console.log('useEffect buckets ejecutado, buckets:', buckets)
-    const expires = new Date()
-    expires.setDate(expires.getDate() + 365)
-    document.cookie = `buckets=${encodeURIComponent(JSON.stringify(buckets))}; expires=${expires.toUTCString()}; path=/`
-  }, [buckets])
+  // TEMPORALMENTE DESHABILITADO - causando loop infinito
+  // useEffect(() => {
+  //   console.log('useEffect buckets ejecutado, buckets:', buckets)
+  //   const expires = new Date()
+  //   expires.setDate(expires.getDate() + 365)
+  //   document.cookie = `buckets=${encodeURIComponent(JSON.stringify(buckets))}; expires=${expires.toUTCString()}; path=/`
+  // }, [buckets])
 
   // Guardar activeBucket en cookies cuando cambie
   useEffect(() => {
@@ -556,23 +557,15 @@ function App() {
 
   // Manejar selección de fotos para configurador
   const togglePhotoSelection = useCallback((photoId) => {
-    console.log('togglePhotoSelection llamado con photoId:', photoId)
-    console.log('activeBucket:', activeBucket)
-
     setBuckets(prev => {
-      console.log('buckets antes:', prev)
       const newBuckets = [...prev]
       const currentSelected = newBuckets[activeBucket].selectedPhotos || []
       const currentConfigs = Array.isArray(newBuckets[activeBucket].photoConfigs)
         ? {}
         : (newBuckets[activeBucket].photoConfigs || {})
 
-      console.log('currentSelected:', currentSelected)
-      console.log('currentConfigs:', currentConfigs)
-
       if (currentSelected.includes(photoId)) {
         // Deseleccionar
-        console.log('Deseleccionando foto')
         const newConfigs = { ...currentConfigs }
         delete newConfigs[photoId]
 
@@ -583,11 +576,9 @@ function App() {
       } else {
         // Verificar límite de 6
         if (currentSelected.length >= 6) {
-          console.log('Límite de 6 alcanzado')
           return prev // No agregar más de 6
         }
         // Seleccionar
-        console.log('Seleccionando foto')
         newBuckets[activeBucket] = {
           selectedPhotos: [...currentSelected, photoId],
           photoConfigs: {
@@ -602,7 +593,6 @@ function App() {
         }
       }
 
-      console.log('newBuckets después:', newBuckets)
       return newBuckets
     })
   }, [activeBucket])
@@ -1396,23 +1386,15 @@ function PhotoCard({ photo, tagGroups, isSelected, onToggleSelection, selectedCo
   }
 
   const handleClick = (e) => {
-    console.log('handleClick ejecutado')
-    console.log('scale:', scale)
-    console.log('isSelected:', isSelected)
-    console.log('selectedCount:', selectedCount)
-    console.log('photo.id:', photo.id)
-
     // Solo ejecutar si no está zoomizado
     if (scale === 1) {
       // Primero manejar la selección para configurador
       if (!isSelected && selectedCount >= 6) {
-        console.log('Límite alcanzado, mostrando mensaje')
         // Mostrar mensaje flotante en la posición del click
         setLimitMessagePos({ x: e.clientX, y: e.clientY })
         setShowLimitMessage(true)
         setTimeout(() => setShowLimitMessage(false), 2000)
       } else {
-        console.log('Llamando a onToggleSelection')
         onToggleSelection(photo.id)
       }
 
