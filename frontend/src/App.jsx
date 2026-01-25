@@ -178,7 +178,12 @@ function App() {
       .find(row => row.startsWith('buckets='))
     if (saved) {
       try {
-        return JSON.parse(decodeURIComponent(saved.split('=')[1]))
+        const parsed = JSON.parse(decodeURIComponent(saved.split('=')[1]))
+        // Normalizar buckets para asegurar que photoConfigs sea objeto, no array
+        return parsed.map(bucket => ({
+          selectedPhotos: bucket.selectedPhotos || [],
+          photoConfigs: Array.isArray(bucket.photoConfigs) ? {} : (bucket.photoConfigs || {})
+        }))
       } catch {
         return Array(5).fill(null).map(() => ({
           selectedPhotos: [],
@@ -556,20 +561,24 @@ function App() {
     setBuckets(prev => {
       console.log('buckets antes:', prev)
       const newBuckets = [...prev]
-      const currentSelected = newBuckets[activeBucket].selectedPhotos
+      const currentSelected = newBuckets[activeBucket].selectedPhotos || []
+      const currentConfigs = Array.isArray(newBuckets[activeBucket].photoConfigs)
+        ? {}
+        : (newBuckets[activeBucket].photoConfigs || {})
+
       console.log('currentSelected:', currentSelected)
+      console.log('currentConfigs:', currentConfigs)
 
       if (currentSelected.includes(photoId)) {
         // Deseleccionar
         console.log('Deseleccionando foto')
-        newBuckets[activeBucket] = {
-          ...newBuckets[activeBucket],
-          selectedPhotos: currentSelected.filter(id => id !== photoId)
-        }
-        // Eliminar también la configuración de esa foto
-        const newConfigs = { ...newBuckets[activeBucket].photoConfigs }
+        const newConfigs = { ...currentConfigs }
         delete newConfigs[photoId]
-        newBuckets[activeBucket].photoConfigs = newConfigs
+
+        newBuckets[activeBucket] = {
+          selectedPhotos: currentSelected.filter(id => id !== photoId),
+          photoConfigs: newConfigs
+        }
       } else {
         // Verificar límite de 6
         if (currentSelected.length >= 6) {
@@ -579,10 +588,9 @@ function App() {
         // Seleccionar
         console.log('Seleccionando foto')
         newBuckets[activeBucket] = {
-          ...newBuckets[activeBucket],
           selectedPhotos: [...currentSelected, photoId],
           photoConfigs: {
-            ...newBuckets[activeBucket].photoConfigs,
+            ...currentConfigs,
             [photoId]: {
               forma: false,
               acero: false,
