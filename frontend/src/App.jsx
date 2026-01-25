@@ -272,10 +272,12 @@ function App() {
 
   // Guardar buckets en cookies cuando cambien
   useEffect(() => {
+    console.log('useEffect buckets ejecutado, buckets:', buckets)
+    console.log('selectedPhotos del bucket activo:', buckets[activeBucket]?.selectedPhotos)
     const expires = new Date()
     expires.setDate(expires.getDate() + 365)
     document.cookie = `buckets=${encodeURIComponent(JSON.stringify(buckets))}; expires=${expires.toUTCString()}; path=/`
-  }, [buckets])
+  }, [buckets, activeBucket])
 
   // Guardar activeBucket en cookies cuando cambie
   useEffect(() => {
@@ -298,6 +300,8 @@ function App() {
 
   // Fotos seleccionadas del bucket activo (para compatibilidad)
   const selectedPhotos = buckets[activeBucket]?.selectedPhotos || []
+
+  console.log('RENDER - activeBucket:', activeBucket, 'selectedPhotos:', selectedPhotos, 'length:', selectedPhotos.length)
 
   // Cargar configuración (logo, whatsapp, telegram) y detectar ?config= en URL
   useEffect(() => {
@@ -1415,16 +1419,15 @@ function PhotoCard({ photo, tagGroups, isSelected, onToggleSelection, selectedCo
         onToggleSelection(photo.id)
       }
 
-      // TEMPORALMENTE DESHABILITADO PARA DEBUG - probar si clipboard causa el problema
-      console.log('>>> copyImageToClipboard DESHABILITADO')
-      // copyImageToClipboard(photo.url).then(result => {
-      //   if (result.success) {
-      //     setImageCopied(true)
-      //     setTimeout(() => setImageCopied(false), 1500)
-      //   }
-      // }).catch(() => {
-      //   // Ignorar errores de clipboard silenciosamente
-      // })
+      // Copiar imagen al clipboard (async, no bloqueante)
+      copyImageToClipboard(photo.url).then(result => {
+        if (result.success) {
+          setImageCopied(true)
+          setTimeout(() => setImageCopied(false), 1500)
+        }
+      }).catch(() => {
+        // Ignorar errores de clipboard silenciosamente
+      })
     }
   }
 
