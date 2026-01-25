@@ -270,14 +270,18 @@ function App() {
     return () => window.removeEventListener('keydown', handleEscape)
   }, [showBucketDelete, showMobileSearch, showInstructions, showConfiguratorInstructions])
 
-  // Guardar buckets en cookies cuando cambien
-  // TEMPORALMENTE DESHABILITADO - causando loop infinito
-  // useEffect(() => {
-  //   console.log('useEffect buckets ejecutado, buckets:', buckets)
-  //   const expires = new Date()
-  //   expires.setDate(expires.getDate() + 365)
-  //   document.cookie = `buckets=${encodeURIComponent(JSON.stringify(buckets))}; expires=${expires.toUTCString()}; path=/`
-  // }, [buckets])
+  // Guardar buckets en cookies cuando cambien (con protección contra loop)
+  const bucketsInitialized = useRef(false)
+  useEffect(() => {
+    // Saltar la primera ejecución (cuando se carga desde cookies)
+    if (!bucketsInitialized.current) {
+      bucketsInitialized.current = true
+      return
+    }
+    const expires = new Date()
+    expires.setDate(expires.getDate() + 365)
+    document.cookie = `buckets=${encodeURIComponent(JSON.stringify(buckets))}; expires=${expires.toUTCString()}; path=/`
+  }, [buckets])
 
   // Guardar activeBucket en cookies cuando cambie
   useEffect(() => {
