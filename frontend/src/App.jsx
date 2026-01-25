@@ -354,19 +354,19 @@ function App() {
   }
 
   // Cargar configuración inicial desde URL si existe
-  const loadConfiguration = async (code) => {
+  const loadConfiguration = useCallback(async (code) => {
     try {
       const API_BASE = import.meta.env.VITE_API_URL || './api/index.php'
       const response = await fetch(`${API_BASE}?route=configurator/${code}`)
       if (response.ok) {
         const data = await response.json()
-        setBuckets(data.buckets || buckets)
+        setBuckets(prev => data.buckets || prev)
         setSavedCode(code)
       }
     } catch (error) {
       console.error('Error al cargar configuración:', error)
     }
-  }
+  }, [setSavedCode])
 
   // Función para compartir directamente desde el configurador
   const handleDirectShare = async (platform) => {
@@ -1604,6 +1604,7 @@ function Configurador({
   configuratorMessage
 }) {
   const [showShareButtons, setShowShareButtons] = useState(false)
+  const configLoadedRef = useRef(false)
 
   // Cerrar confirmación con Escape (en Configurador)
   useEffect(() => {
@@ -1616,12 +1617,15 @@ function Configurador({
     return () => window.removeEventListener('keydown', handleEscape)
   }, [showBucketDelete, setShowBucketDelete])
 
-  // Cargar configuración inicial desde URL si existe
+  // Cargar configuración inicial desde URL si existe (solo una vez)
   useEffect(() => {
+    if (configLoadedRef.current) return
+
     const urlParams = new URLSearchParams(window.location.search)
     const code = urlParams.get('config')
 
     if (code) {
+      configLoadedRef.current = true
       loadConfiguration(code)
     }
   }, [loadConfiguration])
