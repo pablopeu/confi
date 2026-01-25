@@ -1415,15 +1415,16 @@ function PhotoCard({ photo, tagGroups, isSelected, onToggleSelection, selectedCo
         onToggleSelection(photo.id)
       }
 
-      // Luego copiar imagen al clipboard (async, no bloqueante)
-      copyImageToClipboard(photo.url).then(result => {
-        if (result.success) {
-          setImageCopied(true)
-          setTimeout(() => setImageCopied(false), 1500)
-        }
-      }).catch(() => {
-        // Ignorar errores de clipboard silenciosamente
-      })
+      // TEMPORALMENTE DESHABILITADO PARA DEBUG - probar si clipboard causa el problema
+      console.log('>>> copyImageToClipboard DESHABILITADO')
+      // copyImageToClipboard(photo.url).then(result => {
+      //   if (result.success) {
+      //     setImageCopied(true)
+      //     setTimeout(() => setImageCopied(false), 1500)
+      //   }
+      // }).catch(() => {
+      //   // Ignorar errores de clipboard silenciosamente
+      // })
     }
   }
 
