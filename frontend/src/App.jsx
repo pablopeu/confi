@@ -1003,7 +1003,7 @@ function App() {
               <p className="text-sm">Ajusta los filtros para ver resultados</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {filteredPhotos.map(photo => (
                 <PhotoCard
                   key={photo.id}
@@ -1378,16 +1378,9 @@ function PhotoCard({ photo, tagGroups, isSelected, onToggleSelection, selectedCo
   }
 
   const handleClick = async (e) => {
-    // Solo copiar si no está zoomizado
-    if (scale === 1) {
-      // Copiar imagen al clipboard
-      const result = await copyImageToClipboard(photo.url)
-      if (result.success) {
-        setImageCopied(true)
-        setTimeout(() => setImageCopied(false), 1500)
-      }
-
-      // Manejar selección para configurador
+    // Solo ejecutar si no está zoomizado y no estaba arrastrando
+    if (scale === 1 && !isDragging) {
+      // Primero manejar la selección para configurador
       if (!isSelected && selectedCount >= 6) {
         // Mostrar mensaje flotante en la posición del click
         setLimitMessagePos({ x: e.clientX, y: e.clientY })
@@ -1396,6 +1389,14 @@ function PhotoCard({ photo, tagGroups, isSelected, onToggleSelection, selectedCo
       } else {
         onToggleSelection(photo.id)
       }
+
+      // Luego copiar imagen al clipboard (async, no bloqueante)
+      copyImageToClipboard(photo.url).then(result => {
+        if (result.success) {
+          setImageCopied(true)
+          setTimeout(() => setImageCopied(false), 1500)
+        }
+      })
     }
   }
 
@@ -1449,7 +1450,11 @@ function PhotoCard({ photo, tagGroups, isSelected, onToggleSelection, selectedCo
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden border border-gray-200 dark:border-gray-700">
+    <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden transition-all ${
+      isSelected
+        ? 'border-2 border-green-500 ring-2 ring-green-200 dark:ring-green-800'
+        : 'border border-gray-200 dark:border-gray-700'
+    }`}>
       {/* Imagen con zoom */}
       <div
         ref={containerRef}
