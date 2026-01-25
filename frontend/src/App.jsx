@@ -550,12 +550,18 @@ function App() {
 
   // Manejar selección de fotos para configurador
   const togglePhotoSelection = useCallback((photoId) => {
+    console.log('togglePhotoSelection llamado con photoId:', photoId)
+    console.log('activeBucket:', activeBucket)
+
     setBuckets(prev => {
+      console.log('buckets antes:', prev)
       const newBuckets = [...prev]
       const currentSelected = newBuckets[activeBucket].selectedPhotos
+      console.log('currentSelected:', currentSelected)
 
       if (currentSelected.includes(photoId)) {
         // Deseleccionar
+        console.log('Deseleccionando foto')
         newBuckets[activeBucket] = {
           ...newBuckets[activeBucket],
           selectedPhotos: currentSelected.filter(id => id !== photoId)
@@ -567,9 +573,11 @@ function App() {
       } else {
         // Verificar límite de 6
         if (currentSelected.length >= 6) {
+          console.log('Límite de 6 alcanzado')
           return prev // No agregar más de 6
         }
         // Seleccionar
+        console.log('Seleccionando foto')
         newBuckets[activeBucket] = {
           ...newBuckets[activeBucket],
           selectedPhotos: [...currentSelected, photoId],
@@ -585,6 +593,7 @@ function App() {
         }
       }
 
+      console.log('newBuckets después:', newBuckets)
       return newBuckets
     })
   }, [activeBucket])
@@ -1378,15 +1387,23 @@ function PhotoCard({ photo, tagGroups, isSelected, onToggleSelection, selectedCo
   }
 
   const handleClick = (e) => {
+    console.log('handleClick ejecutado')
+    console.log('scale:', scale)
+    console.log('isSelected:', isSelected)
+    console.log('selectedCount:', selectedCount)
+    console.log('photo.id:', photo.id)
+
     // Solo ejecutar si no está zoomizado
     if (scale === 1) {
       // Primero manejar la selección para configurador
       if (!isSelected && selectedCount >= 6) {
+        console.log('Límite alcanzado, mostrando mensaje')
         // Mostrar mensaje flotante en la posición del click
         setLimitMessagePos({ x: e.clientX, y: e.clientY })
         setShowLimitMessage(true)
         setTimeout(() => setShowLimitMessage(false), 2000)
       } else {
+        console.log('Llamando a onToggleSelection')
         onToggleSelection(photo.id)
       }
 
