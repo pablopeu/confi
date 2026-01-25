@@ -1402,14 +1402,6 @@ function PhotoCard({ photo, tagGroups, isSelected, onToggleSelection, selectedCo
     }
   }
 
-  const handleDoubleClick = () => {
-    if (scale > 1) {
-      setScale(1)
-      setPosition({ x: 0, y: 0 })
-    } else {
-      setScale(2.5)
-    }
-  }
 
   // Obtener nombres de tags de la foto
   const getPhotoTags = () => {
@@ -1462,7 +1454,6 @@ function PhotoCard({ photo, tagGroups, isSelected, onToggleSelection, selectedCo
         ref={containerRef}
         className="aspect-square bg-gray-100 dark:bg-gray-700 relative overflow-hidden"
         onClick={handleClick}
-        onDoubleClick={handleDoubleClick}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
