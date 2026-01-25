@@ -273,11 +273,10 @@ function App() {
   // Guardar buckets en cookies cuando cambien
   useEffect(() => {
     console.log('useEffect buckets ejecutado, buckets:', buckets)
-    console.log('selectedPhotos del bucket activo:', buckets[activeBucket]?.selectedPhotos)
     const expires = new Date()
     expires.setDate(expires.getDate() + 365)
     document.cookie = `buckets=${encodeURIComponent(JSON.stringify(buckets))}; expires=${expires.toUTCString()}; path=/`
-  }, [buckets, activeBucket])
+  }, [buckets])
 
   // Guardar activeBucket en cookies cuando cambie
   useEffect(() => {
@@ -300,8 +299,6 @@ function App() {
 
   // Fotos seleccionadas del bucket activo (para compatibilidad)
   const selectedPhotos = buckets[activeBucket]?.selectedPhotos || []
-
-  console.log('RENDER - activeBucket:', activeBucket, 'selectedPhotos:', selectedPhotos, 'length:', selectedPhotos.length)
 
   // Cargar configuración (logo, whatsapp, telegram) y detectar ?config= en URL
   useEffect(() => {
