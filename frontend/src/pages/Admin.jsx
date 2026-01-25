@@ -1547,7 +1547,10 @@ function ManagePhotos({ photos, tagGroups, authParams, onRefresh, showSuccess, s
           </svg>
           <p>No hay fotos sin etiquetar</p>
           <button
-            onClick={() => setShowOnlyUntagged(false)}
+            onClick={() => {
+              setShowOnlyUntagged(false)
+              setFilterMissingGroup(null)
+            }}
             className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
             Mostrar todas las fotos
