@@ -1174,7 +1174,7 @@ function PhotoCarousel({ photos, currentIndex, onSelectPhoto, disableRepeat = fa
 // ==================
 // Tag Section - Sección individual de tags
 // ==================
-function TagSection({ group, selectedTags, onTagToggle, onCreateTag }) {
+function TagSection({ group, selectedTags, onTagToggle, onCreateTag, onFilterMissing, filterGroupActive }) {
   const [search, setSearch] = useState('')
   const [creating, setCreating] = useState(false)
 
@@ -1209,9 +1209,22 @@ function TagSection({ group, selectedTags, onTagToggle, onCreateTag }) {
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 flex flex-col overflow-hidden">
-      {/* Header con nombre del grupo */}
-      <div className="px-3 py-2 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600 flex-shrink-0">
+      {/* Header con nombre del grupo y botón de filtro */}
+      <div className="px-3 py-2 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600 flex-shrink-0 flex items-center justify-between">
         <h3 className="font-semibold text-gray-700 dark:text-gray-200 text-sm">{group.name}</h3>
+        {onFilterMissing && (
+          <button
+            onClick={() => onFilterMissing(filterGroupActive ? null : group.id)}
+            className={`px-2 py-0.5 text-xs rounded transition-colors ${
+              filterGroupActive
+                ? 'bg-orange-500 text-white hover:bg-orange-600'
+                : 'bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-500'
+            }`}
+            title={filterGroupActive ? 'Mostrar todas las fotos' : 'Filtrar fotos sin tags de este grupo'}
+          >
+            {filterGroupActive ? '✓ Todo' : 'Filtrar'}
+          </button>
+        )}
       </div>
 
       {/* Input de búsqueda/creación */}
@@ -1276,6 +1289,7 @@ function ManagePhotos({ photos, tagGroups, authParams, onRefresh, showSuccess, s
   const [savedFeedback, setSavedFeedback] = useState(false)
   const [arrowFeedback, setArrowFeedback] = useState(null)
   const [showOnlyUntagged, setShowOnlyUntagged] = useState(false)
+  const [filterMissingGroup, setFilterMissingGroup] = useState(null) // ID del grupo para filtrar fotos sin tags de ese grupo
   const [searchQuery, setSearchQuery] = useState('')
   const currentPhotoRef = useRef(null) // Para evitar que la foto actual desaparezca del filtro
 
@@ -1318,6 +1332,22 @@ function ManagePhotos({ photos, tagGroups, authParams, onRefresh, showSuccess, s
       const tags = photoTags[p.id] || p.tags || []
       return tags.length === 0
     })
+  }
+
+  // Filtrar fotos sin tags de un grupo específico
+  if (filterMissingGroup) {
+    const group = tagGroups.find(g => g.id === filterMissingGroup)
+    if (group) {
+      const groupTagIds = group.tags.map(t => t.id)
+      filteredPhotos = filteredPhotos.filter(p => {
+        // No filtrar la foto actual que se está editando
+        if (currentPhotoRef.current && p.id === currentPhotoRef.current.id) return true
+        const tags = photoTags[p.id] || p.tags || []
+        // Ver si la foto tiene algún tag de este grupo
+        const hasTagFromGroup = tags.some(t => groupTagIds.includes(t))
+        return !hasTagFromGroup // Mostrar solo las que NO tienen tags del grupo
+      })
+    }
   }
 
   const currentPhoto = filteredPhotos[currentIndex]
@@ -1621,6 +1651,12 @@ function ManagePhotos({ photos, tagGroups, authParams, onRefresh, showSuccess, s
                 selectedTags={currentTags}
                 onTagToggle={handleTagToggle}
                 onCreateTag={(name) => handleCreateTag(group.id, name)}
+                onFilterMissing={(groupId) => {
+                  setFilterMissingGroup(groupId)
+                  setCurrentIndex(0)
+                  currentPhotoRef.current = null // Limpiar ref al cambiar filtro
+                }}
+                filterGroupActive={filterMissingGroup === group.id}
               />
             ))}
           </div>
@@ -1636,6 +1672,12 @@ function ManagePhotos({ photos, tagGroups, authParams, onRefresh, showSuccess, s
             selectedTags={currentTags}
             onTagToggle={handleTagToggle}
             onCreateTag={(name) => handleCreateTag(group.id, name)}
+            onFilterMissing={(groupId) => {
+              setFilterMissingGroup(groupId)
+              setCurrentIndex(0)
+              currentPhotoRef.current = null // Limpiar ref al cambiar filtro
+            }}
+            filterGroupActive={filterMissingGroup === group.id}
           />
         ))}
       </div>
