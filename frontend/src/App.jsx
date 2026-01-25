@@ -545,8 +545,14 @@ function App() {
       })
     }
 
+    // Fotos del bucket activo primero
+    const activeBucketPhotos = buckets[activeBucket]?.selectedPhotos || []
+    const bucketPhotos = result.filter(photo => activeBucketPhotos.includes(photo.id))
+    const otherPhotos = result.filter(photo => !activeBucketPhotos.includes(photo.id))
+    result = [...bucketPhotos, ...otherPhotos]
+
     setFilteredPhotos(result)
-  }, [photos, activeTab, selectedEncabado, selectedAcero, selectedExtras, searchQuery, tagGroups])
+  }, [photos, activeTab, selectedEncabado, selectedAcero, selectedExtras, searchQuery, tagGroups, buckets, activeBucket])
 
   // Handlers
   const handleResetFilters = useCallback(() => {
