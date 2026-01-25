@@ -1075,10 +1075,12 @@ function ZoomableImage({ src, alt }) {
 }
 
 // ==================
-// Photo Carousel - Carrusel de fotos
+// Photo Carousel - Carrusel de fotos con drag & drop para reordenar
 // ==================
-function PhotoCarousel({ photos, currentIndex, onSelectPhoto, disableRepeat = false }) {
+function PhotoCarousel({ photos, currentIndex, onSelectPhoto, disableRepeat = false, onReorder }) {
   const carouselRef = useRef(null)
+  const [draggedIndex, setDraggedIndex] = useState(null)
+  const [dragOverIndex, setDragOverIndex] = useState(null)
 
   const THUMBNAIL_SIZE = 120
 
@@ -1108,14 +1110,50 @@ function PhotoCarousel({ photos, currentIndex, onSelectPhoto, disableRepeat = fa
     }, 0)
   }
 
+  // Drag and drop handlers
+  const handleDragStart = (e, index) => {
+    if (!onReorder) return
+    setDraggedIndex(index)
+    e.dataTransfer.effectAllowed = 'move'
+    // Crear imagen fantasma personalizada
+    const dragImage = e.target.cloneNode(true)
+    dragImage.style.opacity = '0.5'
+    e.dataTransfer.setDragImage(e.target, 60, 60)
+  }
+
+  const handleDragOver = (e, index) => {
+    if (!onReorder || draggedIndex === null) return
+    e.preventDefault()
+    if (dragOverIndex !== index) {
+      setDragOverIndex(index)
+    }
+  }
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null)
+    setDragOverIndex(null)
+  }
+
+  const handleDrop = (e, dropIndex) => {
+    if (!onReorder || draggedIndex === null || draggedIndex === dropIndex) return
+    e.preventDefault()
+    onReorder(draggedIndex, dropIndex)
+    setDraggedIndex(null)
+    setDragOverIndex(null)
+  }
+
   if (!photos || photos.length === 0) {
     return null
   }
 
   // Solo triplicar si hay suficientes fotos para scroll continuo y no está deshabilitada la repetición
-  const displayPhotos = !disableRepeat && photos.length >= 5
+  // Pero si hay drag & drop, no triplicar para evitar confusiones
+  const displayPhotos = (!disableRepeat && photos.length >= 5 && !onReorder)
     ? [...photos, ...photos, ...photos]
     : photos
+
+  // Si hay drag & drop, mostrar solo las fotos originales una vez
+  const photosToRender = onReorder ? photos : displayPhotos
 
   return (
     <div className="relative w-full bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
@@ -1134,26 +1172,41 @@ function PhotoCarousel({ photos, currentIndex, onSelectPhoto, disableRepeat = fa
         ref={carouselRef}
         className="flex overflow-x-auto scrollbar-thin scrollbar-thumb-gray-400 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent"
       >
-        {displayPhotos.map((photo, idx) => {
-          const originalIdx = idx % photos.length
+        {photosToRender.map((photo, idx) => {
+          const originalIdx = onReorder ? idx : idx % photos.length
+          const isDragging = draggedIndex === originalIdx
+          const isDragOver = dragOverIndex === originalIdx
+
           return (
-            <button
+            <div
               key={`${photo.id}-${idx}`}
-              onClick={() => onSelectPhoto(originalIdx)}
-              className={`flex-shrink-0 overflow-hidden border-2 transition-all ${
+              draggable={!!onReorder}
+              onDragStart={(e) => handleDragStart(e, originalIdx)}
+              onDragOver={(e) => handleDragOver(e, originalIdx)}
+              onDragEnd={handleDragEnd}
+              onDrop={(e) => handleDrop(e, originalIdx)}
+              className={`flex-shrink-0 overflow-hidden border-2 transition-all relative ${
                 originalIdx === currentIndex
                   ? 'border-blue-500 ring-2 ring-blue-300 dark:ring-blue-700'
                   : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
-              }`}
-              style={{ width: `${THUMBNAIL_SIZE}px`, height: `${THUMBNAIL_SIZE}px` }}
+              } ${isDragging ? 'opacity-50' : ''} ${isDragOver && !isDragging ? 'border-orange-500 ring-2 ring-orange-300 dark:ring-orange-700' : ''}`}
+              style={{ width: `${THUMBNAIL_SIZE}px`, height: `${THUMBNAIL_SIZE}px`, cursor: onReorder ? 'grab' : 'pointer' }}
             >
               <img
                 src={photo.url}
                 alt={`Foto ${originalIdx + 1}`}
                 className="w-full h-full object-cover pointer-events-none"
                 draggable={false}
+                style={{ cursor: onReorder ? 'grab' : 'pointer' }}
               />
-            </button>
+              {onReorder && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/0 hover:bg-black/10 transition-colors pointer-events-none">
+                  <svg className="w-6 h-6 text-white opacity-0 hover:opacity-100 drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
+                  </svg>
+                </div>
+              )}
+            </div>
           )
         })}
       </div>
@@ -1485,6 +1538,45 @@ function ManagePhotos({ photos, tagGroups, authParams, onRefresh, showSuccess, s
     })
   }
 
+  const handleReorder = async (fromIndex, toIndex) => {
+    try {
+      // Crear nuevo array con las fotos reordenadas
+      const newPhotos = [...filteredPhotos]
+      const [movedPhoto] = newPhotos.splice(fromIndex, 1)
+      newPhotos.splice(toIndex, 0, movedPhoto)
+
+      // Enviar nuevo orden al backend
+      const photoIds = newPhotos.map(p => p.id)
+      const response = await fetch(apiUrl('admin/photos/reorder'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          photo_ids: photoIds,
+          ...authParams
+        })
+      })
+
+      if (response.ok) {
+        // Actualizar índice actual si es necesario
+        if (currentIndex === fromIndex) {
+          setCurrentIndex(toIndex)
+        } else if (fromIndex < currentIndex && toIndex >= currentIndex) {
+          setCurrentIndex(currentIndex - 1)
+        } else if (fromIndex > currentIndex && toIndex <= currentIndex) {
+          setCurrentIndex(currentIndex + 1)
+        }
+        // Refrescar fotos desde el servidor
+        onRefresh()
+      } else if (response.status === 401) {
+        showError('Sesión expirada', 'Por favor, vuelve a iniciar sesión')
+      } else {
+        showError('Error', 'Error al reordenar fotos')
+      }
+    } catch (error) {
+      showError('Error', 'Error de conexión')
+    }
+  }
+
   const goToPrev = async () => {
     await handleSaveCurrentPhoto(false)
     setArrowFeedback('prev')
@@ -1566,12 +1658,13 @@ function ManagePhotos({ photos, tagGroups, authParams, onRefresh, showSuccess, s
       <PhotoCarousel
         photos={filteredPhotos}
         currentIndex={currentIndex}
-        disableRepeat={showOnlyUntagged} // No repetir fotos en modo "sin tag"
+        disableRepeat={showOnlyUntagged || filterMissingGroup !== null} // No repetir fotos en modo filtro
         onSelectPhoto={async (newIndex) => {
           await handleSaveCurrentPhoto(false)
           currentPhotoRef.current = null // Limpiar ref al cambiar explícitamente
           setCurrentIndex(newIndex)
         }}
+        onReorder={handleReorder}
       />
 
       {/* Área superior: foto con flechas + descripción */}

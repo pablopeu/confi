@@ -983,6 +983,48 @@ switch (true) {
         response(['message' => t('photo.deleted')]);
         break;
 
+    // POST /admin/photos/reorder - Reordenar fotos
+    case $path === 'admin/photos/reorder' && $method === 'POST':
+        checkAuth();
+        $input = getInput();
+
+        if (empty($input['photo_ids']) || !is_array($input['photo_ids'])) {
+            response(['error' => 'photo_ids array is required'], 400);
+        }
+
+        $data = readJSON('photos.json');
+        $newOrder = $input['photo_ids'];
+
+        // Crear mapa de fotos por ID para búsqueda rápida
+        $photoMap = [];
+        foreach ($data['photos'] as $photo) {
+            $photoMap[$photo['id']] = $photo;
+        }
+
+        // Reconstruir array de fotos en el nuevo orden
+        $reorderedPhotos = [];
+        foreach ($newOrder as $photoId) {
+            if (isset($photoMap[$photoId])) {
+                $reorderedPhotos[] = $photoMap[$photoId];
+                unset($photoMap[$photoId]);
+            }
+        }
+
+        // Agregar fotos que no estaban en la lista (por seguridad)
+        foreach ($photoMap as $photo) {
+            $reorderedPhotos[] = $photo;
+        }
+
+        // Verificar que no se hayan perdido fotos
+        if (count($reorderedPhotos) !== count($data['photos'])) {
+            response(['error' => 'Photo count mismatch'], 400);
+        }
+
+        $data['photos'] = $reorderedPhotos;
+        writeJSON('photos.json', $data);
+        response(['success' => true, 'message' => 'Photos reordered successfully']);
+        break;
+
     // GET /config - Obtener configuración pública (logo, whatsapp, telegram, etc)
     case $path === 'config' && $method === 'GET':
         $lang = isset($_GET['lang']) ? $_GET['lang'] : 'es';
