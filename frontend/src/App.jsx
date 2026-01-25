@@ -290,6 +290,44 @@ function App() {
     document.cookie = `activeBucket=${activeBucket}; expires=${expires.toUTCString()}; path=/`
   }, [activeBucket])
 
+  // Auto-guardar en servidor cuando cambian los buckets si hay un savedCode
+  useEffect(() => {
+    // Solo guardar si:
+    // 1. Hay un código guardado (usuario ya tiene configuración creada)
+    // 2. Los buckets ya están inicializados (no es la carga inicial desde cookies)
+    // 3. NO estamos en el configurador (para evitar guardar duplicado)
+    if (!savedCode || !bucketsInitialized.current || showConfigurador) {
+      return
+    }
+
+    // Función para guardar con debounce (evitar múltiples llamadas rápidas)
+    const timeoutId = setTimeout(async () => {
+      try {
+        const API_BASE = import.meta.env.VITE_API_URL || './api/index.php'
+        const response = await fetch(`${API_BASE}?route=configurator/save`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            buckets,
+            code: savedCode
+          })
+        })
+        if (response.ok) {
+          const data = await response.json()
+          // Actualizar el código si cambió
+          if (data.code && data.code !== savedCode) {
+            setSavedCode(data.code)
+          }
+        }
+      } catch (error) {
+        // Error silencioso - no interrumpir la experiencia del usuario
+        console.error('Error al auto-guardar configuración:', error)
+      }
+    }, 500) // Debounce de 500ms
+
+    return () => clearTimeout(timeoutId)
+  }, [buckets, savedCode, showConfigurador])
+
   // Guardar savedCode en cookies cuando cambie
   useEffect(() => {
     if (savedCode) {
