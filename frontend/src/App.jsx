@@ -1966,7 +1966,7 @@ function Configurador({
             <div className="flex items-center gap-1 flex-shrink-0">
               <button
                 onClick={onClose}
-                className="px-2 py-1 text-xs text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                className="px-4 py-1 text-xs text-white bg-gray-600 hover:bg-gray-700 dark:bg-gray-500 dark:hover:bg-gray-600 rounded transition-colors"
               >
                 Volver
               </button>
