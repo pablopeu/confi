@@ -865,9 +865,9 @@ function App() {
           </div>
 
           {/* Desktop: Layout horizontal con elementos centrales centrados */}
-          <div className="hidden lg:flex items-center justify-between gap-4">
+          <div className="hidden lg:grid grid-cols-[auto_1fr_auto] items-center gap-4">
             {/* Logo y Título - izquierda */}
-            <div className="flex items-center gap-3 flex-shrink-0">
+            <div className="flex items-center gap-3">
               {logo && (
                 <img src={logo} alt="Logo" className="h-12 object-contain" />
               )}
@@ -881,11 +881,11 @@ function App() {
               </div>
             </div>
 
-            {/* Elementos centrales - se centran cuando hay menos elementos */}
-            <div className="flex items-center gap-4">
+            {/* Elementos centrales - alineados con los buckets de cuchillo */}
+            <div className="flex items-center justify-center gap-4">
               {/* Tabs de tipo */}
               {showTypeGroups && (
-              <div className="flex items-center gap-1 flex-shrink-0">
+              <div className="flex items-center gap-1">
                 <button
                   onClick={() => setActiveTab(null)}
                   className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
@@ -914,7 +914,7 @@ function App() {
 
               {/* Selectboxes */}
               {showSelectors && (
-              <div className="flex items-center gap-3 flex-shrink-0">
+              <div className="flex items-center gap-3">
                 <MultiSelect
                   label="Encabado"
                   options={getTagsByGroup('encabado')}
@@ -943,7 +943,7 @@ function App() {
               {hasActiveFilters && (
                 <button
                   onClick={handleResetFilters}
-                  className="px-3 py-1.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors flex-shrink-0"
+                  className="px-3 py-1.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                 >
                   Resetear filtros
                 </button>
@@ -952,7 +952,7 @@ function App() {
               {/* Botón Configurador */}
               <button
                 onClick={handleOpenConfigurador}
-                className="px-3 py-1.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-1 flex-shrink-0"
+                className="px-3 py-1.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-1"
               >
                 Configurador
                 {selectedPhotos.length > 0 && (
@@ -964,7 +964,7 @@ function App() {
             </div>
 
             {/* Buscador - derecha */}
-            <div className="flex-shrink-0">
+            <div>
               <SearchBar
                 value={searchQuery}
                 onChange={setSearchQuery}
@@ -975,16 +975,15 @@ function App() {
           </div>
 
           {/* Buckets de cuchillos - Desktop (subheader dentro del header) */}
-          <div className="hidden lg:block border-t border-gray-200 dark:border-gray-700">
-            <div className="flex items-center justify-between gap-4 py-1">
-              {/* Contador de fotos a la izquierda */}
-              <div className="text-sm text-gray-500 dark:text-gray-400">
-                {filteredPhotos.length} foto{filteredPhotos.length !== 1 ? 's' : ''} encontrada{filteredPhotos.length !== 1 ? 's' : ''}
-              </div>
+          <div className="hidden lg:grid grid-cols-[auto_1fr_auto] items-center gap-4 border-t border-gray-200 dark:border-gray-700 py-1">
+            {/* Contador de fotos a la izquierda - alineado con el logo */}
+            <div className="text-sm text-gray-500 dark:text-gray-400">
+              {filteredPhotos.length} foto{filteredPhotos.length !== 1 ? 's' : ''} encontrada{filteredPhotos.length !== 1 ? 's' : ''}
+            </div>
 
-              {/* Buckets centrados */}
-              <div className="flex items-center gap-1">
-                {buckets.map((bucket, index) => (
+            {/* Buckets centrados - alineados con los elementos del header principal */}
+            <div className="flex items-center justify-center gap-1">
+              {buckets.map((bucket, index) => (
                   <div key={index} className="relative">
                     <button
                       onClick={() => setActiveBucket(index)}
@@ -1037,8 +1036,8 @@ function App() {
                 ))}
               </div>
 
-              {/* Espacio vacío a la derecha para balancear */}
-              <div className="w-auto"></div>
+              {/* Espacio vacío a la derecha - alineado con el buscador */}
+              <div></div>
             </div>
           </div>
         </div>
