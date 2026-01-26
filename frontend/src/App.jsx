@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faInfoCircle, faQuestionCircle } from '@fortawesome/free-solid-svg-icons'
 import SearchBar from './components/SearchBar'
@@ -302,6 +302,10 @@ function App() {
     window.addEventListener('keydown', handleEscape)
     return () => window.removeEventListener('keydown', handleEscape)
   }, [showBucketDelete, showMobileSearch, showInstructions, showConfiguratorInstructions])
+
+  // Ref para el scroll container del frontend y preservar posición al reordenar
+  const mainScrollRef = useRef(null)
+  const scrollSaveRef = useRef(null)
 
   // Guardar buckets en cookies cuando cambien (con protección contra loop)
   const bucketsInitialized = useRef(false)
@@ -627,6 +631,14 @@ function App() {
     setFilteredPhotos(result)
   }, [photos, activeTab, selectedEncabado, selectedAcero, selectedExtras, searchQuery, tagGroups, buckets, activeBucket])
 
+  // Restaurar scroll position después de reordenar fotos por selección
+  useLayoutEffect(() => {
+    if (scrollSaveRef.current !== null && mainScrollRef.current) {
+      mainScrollRef.current.scrollTop = scrollSaveRef.current
+      scrollSaveRef.current = null
+    }
+  }, [filteredPhotos])
+
   // Handlers
   const handleResetFilters = useCallback(() => {
     setActiveTab(null)
@@ -640,6 +652,10 @@ function App() {
 
   // Manejar selección de fotos para configurador
   const togglePhotoSelection = useCallback((photoId) => {
+    // Guardar scroll position antes de reordenar para no mover al usuario
+    if (mainScrollRef.current) {
+      scrollSaveRef.current = mainScrollRef.current.scrollTop
+    }
     setBuckets(prev => {
       const newBuckets = [...prev]
       const currentSelected = newBuckets[activeBucket].selectedPhotos || []
@@ -1120,7 +1136,7 @@ function App() {
         </header>
 
       {/* Main content */}
-      <main className="flex-1 overflow-y-auto p-4 lg:p-6">
+      <main ref={mainScrollRef} className="flex-1 overflow-y-auto p-4 lg:p-6">
         <div className="max-w-7xl mx-auto">
           {/* Grid de fotos */}
           {loading ? (
