@@ -2249,43 +2249,43 @@ function Footer({ footerConfig, whatsappConfig, telegramConfig }) {
   return (
     <footer className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 sticky bottom-0 z-30">
       <div className="max-w-7xl mx-auto px-4 py-3 lg:py-4">
-        <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-end gap-4">
+        <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-4">
           {/* Redes sociales */}
-          {socialLinks.length > 0 && (
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600 dark:text-gray-400 hidden sm:inline">
-                {footerConfig.social_text || 'Seguime en mis redes sociales'}
-              </span>
-              <div className="flex items-center gap-3">
-                {socialLinks.map((social) => (
-                  <a
-                    key={social.name}
-                    href={social.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`${social.color} ${social.hoverColor} transition-all transform hover:scale-110`}
-                    aria-label={social.name}
-                    title={social.name}
-                  >
-                    {social.icon}
-                  </a>
-                ))}
-              </div>
-            </div>
-          )}
+          <div className="flex items-center gap-4">
+            {socialLinks.length > 0 && (
+              <>
+                <span className="text-sm text-gray-600 dark:text-gray-400 hidden sm:inline">
+                  {footerConfig.social_text || 'Seguime en mis redes sociales'}
+                </span>
+                <div className="flex items-center gap-3">
+                  {socialLinks.map((social) => (
+                    <a
+                      key={social.name}
+                      href={social.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`${social.color} ${social.hoverColor} transition-all transform hover:scale-110`}
+                      aria-label={social.name}
+                      title={social.name}
+                    >
+                      {social.icon}
+                    </a>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
 
-          {/* Link al sitio web */}
+          {/* Botón del sitio web */}
           {footerConfig.website_url && (
-            <div className="flex items-center gap-2">
-              <a
-                href={footerConfig.website_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm text-blue-600 dark:text-blue-400 hover:underline transition-colors"
-              >
-                {footerConfig.website_text || 'Visita mi página web'}
-              </a>
-            </div>
+            <a
+              href={footerConfig.website_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              {footerConfig.website_text || 'Sitio Web'}
+            </a>
           )}
         </div>
       </div>
