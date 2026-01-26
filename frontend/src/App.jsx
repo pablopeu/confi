@@ -359,6 +359,7 @@ function App() {
           setInstructionsConfig(data.instructions || null)
           setConfiguratorInstructionsConfig(data.configurator_instructions || null)
           setHeadersConfig(data.headers || { showTypeGroups: true, showSelectors: true })
+          console.log('Headers config desde API:', data.headers)
           setSiteTitle(data.site_title || 'PEU Cuchillos Artesanales')
           setSiteSubtitleMobile(data.site_subtitle_mobile || 'Buscador interactivo')
           setSiteSubtitleDesktop(data.site_subtitle_desktop || 'Buscador interactivo de modelos y materiales')
