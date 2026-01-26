@@ -2254,9 +2254,9 @@ function Footer({ footerConfig, whatsappConfig, telegramConfig, showMobileSearch
     <footer className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 sticky bottom-0 z-30">
       <div className="max-w-7xl mx-auto px-4 py-3 lg:py-4">
         {/* Mobile: búsqueda a la izquierda (solo frontend), redes y web a la derecha */}
-        <div className={`flex items-center gap-2 sm:hidden ${!showConfigurador ? 'justify-between' : 'justify-end'}`}>
-          {/* Icono de búsqueda a la izquierda - solo en frontend */}
-          {!showConfigurador && (
+        <div className="flex items-center justify-between gap-2 sm:hidden">
+          {/* Icono de búsqueda a la izquierda - solo en frontend, placeholder invisible en configurador */}
+          {!showConfigurador ? (
             <button
               onClick={() => setShowMobileSearch(!showMobileSearch)}
               className="flex-shrink-0 p-1.5 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
@@ -2272,6 +2272,8 @@ function Footer({ footerConfig, whatsappConfig, telegramConfig, showMobileSearch
                 </svg>
               )}
             </button>
+          ) : (
+            <div className="flex-shrink-0 p-1.5 w-8 h-8 opacity-0" aria-hidden="true"></div>
           )}
 
           {/* Iconos de redes sociales y botón web - siempre a la derecha */}
