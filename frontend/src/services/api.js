@@ -31,30 +31,6 @@ export async function getPhotos() {
   return fetchJSON('/photos')
 }
 
-export async function getPhoto(id) {
-  return fetchJSON(`/photos/${id}`)
-}
-
-// Búsqueda
-export async function searchPhotos({ query, steel, category }) {
-  const params = new URLSearchParams()
-  if (query) params.append('query', query)
-  if (steel) params.append('steel', steel)
-  if (category) params.append('category', category)
-
-  const queryString = params.toString()
-  return fetchJSON(`/search${queryString ? `?${queryString}` : ''}`)
-}
-
-// Health check
-export async function healthCheck() {
-  return fetchJSON('/health')
-}
-
-// ==================
-// Funciones de copia al portapapeles
-// ==================
-
 export async function copyImageToClipboard(imageUrl) {
   try {
     // Verificar si el navegador soporta la API de clipboard con imágenes
@@ -104,35 +80,4 @@ export async function copyImageToClipboard(imageUrl) {
   } catch (error) {
     return { success: false, message: 'Error al copiar imagen: ' + error.message }
   }
-}
-
-export async function copyTextToClipboard(text) {
-  try {
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      await navigator.clipboard.writeText(text)
-      return { success: true, message: 'Texto copiado al portapapeles' }
-    }
-
-    // Fallback para navegadores antiguos
-    const textarea = document.createElement('textarea')
-    textarea.value = text
-    textarea.style.position = 'fixed'
-    textarea.style.left = '-9999px'
-    document.body.appendChild(textarea)
-    textarea.select()
-
-    try {
-      document.execCommand('copy')
-      return { success: true, message: 'Texto copiado al portapapeles' }
-    } finally {
-      document.body.removeChild(textarea)
-    }
-  } catch (error) {
-    return { success: false, message: 'Error al copiar texto: ' + error.message }
-  }
-}
-
-export async function copyMultipleTexts(texts) {
-  const combined = texts.filter(Boolean).join('\n\n---\n\n')
-  return copyTextToClipboard(combined)
 }
