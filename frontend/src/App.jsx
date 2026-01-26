@@ -698,37 +698,19 @@ function App() {
         <div className="px-4 py-2">
           {/* Mobile: Layout vertical con headers fijos */}
           <div className="lg:hidden">
-            {/* Header principal: Logo, título y buscador */}
-            <div className="flex items-center justify-between gap-2 py-1">
-              <div className="flex items-center gap-2 flex-1 min-w-0">
-                {logo && (
-                  <img src={logo} alt="Logo" className="h-8 object-contain flex-shrink-0" />
-                )}
-                <div className="min-w-0">
-                  <h1 className="text-base font-bold text-gray-900 dark:text-white truncate">
-                    {siteTitle}
-                  </h1>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                    {siteSubtitleMobile}
-                  </p>
-                </div>
+            {/* Header principal: Logo y título */}
+            <div className="flex items-center gap-2 py-1">
+              {logo && (
+                <img src={logo} alt="Logo" className="h-8 object-contain flex-shrink-0" />
+              )}
+              <div className="min-w-0">
+                <h1 className="text-base font-bold text-gray-900 dark:text-white truncate">
+                  {siteTitle}
+                </h1>
+                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                  {siteSubtitleMobile}
+                </p>
               </div>
-              {/* Icono de búsqueda */}
-              <button
-                onClick={() => setShowMobileSearch(!showMobileSearch)}
-                className="flex-shrink-0 p-1.5 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                aria-label="Buscar"
-              >
-                {showMobileSearch ? (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                ) : (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                )}
-              </button>
             </div>
 
             {/* Buscador expandible */}
@@ -1281,7 +1263,13 @@ function App() {
       )}
 
       {/* Footer compartido - fuera del page-container */}
-      <Footer footerConfig={footerConfig} whatsappConfig={whatsappConfig} telegramConfig={telegramConfig} />
+      <Footer
+        footerConfig={footerConfig}
+        whatsappConfig={whatsappConfig}
+        telegramConfig={telegramConfig}
+        showMobileSearch={showMobileSearch}
+        setShowMobileSearch={setShowMobileSearch}
+      />
     </>
   )
 }
@@ -2197,7 +2185,7 @@ function Configurador({
 }
 
 // Componente Footer
-function Footer({ footerConfig, whatsappConfig, telegramConfig }) {
+function Footer({ footerConfig, whatsappConfig, telegramConfig, showMobileSearch, setShowMobileSearch }) {
   if (!footerConfig?.enabled) return null
 
   const socialLinks = [
@@ -2261,8 +2249,25 @@ function Footer({ footerConfig, whatsappConfig, telegramConfig }) {
   return (
     <footer className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 sticky bottom-0 z-30">
       <div className="max-w-7xl mx-auto px-4 py-3 lg:py-4">
-        {/* Mobile: todo alineado a la derecha, sin texto de redes */}
-        <div className="flex items-center justify-end gap-2 sm:hidden">
+        {/* Mobile: búsqueda a la izquierda, redes a la derecha */}
+        <div className="flex items-center justify-between gap-2 sm:hidden">
+          {/* Icono de búsqueda a la izquierda */}
+          <button
+            onClick={() => setShowMobileSearch(!showMobileSearch)}
+            className="flex-shrink-0 p-1.5 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+            aria-label="Buscar"
+          >
+            {showMobileSearch ? (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            ) : (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            )}
+          </button>
+
           {/* Iconos de redes sociales */}
           <div className="flex items-center gap-2">
             {socialLinks.map((social) => (
