@@ -698,19 +698,33 @@ function App() {
         <div className="px-4 py-2">
           {/* Mobile: Layout vertical con headers fijos */}
           <div className="lg:hidden">
-            {/* Header principal: Logo y título */}
-            <div className="flex items-center gap-2 py-1">
-              {logo && (
-                <img src={logo} alt="Logo" className="h-8 object-contain flex-shrink-0" />
-              )}
-              <div className="min-w-0">
-                <h1 className="text-base font-bold text-gray-900 dark:text-white truncate">
-                  {siteTitle}
-                </h1>
-                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                  {siteSubtitleMobile}
-                </p>
+            {/* Header principal: Logo, título y botón configurador */}
+            <div className="flex items-center justify-between gap-2 py-1">
+              <div className="flex items-center gap-2 flex-1 min-w-0">
+                {logo && (
+                  <img src={logo} alt="Logo" className="h-8 object-contain flex-shrink-0" />
+                )}
+                <div className="min-w-0">
+                  <h1 className="text-base font-bold text-gray-900 dark:text-white truncate">
+                    {siteTitle}
+                  </h1>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                    {siteSubtitleMobile}
+                  </p>
+                </div>
               </div>
+              {/* Botón Configurador */}
+              <button
+                onClick={handleOpenConfigurador}
+                className="flex-shrink-0 px-2 py-1.5 text-xs bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-1"
+              >
+                Configurador
+                {selectedPhotos.length > 0 && (
+                  <span className="bg-white text-green-600 rounded-full px-1.5 py-0.5 text-xs font-bold">
+                    {selectedPhotos.length}
+                  </span>
+                )}
+              </button>
             </div>
 
             {/* Buscador expandible */}
@@ -780,28 +794,17 @@ function App() {
             </div>
             )}
 
-            {/* Subheader3: Configurador y Reset - TODO EN UN RENGLÓN */}
-            <div className="flex items-center justify-between gap-2 py-1 border-t border-gray-200 dark:border-gray-700">
-              <button
-                onClick={handleOpenConfigurador}
-                className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors flex items-center gap-1"
-              >
-                Configurador
-                {selectedPhotos.length > 0 && (
-                  <span className="bg-white text-green-600 rounded-full px-1.5 py-0.5 text-xs font-bold">
-                    {selectedPhotos.length}
-                  </span>
-                )}
-              </button>
-              {hasActiveFilters && (
+            {/* Subheader3: Reset selectores */}
+            {hasActiveFilters && (
+              <div className="flex items-center justify-end gap-2 py-1 border-t border-gray-200 dark:border-gray-700">
                 <button
                   onClick={handleResetFilters}
                   className="px-2 py-1 text-xs text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
                 >
                   Reset selectores
                 </button>
-              )}
-            </div>
+              </div>
+            )}
 
             {/* Subheader4: Buckets - TODO EN UN RENGLÓN, SIN CONTADOR */}
             <div className="flex items-center gap-1 py-1 border-t border-gray-200 dark:border-gray-700">
