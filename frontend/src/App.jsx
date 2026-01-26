@@ -138,7 +138,8 @@ function App() {
   const [telegramConfig, setTelegramConfig] = useState(null)
   const [footerConfig, setFooterConfig] = useState(null)
   const [instructionsConfig, setInstructionsConfig] = useState(null)
-  const [headersConfig, setHeadersConfig] = useState({ showTypeGroups: true, showSelectors: true })
+  const [showTypeGroups, setShowTypeGroups] = useState(true)
+  const [showSelectors, setShowSelectors] = useState(true)
   const [showInstructions, setShowInstructions] = useState(false)
   const [configuratorInstructionsConfig, setConfiguratorInstructionsConfig] = useState(null)
   const [showConfiguratorInstructions, setShowConfiguratorInstructions] = useState(false)
@@ -358,8 +359,8 @@ function App() {
           setFooterConfig(data.footer || null)
           setInstructionsConfig(data.instructions || null)
           setConfiguratorInstructionsConfig(data.configurator_instructions || null)
-          setHeadersConfig(data.headers || { showTypeGroups: true, showSelectors: true })
-          console.log('Headers config desde API:', data.headers)
+          setShowTypeGroups(data.headers?.showTypeGroups ?? true)
+          setShowSelectors(data.headers?.showSelectors ?? true)
           setSiteTitle(data.site_title || 'PEU Cuchillos Artesanales')
           setSiteSubtitleMobile(data.site_subtitle_mobile || 'Buscador interactivo')
           setSiteSubtitleDesktop(data.site_subtitle_desktop || 'Buscador interactivo de modelos y materiales')
@@ -742,7 +743,7 @@ function App() {
             )}
 
             {/* Subheader1: Tabs de tipo - TODO EN UN RENGLÓN */}
-            {headersConfig.showTypeGroups && (
+            {showTypeGroups && (
               <div className="flex items-center gap-1 py-1 border-t border-gray-200 dark:border-gray-700">
                 <button
                   onClick={() => setActiveTab(null)}
@@ -771,7 +772,7 @@ function App() {
             )}
 
             {/* Subheader2: Selectores - TODO EN UN RENGLÓN */}
-            {headersConfig.showSelectors && (
+            {showSelectors && (
               <div className="flex items-center gap-1 py-1 border-t border-gray-200 dark:border-gray-700">
               <MultiSelect
                 label="Encabado"
