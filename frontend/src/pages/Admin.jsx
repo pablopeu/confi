@@ -244,8 +244,8 @@ export default function Admin() {
         </div>
       </header>
 
-      <main className="flex-1 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 h-full">
+      <main className="flex-1 overflow-hidden px-4">
+        <div className="max-w-7xl mx-auto h-full">
           {activeTab === 'upload' && (
             <UploadPhotos
               tagGroups={tagGroups}
