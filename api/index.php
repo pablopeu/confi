@@ -393,11 +393,6 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 // Router
 switch (true) {
-    // Health check
-    case $path === 'health' && $method === 'GET':
-        response(['status' => 'ok', 'timestamp' => date('c')]);
-        break;
-
     // Admin verify (verificar credenciales)
     case $path === 'admin/verify' && $method === 'GET':
         checkAuth();
@@ -528,59 +523,6 @@ switch (true) {
             'message' => 'Bucket y fotos eliminadas del sistema',
             'photos_deleted' => $originalPhotoCount - count($photosData['photos'])
         ]);
-        break;
-
-    // GET /photos/{id}
-    case preg_match('/^photos\/([a-zA-Z0-9-]+)$/', $path, $matches) && $method === 'GET':
-        $data = readJSON('photos.json');
-        $photo = array_filter($data['photos'], fn($p) => $p['id'] === $matches[1]);
-        $photo = array_values($photo);
-        if (empty($photo)) {
-            response(['error' => t('photo.not_found')], 404);
-        }
-        response($photo[0]);
-        break;
-
-    // GET /search - Buscar fotos por tags y texto
-    case $path === 'search' && $method === 'GET':
-        $query = isset($_GET['query']) ? strtolower(sanitize($_GET['query'])) : '';
-        $tagsParam = isset($_GET['tags']) ? $_GET['tags'] : '';
-
-        // Tags puede venir como string separado por comas o como array
-        $filterTags = [];
-        if (!empty($tagsParam)) {
-            if (is_array($tagsParam)) {
-                $filterTags = $tagsParam;
-            } else {
-                $filterTags = array_map('trim', explode(',', $tagsParam));
-            }
-            $filterTags = array_filter($filterTags);
-        }
-
-        $data = readJSON('photos.json');
-        $results = $data['photos'];
-
-        // Filtrar por texto
-        if ($query) {
-            $results = array_filter($results, fn($p) =>
-                stripos($p['text'] ?? '', $query) !== false
-            );
-        }
-
-        // Filtrar por tags (la foto debe tener TODOS los tags seleccionados)
-        if (!empty($filterTags)) {
-            $results = array_filter($results, function($p) use ($filterTags) {
-                $photoTags = $p['tags'] ?? [];
-                foreach ($filterTags as $tag) {
-                    if (!in_array($tag, $photoTags)) {
-                        return false;
-                    }
-                }
-                return true;
-            });
-        }
-
-        response(['photos' => array_values($results)]);
         break;
 
     // ==================
