@@ -865,9 +865,9 @@ function App() {
           </div>
 
           {/* Desktop: Layout horizontal con elementos centrales centrados */}
-          <div className="hidden lg:grid grid-cols-[auto_1fr_auto] items-center gap-4">
-            {/* Logo y Título - izquierda */}
-            <div className="flex items-center gap-3">
+          <div className="hidden lg:grid grid-cols-[280px_1fr_280px] items-center gap-4">
+            {/* Logo y Título - izquierda (280px) */}
+            <div className="flex items-center gap-3 min-w-0">
               {logo && (
                 <img src={logo} alt="Logo" className="h-12 object-contain" />
               )}
@@ -975,8 +975,8 @@ function App() {
           </div>
 
           {/* Buckets de cuchillos - Desktop (subheader dentro del header) */}
-          <div className="hidden lg:grid grid-cols-[auto_1fr_auto] items-center gap-4 border-t border-gray-200 dark:border-gray-700 py-1">
-            {/* Contador de fotos a la izquierda - alineado con el logo */}
+          <div className="hidden lg:grid grid-cols-[280px_1fr_280px] items-center gap-4 border-t border-gray-200 dark:border-gray-700 py-1">
+            {/* Contador de fotos a la izquierda (280px) - alineado con el logo */}
             <div className="text-sm text-gray-500 dark:text-gray-400">
               {filteredPhotos.length} foto{filteredPhotos.length !== 1 ? 's' : ''} encontrada{filteredPhotos.length !== 1 ? 's' : ''}
             </div>
