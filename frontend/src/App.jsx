@@ -633,8 +633,14 @@ function App() {
 
   // Restaurar scroll position después de reordenar fotos por selección
   useLayoutEffect(() => {
-    if (scrollSaveRef.current !== null && mainScrollRef.current) {
-      mainScrollRef.current.scrollTop = scrollSaveRef.current
+    if (scrollSaveRef.current && mainScrollRef.current) {
+      const { anchorId, anchorOffset } = scrollSaveRef.current
+      const anchor = mainScrollRef.current.querySelector(`[data-photo-id="${anchorId}"]`)
+      if (anchor) {
+        const containerRect = mainScrollRef.current.getBoundingClientRect()
+        const newOffset = anchor.getBoundingClientRect().top - containerRect.top
+        mainScrollRef.current.scrollTop += newOffset - anchorOffset
+      }
       scrollSaveRef.current = null
     }
   }, [filteredPhotos])
@@ -652,9 +658,22 @@ function App() {
 
   // Manejar selección de fotos para configurador
   const togglePhotoSelection = useCallback((photoId) => {
-    // Guardar scroll position antes de reordenar para no mover al usuario
+    // Buscar una tarjeta ancla visible (no la que se está toggling) para preservar posición visual
     if (mainScrollRef.current) {
-      scrollSaveRef.current = mainScrollRef.current.scrollTop
+      const container = mainScrollRef.current
+      const containerRect = container.getBoundingClientRect()
+      const cards = container.querySelectorAll('[data-photo-id]')
+      for (const card of cards) {
+        if (card.dataset.photoId === photoId) continue
+        const rect = card.getBoundingClientRect()
+        if (rect.top >= containerRect.top && rect.top < containerRect.bottom) {
+          scrollSaveRef.current = {
+            anchorId: card.dataset.photoId,
+            anchorOffset: rect.top - containerRect.top
+          }
+          break
+        }
+      }
     }
     setBuckets(prev => {
       const newBuckets = [...prev]
@@ -1602,7 +1621,7 @@ function PhotoCard({ photo, tagGroups, isSelected, onToggleSelection, selectedCo
   }
 
   return (
-    <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden transition-all ${
+    <div data-photo-id={photo.id} className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden transition-all ${
       isSelected
         ? 'border-2 border-green-500 ring-2 ring-green-200 dark:ring-green-800'
         : 'border border-gray-200 dark:border-gray-700'
