@@ -1272,6 +1272,7 @@ function App() {
         telegramConfig={telegramConfig}
         showMobileSearch={showMobileSearch}
         setShowMobileSearch={setShowMobileSearch}
+        showConfigurador={showConfigurador}
       />
     </>
   )
@@ -2188,7 +2189,7 @@ function Configurador({
 }
 
 // Componente Footer
-function Footer({ footerConfig, whatsappConfig, telegramConfig, showMobileSearch, setShowMobileSearch }) {
+function Footer({ footerConfig, whatsappConfig, telegramConfig, showMobileSearch, setShowMobileSearch, showConfigurador }) {
   if (!footerConfig?.enabled) return null
 
   const socialLinks = [
@@ -2252,24 +2253,26 @@ function Footer({ footerConfig, whatsappConfig, telegramConfig, showMobileSearch
   return (
     <footer className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 sticky bottom-0 z-30">
       <div className="max-w-7xl mx-auto px-4 py-3 lg:py-4">
-        {/* Mobile: búsqueda a la izquierda, redes a la derecha */}
+        {/* Mobile: búsqueda a la izquierda (solo en frontend), redes a la derecha */}
         <div className="flex items-center justify-between gap-2 sm:hidden">
-          {/* Icono de búsqueda a la izquierda */}
-          <button
-            onClick={() => setShowMobileSearch(!showMobileSearch)}
-            className="flex-shrink-0 p-1.5 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-            aria-label="Buscar"
-          >
-            {showMobileSearch ? (
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            ) : (
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            )}
-          </button>
+          {/* Icono de búsqueda a la izquierda - solo en frontend */}
+          {!showConfigurador && (
+            <button
+              onClick={() => setShowMobileSearch(!showMobileSearch)}
+              className="flex-shrink-0 p-1.5 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              aria-label="Buscar"
+            >
+              {showMobileSearch ? (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              )}
+            </button>
+          )}
 
           {/* Iconos de redes sociales */}
           <div className="flex items-center gap-2">
