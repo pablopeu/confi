@@ -235,12 +235,14 @@ function App() {
     )
 
     if (bucketWithPhotosIndex !== -1) {
-      // Encontramos un bucket con fotos, cambiar a ese
+      // Encontramos un bucket con fotos, cambiar a ese y abrir configurador
       setActiveBucket(bucketWithPhotosIndex)
+      setShowConfigurador(true)
+    } else {
+      // No hay ningún bucket con fotos, quedarse en el frontend
+      // (no abrir el configurador si todos los buckets están vacíos)
+      return
     }
-
-    // Abrir el configurador (con o sin cambio de bucket)
-    setShowConfigurador(true)
   }, [buckets, activeBucket])
 
   // Reiniciar animación del botón del configurador cuando se abre
