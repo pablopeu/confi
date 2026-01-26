@@ -2253,8 +2253,8 @@ function Footer({ footerConfig, whatsappConfig, telegramConfig, showMobileSearch
   return (
     <footer className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 sticky bottom-0 z-30">
       <div className="max-w-7xl mx-auto px-4 py-3 lg:py-4">
-        {/* Mobile: búsqueda a la izquierda (solo en frontend), redes a la derecha */}
-        <div className="flex items-center justify-between gap-2 sm:hidden">
+        {/* Mobile: búsqueda a la izquierda (solo frontend), redes y web a la derecha */}
+        <div className={`flex items-center gap-2 sm:hidden ${!showConfigurador ? 'justify-between' : 'justify-end'}`}>
           {/* Icono de búsqueda a la izquierda - solo en frontend */}
           {!showConfigurador && (
             <button
@@ -2274,7 +2274,7 @@ function Footer({ footerConfig, whatsappConfig, telegramConfig, showMobileSearch
             </button>
           )}
 
-          {/* Iconos de redes sociales */}
+          {/* Iconos de redes sociales y botón web - siempre a la derecha */}
           <div className="flex items-center gap-2">
             {socialLinks.map((social) => (
               <a
@@ -2289,19 +2289,18 @@ function Footer({ footerConfig, whatsappConfig, telegramConfig, showMobileSearch
                 {social.icon}
               </a>
             ))}
+            {/* Botón del sitio web */}
+            {footerConfig.website_url && (
+              <a
+                href={footerConfig.website_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors whitespace-nowrap"
+              >
+                {footerConfig.website_text || 'Sitio Web'}
+              </a>
+            )}
           </div>
-
-          {/* Botón del sitio web */}
-          {footerConfig.website_url && (
-            <a
-              href={footerConfig.website_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors whitespace-nowrap"
-            >
-              {footerConfig.website_text || 'Sitio Web'}
-            </a>
-          )}
         </div>
 
         {/* Desktop: todo alineado a la derecha */}
