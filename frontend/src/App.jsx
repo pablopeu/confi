@@ -2249,28 +2249,23 @@ function Footer({ footerConfig, whatsappConfig, telegramConfig }) {
   return (
     <footer className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 sticky bottom-0 z-30">
       <div className="max-w-7xl mx-auto px-4 py-3 lg:py-4">
-        {/* Mobile: todo en un renglón */}
-        <div className="flex items-center justify-between gap-2 sm:hidden">
-          {/* Texto de redes sociales + iconos */}
+        {/* Mobile: todo alineado a la derecha, sin texto de redes */}
+        <div className="flex items-center justify-end gap-2 sm:hidden">
+          {/* Iconos de redes sociales */}
           <div className="flex items-center gap-2">
-            <span className="text-xs text-gray-600 dark:text-gray-400">
-              {footerConfig.social_text || 'Seguime en mis redes sociales'}
-            </span>
-            <div className="flex items-center gap-2">
-              {socialLinks.map((social) => (
-                <a
-                  key={social.name}
-                  href={social.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`${social.color} ${social.hoverColor} transition-all transform hover:scale-110`}
-                  aria-label={social.name}
-                  title={social.name}
-                >
-                  {social.icon}
-                </a>
-              ))}
-            </div>
+            {socialLinks.map((social) => (
+              <a
+                key={social.name}
+                href={social.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`${social.color} ${social.hoverColor} transition-all transform hover:scale-110`}
+                aria-label={social.name}
+                title={social.name}
+              >
+                {social.icon}
+              </a>
+            ))}
           </div>
 
           {/* Botón del sitio web */}
@@ -2286,8 +2281,8 @@ function Footer({ footerConfig, whatsappConfig, telegramConfig }) {
           )}
         </div>
 
-        {/* Desktop: redes a la izquierda del botón, centrados visualmente */}
-        <div className="hidden sm:flex items-center justify-center gap-4">
+        {/* Desktop: todo alineado a la derecha */}
+        <div className="hidden sm:flex items-center justify-end gap-4">
           <div className="flex items-center gap-3">
             {/* Texto de redes sociales */}
             {socialLinks.length > 0 && (
