@@ -138,6 +138,7 @@ function App() {
   const [telegramConfig, setTelegramConfig] = useState(null)
   const [footerConfig, setFooterConfig] = useState(null)
   const [instructionsConfig, setInstructionsConfig] = useState(null)
+  const [headersConfig, setHeadersConfig] = useState({ showTypeGroups: true, showSelectors: true })
   const [showInstructions, setShowInstructions] = useState(false)
   const [configuratorInstructionsConfig, setConfiguratorInstructionsConfig] = useState(null)
   const [showConfiguratorInstructions, setShowConfiguratorInstructions] = useState(false)
@@ -357,6 +358,7 @@ function App() {
           setFooterConfig(data.footer || null)
           setInstructionsConfig(data.instructions || null)
           setConfiguratorInstructionsConfig(data.configurator_instructions || null)
+          setHeadersConfig(data.headers || { showTypeGroups: true, showSelectors: true })
           setSiteTitle(data.site_title || 'PEU Cuchillos Artesanales')
           setSiteSubtitleMobile(data.site_subtitle_mobile || 'Buscador interactivo')
           setSiteSubtitleDesktop(data.site_subtitle_desktop || 'Buscador interactivo de modelos y materiales')
@@ -739,34 +741,37 @@ function App() {
             )}
 
             {/* Subheader1: Tabs de tipo - TODO EN UN RENGLÓN */}
-            <div className="flex items-center gap-1 py-1 border-t border-gray-200 dark:border-gray-700">
-              <button
-                onClick={() => setActiveTab(null)}
-                className={`px-2 py-1 text-xs font-medium rounded transition-colors flex-1 ${
-                  activeTab === null
-                    ? 'bg-blue-600 text-white'
-                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                }`}
-              >
-                Todos
-              </button>
-              {tipoTabs.map(tab => (
+            {headersConfig.showTypeGroups && (
+              <div className="flex items-center gap-1 py-1 border-t border-gray-200 dark:border-gray-700">
                 <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => setActiveTab(null)}
                   className={`px-2 py-1 text-xs font-medium rounded transition-colors flex-1 ${
-                    activeTab === tab.id
+                    activeTab === null
                       ? 'bg-blue-600 text-white'
                       : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                   }`}
                 >
-                  {tab.label}
+                  Todos
                 </button>
-              ))}
-            </div>
+                {tipoTabs.map(tab => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`px-2 py-1 text-xs font-medium rounded transition-colors flex-1 ${
+                      activeTab === tab.id
+                        ? 'bg-blue-600 text-white'
+                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            )}
 
             {/* Subheader2: Selectores - TODO EN UN RENGLÓN */}
-            <div className="flex items-center gap-1 py-1 border-t border-gray-200 dark:border-gray-700">
+            {headersConfig.showSelectors && (
+              <div className="flex items-center gap-1 py-1 border-t border-gray-200 dark:border-gray-700">
               <MultiSelect
                 label="Encabado"
                 options={getTagsByGroup('encabado')}
@@ -789,6 +794,7 @@ function App() {
                 groupId="extras"
               />
             </div>
+            )}
 
             {/* Subheader3: Configurador y Reset - TODO EN UN RENGLÓN */}
             <div className="flex items-center justify-between gap-2 py-1 border-t border-gray-200 dark:border-gray-700">

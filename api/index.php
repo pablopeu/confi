@@ -1088,6 +1088,12 @@ switch (true) {
             }
             $publicConfig['configurator_instructions'] = $configuratorInstructions;
         }
+        // Configuración de headers (visibilidad)
+        if (isset($config['headers'])) {
+            $publicConfig['headers'] = $config['headers'];
+        } else {
+            $publicConfig['headers'] = ['showTypeGroups' => true, 'showSelectors' => true];
+        }
         response($publicConfig);
         break;
 
@@ -1450,6 +1456,40 @@ switch (true) {
         ];
 
         response($contactConfig);
+        break;
+
+    // GET /admin/config/headers - Obtener configuración de headers
+    case $path === 'admin/config/headers' && $method === 'GET':
+        checkAuth();
+
+        $config = getConfig();
+        $headersConfig = $config['headers'] ?? [
+            'showTypeGroups' => true,
+            'showSelectors' => true
+        ];
+
+        response(['headers' => $headersConfig]);
+        break;
+
+    // POST /admin/config/headers - Configurar headers del frontend
+    case $path === 'admin/config/headers' && $method === 'POST':
+        checkAuth();
+
+        global $JSON_INPUT;
+        $input = $JSON_INPUT;
+        $config = getConfig();
+
+        if (!isset($input['headers'])) {
+            response(['error' => 'headers configuration is required'], 400);
+        }
+
+        $config['headers'] = $input['headers'];
+
+        if (!file_put_contents(CONFIG_FILE, json_encode($config, JSON_PRETTY_PRINT))) {
+            response(['error' => 'Failed to save headers configuration'], 500);
+        }
+
+        response(['message' => 'Headers configuration updated successfully']);
         break;
 
     // POST /admin/config/metatags - Configurar metadatos HTML

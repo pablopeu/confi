@@ -2125,6 +2125,14 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
   const [savingContact, setSavingContact] = useState(false)
   const [savedContactFeedback, setSavedContactFeedback] = useState(false)
 
+  // Estado para Headers (visibilidad de grupos y selectores)
+  const [headersConfig, setHeadersConfig] = useState({
+    showTypeGroups: true,
+    showSelectors: true
+  })
+  const [savingHeaders, setSavingHeaders] = useState(false)
+  const [savedHeadersFeedback, setSavedHeadersFeedback] = useState(false)
+
   // Estado para metadatos HTML
   const [metaTags, setMetaTags] = useState('')
   const [savingMetaTags, setSavingMetaTags] = useState(false)
@@ -2168,6 +2176,7 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
     loadBackups()
     loadConfig()
     loadContactConfig()
+    loadHeadersConfig()
     loadMetaTags()
     loadConfiguratorMessage()
     loadFooterConfig()
@@ -2218,6 +2227,19 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
       }
     } catch (error) {
       // Error silencioso
+    }
+  }
+
+  const loadHeadersConfig = async () => {
+    try {
+      const params = new URLSearchParams(authParams)
+      const response = await fetch(apiUrl('admin/config/headers') + '&' + params.toString())
+      if (response.ok) {
+        const data = await response.json()
+        setHeadersConfig(data.headers || { showTypeGroups: true, showSelectors: true })
+      }
+    } catch (error) {
+      // Error silencioso - usar valores por defecto
     }
   }
 
@@ -2688,6 +2710,34 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
     }
   }
 
+  const handleSaveHeadersConfig = async () => {
+    setSavingHeaders(true)
+    try {
+      const params = new URLSearchParams(authParams)
+      const response = await fetch(apiUrl('admin/config/headers') + '&' + params.toString(), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          headers: headersConfig
+        })
+      })
+
+      if (response.ok) {
+        setSavedHeadersFeedback(true)
+        setTimeout(() => setSavedHeadersFeedback(false), 2000)
+      } else if (response.status === 401) {
+        showError('Sesión expirada', 'Por favor, vuelve a iniciar sesión')
+      } else {
+        const error = await response.json()
+        showError('Error', error.error || 'Error al guardar configuración')
+      }
+    } catch (error) {
+      showError('Error', 'Error de conexión')
+    } finally {
+      setSavingHeaders(false)
+    }
+  }
+
   const formatFileSize = (bytes) => {
     if (bytes < 1024) return bytes + ' B'
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB'
@@ -2909,8 +2959,8 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
           </div>
         </div>
 
-        {/* Grid de Contacto */}
-        <div className="grid grid-cols-1 gap-4 mb-4">
+        {/* Grid de Contacto y Headers */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
           {/* Sección de Contacto - 2 columnas compactas */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Contacto</h2>
@@ -2997,6 +3047,64 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
               } disabled:opacity-50`}
             >
               {savingContact ? 'Guardando...' : savedContactFeedback ? '✓' : 'Guardar'}
+            </button>
+          </div>
+
+          {/* Sección de Headers - Visibilidad del frontend */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Headers Frontend</h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">Configura qué elementos se muestran en el header</p>
+
+            <div className="space-y-4">
+              {/* Mostrar grupos de tipo */}
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <input
+                    type="checkbox"
+                    id="show-type-groups"
+                    checked={headersConfig.showTypeGroups}
+                    onChange={(e) => setHeadersConfig({ ...headersConfig, showTypeGroups: e.target.checked })}
+                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                  />
+                  <label htmlFor="show-type-groups" className="text-sm font-medium text-gray-900 dark:text-white">
+                    Mostrar grupos de tipo
+                  </label>
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 ml-6">
+                  Muestra los tabs "Todos", "Nakiri", "Santoku", etc. y los selectores
+                </p>
+              </div>
+
+              {/* Mostrar selectores */}
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <input
+                    type="checkbox"
+                    id="show-selectors"
+                    checked={headersConfig.showSelectors}
+                    onChange={(e) => setHeadersConfig({ ...headersConfig, showSelectors: e.target.checked })}
+                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                  />
+                  <label htmlFor="show-selectors" className="text-sm font-medium text-gray-900 dark:text-white">
+                    Mostrar selectores
+                  </label>
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 ml-6">
+                  Muestra los 3 selectores: Encabado, Acero y Tipo de Cuchillo
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={handleSaveHeadersConfig}
+              disabled={savingHeaders}
+              className={`w-full px-3 py-2 text-sm rounded transition-all duration-300 mt-3 ${
+                savedHeadersFeedback
+                  ? 'bg-green-500 text-white'
+                  : 'bg-blue-600 text-white hover:bg-blue-700'
+              } disabled:opacity-50`}
+            >
+              {savingHeaders ? 'Guardando...' : savedHeadersFeedback ? '✓' : 'Guardar'}
             </button>
           </div>
         </div>
