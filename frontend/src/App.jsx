@@ -895,6 +895,7 @@ function App() {
             </div>
 
             {/* Tabs de tipo */}
+            {showTypeGroups && (
             <div className="flex items-center gap-1 flex-shrink-0">
               <button
                 onClick={() => setActiveTab(null)}
@@ -920,8 +921,10 @@ function App() {
                 </button>
               ))}
             </div>
+            )}
 
             {/* Selectboxes */}
+            {showSelectors && (
             <div className="flex items-center gap-3 flex-shrink-0">
               <MultiSelect
                 label="Encabado"
@@ -945,6 +948,7 @@ function App() {
                 groupId="extras"
               />
             </div>
+            )}
 
             {/* Botón resetear */}
             {hasActiveFilters && (
