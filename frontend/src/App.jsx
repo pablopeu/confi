@@ -864,9 +864,9 @@ function App() {
             </div>
           </div>
 
-          {/* Desktop: Layout horizontal en una línea */}
-          <div className="hidden lg:flex items-center gap-4">
-            {/* Logo y Título */}
+          {/* Desktop: Layout horizontal con elementos centrales centrados */}
+          <div className="hidden lg:flex items-center justify-between gap-4">
+            {/* Logo y Título - izquierda */}
             <div className="flex items-center gap-3 flex-shrink-0">
               {logo && (
                 <img src={logo} alt="Logo" className="h-12 object-contain" />
@@ -881,87 +881,90 @@ function App() {
               </div>
             </div>
 
-            {/* Tabs de tipo */}
-            {showTypeGroups && (
-            <div className="flex items-center gap-1 flex-shrink-0">
-              <button
-                onClick={() => setActiveTab(null)}
-                className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
-                  activeTab === null
-                    ? 'bg-blue-600 text-white'
-                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                }`}
-              >
-                Todos
-              </button>
-              {tipoTabs.map(tab => (
+            {/* Elementos centrales - se centran cuando hay menos elementos */}
+            <div className="flex items-center gap-4">
+              {/* Tabs de tipo */}
+              {showTypeGroups && (
+              <div className="flex items-center gap-1 flex-shrink-0">
                 <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => setActiveTab(null)}
                   className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
-                    activeTab === tab.id
+                    activeTab === null
                       ? 'bg-blue-600 text-white'
                       : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                   }`}
                 >
-                  {tab.label}
+                  Todos
                 </button>
-              ))}
-            </div>
-            )}
-
-            {/* Selectboxes */}
-            {showSelectors && (
-            <div className="flex items-center gap-3 flex-shrink-0">
-              <MultiSelect
-                label="Encabado"
-                options={getTagsByGroup('encabado')}
-                selected={selectedEncabado}
-                onChange={setSelectedEncabado}
-                groupId="encabado"
-              />
-              <MultiSelect
-                label="Acero"
-                options={getTagsByGroup('acero')}
-                selected={selectedAcero}
-                onChange={setSelectedAcero}
-                groupId="acero"
-              />
-              <MultiSelect
-                label="Tipo de Cuchillo"
-                options={getTagsByGroup('extras')}
-                selected={selectedExtras}
-                onChange={setSelectedExtras}
-                groupId="extras"
-              />
-            </div>
-            )}
-
-            {/* Botón resetear */}
-            {hasActiveFilters && (
-              <button
-                onClick={handleResetFilters}
-                className="px-3 py-1.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors flex-shrink-0"
-              >
-                Resetear filtros
-              </button>
-            )}
-
-            {/* Botón Configurador */}
-            <button
-              onClick={handleOpenConfigurador}
-              className="px-3 py-1.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-1 flex-shrink-0"
-            >
-              Configurador
-              {selectedPhotos.length > 0 && (
-                <span className="bg-white text-green-600 rounded-full px-1.5 py-0.5 text-xs font-bold">
-                  {selectedPhotos.length}
-                </span>
+                {tipoTabs.map(tab => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
+                      activeTab === tab.id
+                        ? 'bg-blue-600 text-white'
+                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
               )}
-            </button>
 
-            {/* Buscador al final */}
-            <div className="ml-auto">
+              {/* Selectboxes */}
+              {showSelectors && (
+              <div className="flex items-center gap-3 flex-shrink-0">
+                <MultiSelect
+                  label="Encabado"
+                  options={getTagsByGroup('encabado')}
+                  selected={selectedEncabado}
+                  onChange={setSelectedEncabado}
+                  groupId="encabado"
+                />
+                <MultiSelect
+                  label="Acero"
+                  options={getTagsByGroup('acero')}
+                  selected={selectedAcero}
+                  onChange={setSelectedAcero}
+                  groupId="acero"
+                />
+                <MultiSelect
+                  label="Tipo de Cuchillo"
+                  options={getTagsByGroup('extras')}
+                  selected={selectedExtras}
+                  onChange={setSelectedExtras}
+                  groupId="extras"
+                />
+              </div>
+              )}
+
+              {/* Botón resetear */}
+              {hasActiveFilters && (
+                <button
+                  onClick={handleResetFilters}
+                  className="px-3 py-1.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors flex-shrink-0"
+                >
+                  Resetear filtros
+                </button>
+              )}
+
+              {/* Botón Configurador */}
+              <button
+                onClick={handleOpenConfigurador}
+                className="px-3 py-1.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-1 flex-shrink-0"
+              >
+                Configurador
+                {selectedPhotos.length > 0 && (
+                  <span className="bg-white text-green-600 rounded-full px-1.5 py-0.5 text-xs font-bold">
+                    {selectedPhotos.length}
+                  </span>
+                )}
+              </button>
+            </div>
+
+            {/* Buscador - derecha */}
+            <div className="flex-shrink-0">
               <SearchBar
                 value={searchQuery}
                 onChange={setSearchQuery}
