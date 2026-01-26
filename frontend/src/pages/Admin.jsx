@@ -2,23 +2,9 @@ import { useState, useEffect, useRef } from 'react'
 import Modal from '../components/Modal'
 import { useModal } from '../hooks/useModal'
 import SearchBar from '../components/SearchBar/SearchBar'
+import { capitalize, normalizeText } from '../utils'
 
 const API_BASE = import.meta.env.VITE_API_URL || './api/index.php'
-
-// Helper para capitalizar primera letra
-const capitalize = (str) => {
-  if (!str) return ''
-  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase()
-}
-
-// Helper para normalizar texto (remover acentos)
-const normalizeText = (str) => {
-  if (!str) return ''
-  return str
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-}
 
 function apiUrl(route) {
   return `${API_BASE}?route=${route.replace(/^\//, '')}`
