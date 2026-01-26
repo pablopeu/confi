@@ -739,7 +739,7 @@ function App() {
     <>
       <div className="page-container">
         {/* Slide del frontend */}
-        <div className={`page-slide ${showConfigurador ? 'page-slide-left' : 'page-slide-visible'}`}>
+        <div ref={mainScrollRef} className={`page-slide ${showConfigurador ? 'page-slide-left' : 'page-slide-visible'}`}>
         {/* Header del frontend */}
         <header className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-40">
         <div className="px-4 py-2">
@@ -1136,7 +1136,7 @@ function App() {
         </header>
 
       {/* Main content */}
-      <main ref={mainScrollRef} className="flex-1 overflow-y-auto p-4 lg:p-6">
+      <main className="flex-1 overflow-y-auto p-4 lg:p-6">
         <div className="max-w-7xl mx-auto">
           {/* Grid de fotos */}
           {loading ? (
