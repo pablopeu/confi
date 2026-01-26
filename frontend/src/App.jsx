@@ -146,6 +146,35 @@ function App() {
   const [siteTitle, setSiteTitle] = useState('PEU Cuchillos Artesanales')
   const [siteSubtitleMobile, setSiteSubtitleMobile] = useState('Buscador interactivo')
   const [siteSubtitleDesktop, setSiteSubtitleDesktop] = useState('Buscador interactivo de modelos y materiales')
+
+  // Dark mode state con persistencia en cookies
+  const [darkMode, setDarkMode] = useState(() => {
+    const savedTheme = document.cookie
+      .split('; ')
+      .find(row => row.startsWith('darkMode='))
+    return savedTheme ? savedTheme.split('=')[1] === 'true' : false
+  })
+
+  const toggleDarkMode = useCallback(() => {
+    setDarkMode(prev => {
+      const newValue = !prev
+      // Guardar en cookie con expiración de 1 año
+      const expires = new Date()
+      expires.setFullYear(expires.getFullYear() + 1)
+      document.cookie = `darkMode=${newValue}; expires=${expires.toUTCString()}; path=/`
+      return newValue
+    })
+  }, [])
+
+  // Aplicar clase dark al elemento html cuando cambia darkMode
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+  }, [darkMode])
+
   const [showConfigurador, setShowConfigurador] = useState(false)
   const [configuratorButtonAnimationKey, setConfiguratorButtonAnimationKey] = useState(0)
   const [savingConfigurator, setSavingConfigurator] = useState(false)
@@ -700,11 +729,15 @@ function App() {
         <div className="px-4 py-2">
           {/* Mobile: Layout vertical con headers fijos */}
           <div className="lg:hidden">
-            {/* Header principal: Logo, título y botón configurador */}
+            {/* Header principal: Logo, título y botones */}
             <div className="flex items-center justify-between gap-2 py-1">
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 {logo && (
-                  <img src={logo} alt="Logo" className="h-8 object-contain flex-shrink-0" />
+                  <img
+                    src={logo}
+                    alt="Logo"
+                    className={`h-8 object-contain flex-shrink-0 ${darkMode ? 'brightness-0 invert' : ''}`}
+                  />
                 )}
                 <div className="min-w-0">
                   <h1 className="text-base font-bold text-gray-900 dark:text-white truncate">
@@ -715,18 +748,39 @@ function App() {
                   </p>
                 </div>
               </div>
-              {/* Botón Configurador */}
-              <button
-                onClick={handleOpenConfigurador}
-                className="flex-shrink-0 px-2 py-1.5 text-xs bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-1"
-              >
-                Configurador
-                {selectedPhotos.length > 0 && (
-                  <span className="bg-white text-green-600 rounded-full px-1.5 py-0.5 text-xs font-bold">
-                    {selectedPhotos.length}
-                  </span>
-                )}
-              </button>
+              <div className="flex items-center gap-2">
+                {/* Botón Dark Mode */}
+                <button
+                  onClick={toggleDarkMode}
+                  className="flex-shrink-0 p-1.5 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                  aria-label="Cambiar tema"
+                  title={darkMode ? 'Modo claro' : 'Modo oscuro'}
+                >
+                  {darkMode ? (
+                    // Sol (modo claro)
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                  ) : (
+                    // Luna (modo oscuro)
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                    </svg>
+                  )}
+                </button>
+                {/* Botón Configurador */}
+                <button
+                  onClick={handleOpenConfigurador}
+                  className="flex-shrink-0 px-2 py-1.5 text-xs bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-1"
+                >
+                  Configurador
+                  {selectedPhotos.length > 0 && (
+                    <span className="bg-white text-green-600 rounded-full px-1.5 py-0.5 text-xs font-bold">
+                      {selectedPhotos.length}
+                    </span>
+                  )}
+                </button>
+              </div>
             </div>
 
             {/* Buscador expandible */}
@@ -869,7 +923,11 @@ function App() {
             {/* Logo y Título - izquierda (280px) */}
             <div className="flex items-center gap-3 min-w-0">
               {logo && (
-                <img src={logo} alt="Logo" className="h-12 object-contain" />
+                <img
+                  src={logo}
+                  alt="Logo"
+                  className={`h-12 object-contain ${darkMode ? 'brightness-0 invert' : ''}`}
+                />
               )}
               <div>
                 <h1 className="text-xl font-bold text-gray-900 dark:text-white">
@@ -963,8 +1021,27 @@ function App() {
               </button>
             </div>
 
-            {/* Buscador - derecha */}
-            <div>
+            {/* Buscador y Dark Mode - derecha */}
+            <div className="flex items-center gap-3">
+              {/* Botón Dark Mode */}
+              <button
+                onClick={toggleDarkMode}
+                className="flex-shrink-0 p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                aria-label="Cambiar tema"
+                title={darkMode ? 'Modo claro' : 'Modo oscuro'}
+              >
+                {darkMode ? (
+                  // Sol (modo claro)
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                ) : (
+                  // Luna (modo oscuro)
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                  </svg>
+                )}
+              </button>
               <SearchBar
                 value={searchQuery}
                 onChange={setSearchQuery}
@@ -1130,6 +1207,8 @@ function App() {
           setSaving={setSavingConfigurator}
           handleDirectShare={handleDirectShare}
           loadConfiguration={loadConfiguration}
+          darkMode={darkMode}
+          toggleDarkMode={toggleDarkMode}
           configuratorMessage={configuratorMessage}
         />
       </div>
@@ -1652,7 +1731,9 @@ function Configurador({
   setSaving,
   handleDirectShare,
   loadConfiguration,
-  configuratorMessage
+  configuratorMessage,
+  darkMode,
+  toggleDarkMode
 }) {
   const [showShareButtons, setShowShareButtons] = useState(false)
   const configLoadedRef = useRef(false)
@@ -1815,14 +1896,18 @@ function Configurador({
         <div className="px-4 py-2">
           {/* Mobile: Layout vertical */}
           <div className="lg:hidden">
-            {/* Header principal: Logo, título del sitio y botón guardar */}
+            {/* Header principal: Logo, título del sitio y botones */}
             <div className="flex items-center justify-between gap-2 py-1">
               <div
                 className="flex items-center gap-2 flex-1 min-w-0 cursor-pointer hover:opacity-80 transition-opacity"
                 onClick={onClose}
               >
                 {logo && (
-                  <img src={logo} alt="Logo" className="h-8 object-contain flex-shrink-0" />
+                  <img
+                    src={logo}
+                    alt="Logo"
+                    className={`h-8 object-contain flex-shrink-0 ${darkMode ? 'brightness-0 invert' : ''}`}
+                  />
                 )}
                 <div className="min-w-0">
                   <h1 className="text-base font-bold text-gray-900 dark:text-white truncate">
@@ -1834,8 +1919,25 @@ function Configurador({
                 </div>
               </div>
 
-              {/* Botón de guardar o botones de compartir */}
+              {/* Botones de guardar y dark mode */}
               <div className="flex items-center gap-1 flex-shrink-0">
+                {/* Botón Dark Mode */}
+                <button
+                  onClick={toggleDarkMode}
+                  className="flex-shrink-0 p-1.5 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                  aria-label="Cambiar tema"
+                  title={darkMode ? 'Modo claro' : 'Modo oscuro'}
+                >
+                  {darkMode ? (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                    </svg>
+                  )}
+                </button>
                 <button
                   onClick={handleSaveConfiguration}
                   disabled={saving || showShareButtons}
@@ -1927,7 +2029,7 @@ function Configurador({
             </div>
           </div>
 
-          {/* Desktop: Layout horizontal (sin cambios) */}
+          {/* Desktop: Layout horizontal */}
           <div className="hidden lg:flex items-center gap-4 justify-between">
             {/* Logo y nombre del sitio (clickeable) */}
             <div
@@ -1935,7 +2037,11 @@ function Configurador({
               onClick={onClose}
             >
               {logo && (
-                <img src={logo} alt="Logo" className="h-12 object-contain" />
+                <img
+                  src={logo}
+                  alt="Logo"
+                  className={`h-12 object-contain ${darkMode ? 'brightness-0 invert' : ''}`}
+                />
               )}
               <div>
                 <h1 className="text-xl font-bold text-gray-900 dark:text-white">
@@ -2008,7 +2114,24 @@ function Configurador({
             </div>
 
             {/* Botones de acción */}
-            <div className="flex items-center gap-1 flex-shrink-0">
+            <div className="flex items-center gap-2 flex-shrink-0">
+              {/* Botón Dark Mode */}
+              <button
+                onClick={toggleDarkMode}
+                className="flex-shrink-0 p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                aria-label="Cambiar tema"
+                title={darkMode ? 'Modo claro' : 'Modo oscuro'}
+              >
+                {darkMode ? (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                  </svg>
+                )}
+              </button>
               <button
                 onClick={onClose}
                 className="px-4 py-1 text-xs text-white bg-gray-600 hover:bg-gray-700 dark:bg-gray-500 dark:hover:bg-gray-600 rounded transition-colors"
