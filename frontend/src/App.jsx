@@ -1230,7 +1230,7 @@ function App() {
           {/* Instrucciones - arriba de todo */}
           {instructionsConfig?.enabled && (
             <button
-              onClick={() => setShowInstructions(true)}
+              onClick={() => setShowInstructions(prev => !prev)}
               className="w-[42px] h-[42px] sm:w-14 sm:h-14 rounded-full bg-gray-800 hover:bg-gray-900 text-white flex items-center justify-center shadow-lg transition-all hover:scale-110 relative"
               title="Ver instrucciones"
             >
@@ -1297,7 +1297,7 @@ function App() {
           {/* Instrucciones del configurador - arriba de todo */}
           {configuratorInstructionsConfig?.enabled && (
             <button
-              onClick={() => setShowConfiguratorInstructions(true)}
+              onClick={() => setShowConfiguratorInstructions(prev => !prev)}
               className="w-[42px] h-[42px] sm:w-14 sm:h-14 rounded-full bg-gray-800 hover:bg-gray-900 text-white flex items-center justify-center shadow-lg transition-all hover:scale-110 relative"
               title="Ver instrucciones"
             >
