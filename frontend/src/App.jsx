@@ -1,4 +1,4 @@
-import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faQuestionCircle } from '@fortawesome/free-solid-svg-icons'
 import SearchBar from './components/SearchBar'
@@ -292,6 +292,8 @@ function App() {
   // Ref para el scroll container del frontend y preservar posición al reordenar
   const mainScrollRef = useRef(null)
   const scrollSaveRef = useRef(null)
+  const gridTopSentinel = useRef(null)
+  const [showThumbnailStrip, setShowThumbnailStrip] = useState(false)
 
   // Guardar buckets en cookies cuando cambien (con protección contra loop)
   const bucketsInitialized = useRef(false)
@@ -365,6 +367,10 @@ function App() {
 
   // Fotos seleccionadas del bucket activo (para compatibilidad)
   const selectedPhotos = buckets[activeBucket]?.selectedPhotos || []
+  const thumbnailPhotos = useMemo(() =>
+    selectedPhotos.map(id => photos.find(p => p.id === id)).filter(Boolean),
+    [selectedPhotos, photos]
+  )
 
   // Cargar configuración (logo, whatsapp, telegram) y detectar ?config= en URL
   useEffect(() => {
@@ -630,6 +636,23 @@ function App() {
       scrollSaveRef.current = null
     }
   }, [filteredPhotos])
+
+  // IntersectionObserver para mostrar/ocultar thumbnails flotantes
+  useEffect(() => {
+    const sentinel = gridTopSentinel.current
+    const root = mainScrollRef.current
+    if (!sentinel || !root) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setShowThumbnailStrip(!entry.isIntersecting)
+      },
+      { root, threshold: 0, rootMargin: '0px 0px 0px 0px' }
+    )
+
+    observer.observe(sentinel)
+    return () => observer.disconnect()
+  }, [])
 
   // Handlers
   const handleResetFilters = useCallback(() => {
@@ -1127,10 +1150,28 @@ function App() {
               <div></div>
             </div>
           </div>
+
+          {/* Thumbnails flotantes del bucket activo - solo visibles al scrollear */}
+          {showThumbnailStrip && thumbnailPhotos.length > 0 && (
+            <div className="border-t border-gray-200 dark:border-gray-700 py-1.5 px-4">
+              <div className="flex justify-center gap-1">
+                {thumbnailPhotos.map(photo => (
+                  <div
+                    key={photo.id}
+                    className="aspect-square overflow-hidden rounded-sm border border-gray-300 dark:border-gray-600"
+                    style={{ width: `${Math.max(32, Math.min(48, Math.floor(280 / thumbnailPhotos.length)))}px` }}
+                  >
+                    <img src={photo.url} alt="" className="w-full h-full object-cover" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </header>
 
       {/* Main content */}
       <main className="flex-1 overflow-y-auto p-4 lg:p-6">
+        <div ref={gridTopSentinel} className="h-0" />
         <div className="max-w-7xl mx-auto">
           {/* Grid de fotos */}
           {loading ? (
