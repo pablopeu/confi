@@ -1648,16 +1648,18 @@ function PhotoCard({ photo, tagGroups, isSelected, onToggleSelection, selectedCo
   }
 
   return (
-    <div data-photo-id={photo.id} className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden transition-all ${
-      isSelected
-        ? 'border-2 border-green-500 ring-2 ring-green-200 dark:ring-green-800'
-        : 'border border-gray-200 dark:border-gray-700'
-    }`}>
+    <div
+      data-photo-id={photo.id}
+      onClick={handleClick}
+      className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden transition-all cursor-pointer ${
+        isSelected
+          ? 'border-2 border-green-500 ring-2 ring-green-200 dark:ring-green-800'
+          : 'border border-gray-200 dark:border-gray-700'
+      }`}>
       {/* Imagen con zoom */}
       <div
         ref={containerRef}
         className="aspect-square bg-gray-100 dark:bg-gray-700 relative overflow-hidden"
-        onClick={handleClick}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
@@ -1666,7 +1668,7 @@ function PhotoCard({ photo, tagGroups, isSelected, onToggleSelection, selectedCo
           handleMouseUp()
           setShowTooltip(false)
         }}
-        style={{ cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'pointer' }}
+        style={{ cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default' }}
       >
         {!imageLoaded && !imageError && (
           <div className="absolute inset-0 flex items-center justify-center">
