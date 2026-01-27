@@ -1158,12 +1158,11 @@ function App() {
             <div className={`absolute top-full left-0 right-0 z-30 flex justify-center pt-3 pointer-events-none transition-all duration-300 ease-in-out ${
               showThumbnailStrip ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'
             }`}>
-              <div className="flex gap-1.5 pointer-events-auto">
+              <div className="flex gap-1.5 lg:gap-2 pointer-events-auto w-full px-3 lg:w-auto lg:px-0">
                 {thumbnailPhotos.map(photo => (
                   <div
                     key={photo.id}
-                    className="aspect-square overflow-hidden rounded-lg border border-gray-200 dark:border-gray-600 shadow-md bg-white dark:bg-gray-800"
-                    style={{ width: `${Math.max(40, Math.min(56, Math.floor(280 / thumbnailPhotos.length)))}px` }}
+                    className="flex-1 min-w-0 lg:flex-none lg:w-[100px] aspect-square overflow-hidden rounded-lg border-2 border-green-500 shadow-md"
                   >
                     <img src={photo.url} alt="" className="w-full h-full object-cover" />
                   </div>
