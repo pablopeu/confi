@@ -1162,7 +1162,13 @@ function App() {
                 {thumbnailPhotos.map(photo => (
                   <div
                     key={photo.id}
-                    className="w-[calc((100vw-3rem-1.875rem)/6)] lg:w-[100px] aspect-square overflow-hidden rounded-lg border-2 border-green-500 shadow-md"
+                    onClick={() => {
+                      const card = mainScrollRef.current?.querySelector(`[data-photo-id="${photo.id}"]`)
+                      if (card) {
+                        card.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                      }
+                    }}
+                    className="w-[calc((100vw-3rem-1.875rem)/6)] lg:w-[100px] aspect-square overflow-hidden rounded-lg border-2 border-green-500 shadow-md cursor-pointer hover:ring-2 hover:ring-green-300 dark:hover:ring-green-700 transition-all"
                   >
                     <img src={photo.url} alt="" className="w-full h-full object-cover" />
                   </div>
