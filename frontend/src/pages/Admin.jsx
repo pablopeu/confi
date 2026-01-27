@@ -2114,7 +2114,8 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
   // Estado para Headers (visibilidad de grupos y selectores)
   const [headersConfig, setHeadersConfig] = useState({
     showTypeGroups: true,
-    showSelectors: true
+    showSelectors: true,
+    showThumbnails: true
   })
   const [savingHeaders, setSavingHeaders] = useState(false)
   const [savedHeadersFeedback, setSavedHeadersFeedback] = useState(false)
@@ -3077,6 +3078,25 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
                 </div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 ml-6">
                   Muestra los 3 selectores: Encabado, Acero y Tipo de Cuchillo
+                </p>
+              </div>
+
+              {/* Mostrar thumbnails flotantes */}
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <input
+                    type="checkbox"
+                    id="show-thumbnails"
+                    checked={headersConfig.showThumbnails}
+                    onChange={(e) => setHeadersConfig({ ...headersConfig, showThumbnails: e.target.checked })}
+                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                  />
+                  <label htmlFor="show-thumbnails" className="text-sm font-medium text-gray-900 dark:text-white">
+                    Mostrar thumbnails flotantes
+                  </label>
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 ml-6">
+                  Muestra miniaturas flotantes de los cuchillos seleccionados al hacer scroll
                 </p>
               </div>
             </div>

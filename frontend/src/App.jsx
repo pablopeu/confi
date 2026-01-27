@@ -126,6 +126,7 @@ function App() {
   const [instructionsConfig, setInstructionsConfig] = useState(null)
   const [showTypeGroups, setShowTypeGroups] = useState(true)
   const [showSelectors, setShowSelectors] = useState(true)
+  const [showThumbnails, setShowThumbnails] = useState(true)
   const [showInstructions, setShowInstructions] = useState(false)
   const [configuratorInstructionsConfig, setConfiguratorInstructionsConfig] = useState(null)
   const [showConfiguratorInstructions, setShowConfiguratorInstructions] = useState(false)
@@ -388,6 +389,7 @@ function App() {
           setConfiguratorInstructionsConfig(data.configurator_instructions || null)
           setShowTypeGroups(data.headers?.showTypeGroups ?? true)
           setShowSelectors(data.headers?.showSelectors ?? true)
+          setShowThumbnails(data.headers?.showThumbnails ?? true)
           setSiteTitle(data.site_title || 'PEU Cuchillos Artesanales')
           setSiteSubtitleMobile(data.site_subtitle_mobile || 'Buscador interactivo')
           setSiteSubtitleDesktop(data.site_subtitle_desktop || 'Buscador interactivo de modelos y materiales')
@@ -769,7 +771,7 @@ function App() {
         {/* Slide del frontend */}
         <div ref={mainScrollRef} className={`page-slide ${showConfigurador ? 'page-slide-left' : 'page-slide-visible'}`}>
         {/* Header del frontend */}
-        <header className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-40">
+        <header className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-40 relative">
         <div className="px-4 py-2">
           {/* Mobile: Layout vertical con headers fijos */}
           <div className="lg:hidden">
@@ -1151,15 +1153,17 @@ function App() {
             </div>
           </div>
 
-          {/* Thumbnails flotantes del bucket activo - solo visibles al scrollear */}
-          {showThumbnailStrip && thumbnailPhotos.length > 0 && (
-            <div className="border-t border-gray-200 dark:border-gray-700 py-1.5 px-4">
-              <div className="flex justify-center gap-1">
+          {/* Thumbnails flotantes del bucket activo - flotan sobre el contenido */}
+          {showThumbnails && thumbnailPhotos.length > 0 && (
+            <div className={`absolute top-full left-0 right-0 z-30 flex justify-center pt-3 pointer-events-none transition-all duration-300 ease-in-out ${
+              showThumbnailStrip ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'
+            }`}>
+              <div className="flex gap-1.5 pointer-events-auto">
                 {thumbnailPhotos.map(photo => (
                   <div
                     key={photo.id}
-                    className="aspect-square overflow-hidden rounded-sm border border-gray-300 dark:border-gray-600"
-                    style={{ width: `${Math.max(32, Math.min(48, Math.floor(280 / thumbnailPhotos.length)))}px` }}
+                    className="aspect-square overflow-hidden rounded-lg border border-gray-200 dark:border-gray-600 shadow-md bg-white dark:bg-gray-800"
+                    style={{ width: `${Math.max(40, Math.min(56, Math.floor(280 / thumbnailPhotos.length)))}px` }}
                   >
                     <img src={photo.url} alt="" className="w-full h-full object-cover" />
                   </div>
