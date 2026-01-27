@@ -804,17 +804,6 @@ function App() {
               </div>
             </div>
 
-            {/* Buscador expandible */}
-            {showMobileSearch && (
-              <div className="py-1">
-                <SearchBar
-                  value={searchQuery}
-                  onChange={setSearchQuery}
-                  placeholder="Buscar..."
-                />
-              </div>
-            )}
-
             {/* Subheader1: Tabs de tipo - TODO EN UN RENGLÓN */}
             {showTypeGroups && (
               <div className="flex items-center gap-1 py-1 border-t border-gray-200 dark:border-gray-700">
@@ -1376,6 +1365,8 @@ function App() {
         showMobileSearch={showMobileSearch}
         setShowMobileSearch={setShowMobileSearch}
         showConfigurador={showConfigurador}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
       />
     </>
   )
@@ -2336,7 +2327,7 @@ function Configurador({
 }
 
 // Componente Footer
-function Footer({ footerConfig, whatsappConfig, telegramConfig, showMobileSearch, setShowMobileSearch, showConfigurador }) {
+function Footer({ footerConfig, whatsappConfig, telegramConfig, showMobileSearch, setShowMobileSearch, showConfigurador, searchQuery, setSearchQuery }) {
   if (!footerConfig?.enabled) return null
 
   const socialLinks = [
@@ -2399,6 +2390,16 @@ function Footer({ footerConfig, whatsappConfig, telegramConfig, showMobileSearch
 
   return (
     <footer className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 sticky bottom-0 z-30">
+      {/* Buscador mobile - aparece arriba del footer */}
+      {showMobileSearch && !showConfigurador && (
+        <div className="sm:hidden px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+          <SearchBar
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="Buscar..."
+          />
+        </div>
+      )}
       <div className="max-w-7xl mx-auto px-4 py-3 lg:py-4">
         {/* Mobile: búsqueda a la izquierda (solo frontend), redes y web a la derecha */}
         <div className="flex items-center justify-between gap-2 sm:hidden">
