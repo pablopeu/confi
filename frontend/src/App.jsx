@@ -1,4 +1,4 @@
-import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faQuestionCircle } from '@fortawesome/free-solid-svg-icons'
 import SearchBar from './components/SearchBar'
@@ -126,6 +126,7 @@ function App() {
   const [instructionsConfig, setInstructionsConfig] = useState(null)
   const [showTypeGroups, setShowTypeGroups] = useState(true)
   const [showSelectors, setShowSelectors] = useState(true)
+  const [showThumbnails, setShowThumbnails] = useState(true)
   const [showInstructions, setShowInstructions] = useState(false)
   const [configuratorInstructionsConfig, setConfiguratorInstructionsConfig] = useState(null)
   const [showConfiguratorInstructions, setShowConfiguratorInstructions] = useState(false)
@@ -292,6 +293,8 @@ function App() {
   // Ref para el scroll container del frontend y preservar posición al reordenar
   const mainScrollRef = useRef(null)
   const scrollSaveRef = useRef(null)
+  const gridTopSentinel = useRef(null)
+  const [showThumbnailStrip, setShowThumbnailStrip] = useState(false)
 
   // Guardar buckets en cookies cuando cambien (con protección contra loop)
   const bucketsInitialized = useRef(false)
@@ -365,6 +368,10 @@ function App() {
 
   // Fotos seleccionadas del bucket activo (para compatibilidad)
   const selectedPhotos = buckets[activeBucket]?.selectedPhotos || []
+  const thumbnailPhotos = useMemo(() =>
+    selectedPhotos.map(id => photos.find(p => p.id === id)).filter(Boolean),
+    [selectedPhotos, photos]
+  )
 
   // Cargar configuración (logo, whatsapp, telegram) y detectar ?config= en URL
   useEffect(() => {
@@ -382,6 +389,7 @@ function App() {
           setConfiguratorInstructionsConfig(data.configurator_instructions || null)
           setShowTypeGroups(data.headers?.showTypeGroups ?? true)
           setShowSelectors(data.headers?.showSelectors ?? true)
+          setShowThumbnails(data.headers?.showThumbnails ?? true)
           setSiteTitle(data.site_title || 'PEU Cuchillos Artesanales')
           setSiteSubtitleMobile(data.site_subtitle_mobile || 'Buscador interactivo')
           setSiteSubtitleDesktop(data.site_subtitle_desktop || 'Buscador interactivo de modelos y materiales')
@@ -631,6 +639,23 @@ function App() {
     }
   }, [filteredPhotos])
 
+  // IntersectionObserver para mostrar/ocultar thumbnails flotantes
+  useEffect(() => {
+    const sentinel = gridTopSentinel.current
+    const root = mainScrollRef.current
+    if (!sentinel || !root) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setShowThumbnailStrip(!entry.isIntersecting)
+      },
+      { root, threshold: 0, rootMargin: '0px 0px 0px 0px' }
+    )
+
+    observer.observe(sentinel)
+    return () => observer.disconnect()
+  }, [])
+
   // Handlers
   const handleResetFilters = useCallback(() => {
     setActiveTab(null)
@@ -746,7 +771,7 @@ function App() {
         {/* Slide del frontend */}
         <div ref={mainScrollRef} className={`page-slide ${showConfigurador ? 'page-slide-left' : 'page-slide-visible'}`}>
         {/* Header del frontend */}
-        <header className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-40">
+        <header className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-40 relative">
         <div className="px-4 py-2">
           {/* Mobile: Layout vertical con headers fijos */}
           <div className="lg:hidden">
@@ -803,17 +828,6 @@ function App() {
                 </button>
               </div>
             </div>
-
-            {/* Buscador expandible */}
-            {showMobileSearch && (
-              <div className="py-1">
-                <SearchBar
-                  value={searchQuery}
-                  onChange={setSearchQuery}
-                  placeholder="Buscar..."
-                />
-              </div>
-            )}
 
             {/* Subheader1: Tabs de tipo - TODO EN UN RENGLÓN */}
             {showTypeGroups && (
@@ -1138,10 +1152,35 @@ function App() {
               <div></div>
             </div>
           </div>
+
+          {/* Thumbnails flotantes del bucket activo - flotan sobre el contenido */}
+          {showThumbnails && thumbnailPhotos.length > 0 && (
+            <div className={`absolute top-full left-0 right-0 z-30 flex justify-center pt-3 pointer-events-none transition-all duration-300 ease-in-out ${
+              showThumbnailStrip ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'
+            }`}>
+              <div className="flex gap-1.5 lg:gap-2 pointer-events-auto justify-center px-3 lg:px-0">
+                {thumbnailPhotos.map(photo => (
+                  <div
+                    key={photo.id}
+                    onClick={() => {
+                      const card = mainScrollRef.current?.querySelector(`[data-photo-id="${photo.id}"]`)
+                      if (card) {
+                        card.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                      }
+                    }}
+                    className="w-[calc((100vw-3rem-1.875rem)/6)] lg:w-[100px] aspect-square overflow-hidden rounded-lg border-2 border-green-500 shadow-md cursor-pointer hover:ring-2 hover:ring-green-300 dark:hover:ring-green-700 transition-all"
+                  >
+                    <img src={photo.url} alt="" className="w-full h-full object-cover" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </header>
 
       {/* Main content */}
       <main className="flex-1 overflow-y-auto p-4 lg:p-6">
+        <div ref={gridTopSentinel} className="h-0" />
         <div className="max-w-7xl mx-auto">
           {/* Grid de fotos */}
           {loading ? (
@@ -1241,7 +1280,7 @@ function App() {
           {/* Instrucciones - arriba de todo */}
           {instructionsConfig?.enabled && (
             <button
-              onClick={() => setShowInstructions(true)}
+              onClick={() => setShowInstructions(prev => !prev)}
               className="w-[42px] h-[42px] sm:w-14 sm:h-14 rounded-full bg-gray-800 hover:bg-gray-900 text-white flex items-center justify-center shadow-lg transition-all hover:scale-110 relative"
               title="Ver instrucciones"
             >
@@ -1308,7 +1347,7 @@ function App() {
           {/* Instrucciones del configurador - arriba de todo */}
           {configuratorInstructionsConfig?.enabled && (
             <button
-              onClick={() => setShowConfiguratorInstructions(true)}
+              onClick={() => setShowConfiguratorInstructions(prev => !prev)}
               className="w-[42px] h-[42px] sm:w-14 sm:h-14 rounded-full bg-gray-800 hover:bg-gray-900 text-white flex items-center justify-center shadow-lg transition-all hover:scale-110 relative"
               title="Ver instrucciones"
             >
@@ -1376,6 +1415,8 @@ function App() {
         showMobileSearch={showMobileSearch}
         setShowMobileSearch={setShowMobileSearch}
         showConfigurador={showConfigurador}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
       />
     </>
   )
@@ -1607,16 +1648,18 @@ function PhotoCard({ photo, tagGroups, isSelected, onToggleSelection, selectedCo
   }
 
   return (
-    <div data-photo-id={photo.id} className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden transition-all ${
-      isSelected
-        ? 'border-2 border-green-500 ring-2 ring-green-200 dark:ring-green-800'
-        : 'border border-gray-200 dark:border-gray-700'
-    }`}>
+    <div
+      data-photo-id={photo.id}
+      onClick={handleClick}
+      className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden transition-all cursor-pointer ${
+        isSelected
+          ? 'border-2 border-green-500 ring-2 ring-green-200 dark:ring-green-800'
+          : 'border border-gray-200 dark:border-gray-700'
+      }`}>
       {/* Imagen con zoom */}
       <div
         ref={containerRef}
         className="aspect-square bg-gray-100 dark:bg-gray-700 relative overflow-hidden"
-        onClick={handleClick}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
@@ -1625,7 +1668,7 @@ function PhotoCard({ photo, tagGroups, isSelected, onToggleSelection, selectedCo
           handleMouseUp()
           setShowTooltip(false)
         }}
-        style={{ cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'pointer' }}
+        style={{ cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default' }}
       >
         {!imageLoaded && !imageError && (
           <div className="absolute inset-0 flex items-center justify-center">
@@ -2336,7 +2379,7 @@ function Configurador({
 }
 
 // Componente Footer
-function Footer({ footerConfig, whatsappConfig, telegramConfig, showMobileSearch, setShowMobileSearch, showConfigurador }) {
+function Footer({ footerConfig, whatsappConfig, telegramConfig, showMobileSearch, setShowMobileSearch, showConfigurador, searchQuery, setSearchQuery }) {
   if (!footerConfig?.enabled) return null
 
   const socialLinks = [
@@ -2399,6 +2442,16 @@ function Footer({ footerConfig, whatsappConfig, telegramConfig, showMobileSearch
 
   return (
     <footer className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 sticky bottom-0 z-30">
+      {/* Buscador mobile - aparece arriba del footer */}
+      {showMobileSearch && !showConfigurador && (
+        <div className="sm:hidden px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+          <SearchBar
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="Buscar..."
+          />
+        </div>
+      )}
       <div className="max-w-7xl mx-auto px-4 py-3 lg:py-4">
         {/* Mobile: búsqueda a la izquierda (solo frontend), redes y web a la derecha */}
         <div className="flex items-center justify-between gap-2 sm:hidden">

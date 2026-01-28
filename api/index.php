@@ -1034,7 +1034,7 @@ switch (true) {
         if (isset($config['headers'])) {
             $publicConfig['headers'] = $config['headers'];
         } else {
-            $publicConfig['headers'] = ['showTypeGroups' => true, 'showSelectors' => true];
+            $publicConfig['headers'] = ['showTypeGroups' => true, 'showSelectors' => true, 'showThumbnails' => true];
         }
         response($publicConfig);
         break;
@@ -1407,7 +1407,8 @@ switch (true) {
         $config = getConfig();
         $headersConfig = $config['headers'] ?? [
             'showTypeGroups' => true,
-            'showSelectors' => true
+            'showSelectors' => true,
+            'showThumbnails' => true
         ];
 
         response(['headers' => $headersConfig]);
