@@ -163,6 +163,13 @@ function App() {
     }
   }, [darkMode])
 
+  // Actualizar título del documento cuando cambia siteTitle
+  useEffect(() => {
+    if (siteTitle) {
+      document.title = typeof siteTitle === 'string' ? siteTitle : (siteTitle.es || 'PEU Cuchillos Artesanales')
+    }
+  }, [siteTitle])
+
   const [showConfigurador, setShowConfigurador] = useState(false)
   const [configuratorButtonAnimationKey, setConfiguratorButtonAnimationKey] = useState(0)
   const [savingConfigurator, setSavingConfigurator] = useState(false)
