@@ -136,7 +136,9 @@ function App() {
 
   // Actualizar título cuando cambia siteTitle o cuando se monta el componente
   useLayoutEffect(() => {
+    console.log('useLayoutEffect ejecutado, siteTitle:', siteTitle)
     document.title = siteTitle || 'PEU Cuchillos Artesanales'
+    console.log('document.title después de actualizar:', document.title)
   }, [siteTitle])
   const [siteSubtitleDesktop, setSiteSubtitleDesktop] = useState('Buscador interactivo de modelos y materiales')
 
