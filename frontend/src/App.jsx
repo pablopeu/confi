@@ -127,6 +127,7 @@ function App() {
   const [showTypeGroups, setShowTypeGroups] = useState(true)
   const [showSelectors, setShowSelectors] = useState(true)
   const [showThumbnails, setShowThumbnails] = useState(true)
+  const [showTags, setShowTags] = useState(true)
   const [showInstructions, setShowInstructions] = useState(false)
   const [configuratorInstructionsConfig, setConfiguratorInstructionsConfig] = useState(null)
   const [showConfiguratorInstructions, setShowConfiguratorInstructions] = useState(false)
@@ -390,6 +391,7 @@ function App() {
           setShowTypeGroups(data.headers?.showTypeGroups ?? true)
           setShowSelectors(data.headers?.showSelectors ?? true)
           setShowThumbnails(data.headers?.showThumbnails ?? true)
+          setShowTags(data.headers?.showTags ?? true)
           setSiteTitle(data.site_title || 'PEU Cuchillos Artesanales')
           setSiteSubtitleMobile(data.site_subtitle_mobile || 'Buscador interactivo')
           setSiteSubtitleDesktop(data.site_subtitle_desktop || 'Buscador interactivo de modelos y materiales')
@@ -1204,6 +1206,7 @@ function App() {
                   tagGroups={tagGroups}
                   isSelected={isPhotoSelected(photo.id)}
                   onToggleSelection={togglePhotoSelection}
+                  showTags={showTags}
                   selectedCount={selectedPhotos.length}
                 />
               ))}
@@ -1508,7 +1511,7 @@ function MultiSelect({ label, options, selected, onChange, groupId }) {
 }
 
 // Componente PhotoCard con zoom y tags
-function PhotoCard({ photo, tagGroups, isSelected, onToggleSelection, selectedCount }) {
+function PhotoCard({ photo, tagGroups, isSelected, onToggleSelection, selectedCount, showTags = true }) {
   const containerRef = useRef(null)
   const [imageLoaded, setImageLoaded] = useState(false)
   const [imageError, setImageError] = useState(false)
@@ -1746,22 +1749,24 @@ function PhotoCard({ photo, tagGroups, isSelected, onToggleSelection, selectedCo
       )}
 
       {/* Tags de la foto */}
-      <div className="p-2">
-        {photoTagsList.length > 0 ? (
-          <div className="flex flex-wrap gap-1">
-            {photoTagsList.map((tag, idx) => (
-              <span
-                key={idx}
-                className={`px-2 py-0.5 text-xs rounded-full ${getTagColor(tag.groupId)}`}
-              >
-                {tag.name}
-              </span>
-            ))}
-          </div>
-        ) : (
-          <p className="text-xs text-gray-400 italic">Sin tags</p>
-        )}
-      </div>
+      {showTags && (
+        <div className="p-2">
+          {photoTagsList.length > 0 ? (
+            <div className="flex flex-wrap gap-1">
+              {photoTagsList.map((tag, idx) => (
+                <span
+                  key={idx}
+                  className={`px-2 py-0.5 text-xs rounded-full ${getTagColor(tag.groupId)}`}
+                >
+                  {tag.name}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-gray-400 italic">Sin tags</p>
+          )}
+        </div>
+      )}
     </div>
   )
 }

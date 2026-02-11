@@ -23,6 +23,7 @@ export default function Admin() {
   const [backendTitle, setBackendTitle] = useState(null)
   const [loginTitle, setLoginTitle] = useState(null)
   const [titlesLoaded, setTitlesLoaded] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false) // Menú hamburguesa en móvil
 
   const { isOpen, modalProps, closeModal, showSuccess, showError, showConfirm } = useModal()
 
@@ -201,8 +202,8 @@ export default function Admin() {
             {backendTitle || 'Admin'}
           </button>
 
-          {/* Tabs en el header */}
-          <div className="flex gap-1">
+          {/* Desktop: Tabs en el header */}
+          <div className="hidden md:flex gap-1">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
@@ -218,7 +219,8 @@ export default function Admin() {
             ))}
           </div>
 
-          <div className="flex items-center gap-4">
+          {/* Desktop: Acciones */}
+          <div className="hidden md:flex items-center gap-4">
             <a href="#/" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-600 dark:text-gray-300 hover:underline">Ver catálogo</a>
             <button onClick={() => setShowPasswordModal(true)} className="text-sm text-gray-600 dark:text-gray-300 hover:underline">
               Cambiar contraseña
@@ -227,7 +229,65 @@ export default function Admin() {
               Cerrar sesión
             </button>
           </div>
+
+          {/* Mobile: Menú hamburguesa */}
+          <div className="md:hidden flex items-center gap-2">
+            <a href="#/" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-600 dark:text-gray-300 hover:underline px-2">Ver catálogo</a>
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {mobileMenuOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </button>
+          </div>
         </div>
+
+        {/* Mobile: Menú desplegable */}
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+            <div className="px-4 py-3 space-y-2">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => {
+                    handleTabChange(tab.id)
+                    setMobileMenuOpen(false)
+                  }}
+                  className={`w-full text-left px-4 py-2 font-medium text-sm rounded-lg transition-colors ${
+                    activeTab === tab.id
+                      ? 'bg-blue-600 text-white'
+                      : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-2 mt-2 space-y-2">
+                <button
+                  onClick={() => {
+                    setShowPasswordModal(true)
+                    setMobileMenuOpen(false)
+                  }}
+                  className="w-full text-left px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                >
+                  Cambiar contraseña
+                </button>
+                <button
+                  onClick={() => setAuthenticated(false)}
+                  className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                >
+                  Cerrar sesión
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </header>
 
       <main className="flex-1 overflow-hidden px-4">
@@ -2115,7 +2175,8 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
   const [headersConfig, setHeadersConfig] = useState({
     showTypeGroups: true,
     showSelectors: true,
-    showThumbnails: true
+    showThumbnails: true,
+    showTags: true
   })
   const [savingHeaders, setSavingHeaders] = useState(false)
   const [savedHeadersFeedback, setSavedHeadersFeedback] = useState(false)
@@ -2223,7 +2284,7 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
       const response = await fetch(apiUrl('admin/config/headers') + '&' + params.toString())
       if (response.ok) {
         const data = await response.json()
-        setHeadersConfig(data.headers || { showTypeGroups: true, showSelectors: true })
+        setHeadersConfig(data.headers || { showTypeGroups: true, showSelectors: true, showThumbnails: true, showTags: true })
       }
     } catch (error) {
       // Error silencioso - usar valores por defecto
@@ -3037,10 +3098,10 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
             </button>
           </div>
 
-          {/* Sección de Headers - Visibilidad del frontend */}
+          {/* Sección de Configuraciones Generales - Visibilidad del frontend */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Headers Frontend</h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">Configura qué elementos se muestran en el header</p>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Configuraciones Generales</h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">Configura qué elementos se muestran en el frontend</p>
 
             <div className="space-y-4">
               {/* Mostrar grupos de tipo */}
@@ -3097,6 +3158,25 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
                 </div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 ml-6">
                   Muestra miniaturas flotantes de los cuchillos seleccionados al hacer scroll
+                </p>
+              </div>
+
+              {/* Mostrar tags en las tarjetas */}
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <input
+                    type="checkbox"
+                    id="show-tags"
+                    checked={headersConfig.showTags}
+                    onChange={(e) => setHeadersConfig({ ...headersConfig, showTags: e.target.checked })}
+                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                  />
+                  <label htmlFor="show-tags" className="text-sm font-medium text-gray-900 dark:text-white">
+                    Mostrar tags en las tarjetas
+                  </label>
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 ml-6">
+                  Muestra los tags (tipo, encabado, acero) debajo de cada foto en el catálogo
                 </p>
               </div>
             </div>
