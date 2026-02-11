@@ -133,6 +133,13 @@ function App() {
   const [showConfiguratorInstructions, setShowConfiguratorInstructions] = useState(false)
   const [siteTitle, setSiteTitle] = useState('PEU Cuchillos Artesanales')
   const [siteSubtitleMobile, setSiteSubtitleMobile] = useState('Buscador interactivo')
+
+  // Actualizar título cuando cambia siteTitle o cuando se monta el componente
+  useEffect(() => {
+    if (siteTitle) {
+      document.title = siteTitle
+    }
+  }, [siteTitle])
   const [siteSubtitleDesktop, setSiteSubtitleDesktop] = useState('Buscador interactivo de modelos y materiales')
 
   // Dark mode state con persistencia en cookies
@@ -392,9 +399,7 @@ function App() {
           setShowSelectors(data.headers?.showSelectors ?? true)
           setShowThumbnails(data.headers?.showThumbnails ?? true)
           setShowTags(data.headers?.showTags ?? true)
-          const newSiteTitle = data.site_title || 'PEU Cuchillos Artesanales'
-          setSiteTitle(newSiteTitle)
-          document.title = newSiteTitle
+          setSiteTitle(data.site_title || 'PEU Cuchillos Artesanales')
           setSiteSubtitleMobile(data.site_subtitle_mobile || 'Buscador interactivo')
           setSiteSubtitleDesktop(data.site_subtitle_desktop || 'Buscador interactivo de modelos y materiales')
         }
