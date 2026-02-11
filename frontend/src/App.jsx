@@ -397,6 +397,7 @@ function App() {
           setShowSelectors(data.headers?.showSelectors ?? true)
           setShowThumbnails(data.headers?.showThumbnails ?? true)
           setShowTags(data.headers?.showTags ?? true)
+          console.log('site_title from backend:', data.site_title)
           setSiteTitle(data.site_title || 'PEU Cuchillos Artesanales')
           setSiteSubtitleMobile(data.site_subtitle_mobile || 'Buscador interactivo')
           setSiteSubtitleDesktop(data.site_subtitle_desktop || 'Buscador interactivo de modelos y materiales')
