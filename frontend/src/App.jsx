@@ -136,9 +136,7 @@ function App() {
 
   // Actualizar título cuando cambia siteTitle o cuando se monta el componente
   useEffect(() => {
-    if (siteTitle) {
-      document.title = siteTitle
-    }
+    document.title = siteTitle || 'PEU Cuchillos Artesanales'
   }, [siteTitle])
   const [siteSubtitleDesktop, setSiteSubtitleDesktop] = useState('Buscador interactivo de modelos y materiales')
 
