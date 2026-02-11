@@ -397,7 +397,9 @@ function App() {
           setShowSelectors(data.headers?.showSelectors ?? true)
           setShowThumbnails(data.headers?.showThumbnails ?? true)
           setShowTags(data.headers?.showTags ?? true)
-          setSiteTitle(data.site_title || 'PEU Cuchillos Artesanales')
+          const newSiteTitle = data.site_title || 'PEU Cuchillos Artesanales'
+          setSiteTitle(newSiteTitle)
+          document.title = newSiteTitle
           setSiteSubtitleMobile(data.site_subtitle_mobile || 'Buscador interactivo')
           setSiteSubtitleDesktop(data.site_subtitle_desktop || 'Buscador interactivo de modelos y materiales')
         }
