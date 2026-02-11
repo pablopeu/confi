@@ -47,6 +47,6 @@
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
 
-  # Si no es un archivo estático (assets, json, etc), redirigir a index.php
-  RewriteRule ^ index.php [L]
+  # Si no es un archivo estático (assets, json, etc), redirigir a index.html
+  RewriteRule ^ index.html [L]
 </IfModule>
