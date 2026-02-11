@@ -163,11 +163,6 @@ function App() {
     }
   }, [darkMode])
 
-  // Actualizar título del documento cuando cambia siteTitle
-  useEffect(() => {
-    document.title = siteTitle
-  }, [siteTitle])
-
   const [showConfigurador, setShowConfigurador] = useState(false)
   const [configuratorButtonAnimationKey, setConfiguratorButtonAnimationKey] = useState(0)
   const [savingConfigurator, setSavingConfigurator] = useState(false)
