@@ -164,9 +164,13 @@ function App() {
   }, [darkMode])
 
   // Actualizar título del documento cuando cambia siteTitle
-  useLayoutEffect(() => {
+  useEffect(() => {
     const title = siteTitle || 'PEU Cuchillos Artesanales'
-    document.title = typeof title === 'string' ? title : (title?.es || 'PEU Cuchillos Artesanales')
+    const finalTitle = typeof title === 'string' ? title : (title?.es || 'PEU Cuchillos Artesanales')
+    // Pequeño delay para asegurar que el DOM esté listo
+    setTimeout(() => {
+      document.title = finalTitle
+    }, 0)
   }, [siteTitle])
 
   const [showConfigurador, setShowConfigurador] = useState(false)
