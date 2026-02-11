@@ -136,9 +136,7 @@ function App() {
 
   // Actualizar título cuando cambia siteTitle o cuando se monta el componente
   useLayoutEffect(() => {
-    console.log('useLayoutEffect ejecutado, siteTitle:', siteTitle)
     document.title = siteTitle || 'PEU Cuchillos Artesanales'
-    console.log('document.title después de actualizar:', document.title)
   }, [siteTitle])
   const [siteSubtitleDesktop, setSiteSubtitleDesktop] = useState('Buscador interactivo de modelos y materiales')
 
@@ -399,7 +397,6 @@ function App() {
           setShowSelectors(data.headers?.showSelectors ?? true)
           setShowThumbnails(data.headers?.showThumbnails ?? true)
           setShowTags(data.headers?.showTags ?? true)
-          console.log('site_title from backend:', data.site_title)
           setSiteTitle(data.site_title || 'PEU Cuchillos Artesanales')
           setSiteSubtitleMobile(data.site_subtitle_mobile || 'Buscador interactivo')
           setSiteSubtitleDesktop(data.site_subtitle_desktop || 'Buscador interactivo de modelos y materiales')
