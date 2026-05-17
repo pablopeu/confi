@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useEffect } from 'react'
 import { TREE, photosMap } from '../../data/catalogTree'
 
 function collectIds(node, ids) {
@@ -16,7 +16,7 @@ const LEVELS = [
 
 const STEEL_ORDER = { 'Acero inoxidable': 1, 'Acero carbono': 2, 'Acero damasco': 3, 'Otros': 4 }
 
-export default function Catalog({ onCopyImage, darkMode, onPhotoOpen }) {
+export default function Catalog({ onCopyImage, darkMode, onPhotoOpen, initialPhotoId }) {
   const [state, setState] = useState({ tipo: null, estilo: null, ag: null, acero: null, encabado: null })
   const [fullImg, setFullImg] = useState(null)
 
@@ -64,6 +64,15 @@ export default function Catalog({ onCopyImage, darkMode, onPhotoOpen }) {
       key: k, label: k, count: v.length
     })).sort((a, b) => b.count - a.count)
   }, [state.tipo, state.estilo, state.ag, state.acero])
+
+  // Auto-open initial photo from URL param
+  useEffect(() => {
+    if (initialPhotoId && photosMap[initialPhotoId]) {
+      const url = `https://peu.net/confi/${photosMap[initialPhotoId].url}`
+      setFullImg(url)
+      if (onPhotoOpen) onPhotoOpen(initialPhotoId)
+    }
+  }, [initialPhotoId])
 
   const matching = useMemo(() => {
     let n = TREE
@@ -133,10 +142,10 @@ export default function Catalog({ onCopyImage, darkMode, onPhotoOpen }) {
     crumbItems.push({ label: LEVELS[i].label || v, val: v, key: LEVELS[i].key, last: i === showLevel - 1 })
   }
 
-  const handleCardClick = (url) => {
+  const handleCardClick = (url, id) => {
     setFullImg(url)
     if (onCopyImage) onCopyImage(url)
-    if (onPhotoOpen) onPhotoOpen(url)
+    if (onPhotoOpen) onPhotoOpen(id)
   }
 
   return (
@@ -221,7 +230,7 @@ export default function Catalog({ onCopyImage, darkMode, onPhotoOpen }) {
               return (
                 <div
                   key={id}
-                  onClick={() => handleCardClick(url)}
+                  onClick={() => handleCardClick(url, id)}
                   className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden cursor-pointer shadow-sm hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-md transition-all"
                 >
                   <div className="aspect-[4/3] bg-gray-100 dark:bg-gray-700 flex items-center justify-center overflow-hidden">

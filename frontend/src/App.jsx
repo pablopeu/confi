@@ -172,6 +172,7 @@ function App() {
   const [showConfigurador, setShowConfigurador] = useState(false)
   const [showCatalog, setShowCatalog] = useState(false)
   const [catalogPhotoUrl, setCatalogPhotoUrl] = useState(null)
+  const [initialCatalogPhotoId, setInitialCatalogPhotoId] = useState(null)
   const [configuratorButtonAnimationKey, setConfiguratorButtonAnimationKey] = useState(0)
   const [savingConfigurator, setSavingConfigurator] = useState(false)
   const [configuratorMessage, setConfiguratorMessage] = useState('')
@@ -282,6 +283,21 @@ function App() {
     } catch {}
   }, [])
 
+  const handleCatalogPhotoOpen = useCallback((photoId) => {
+    if (!photoId) {
+      setCatalogPhotoUrl(null)
+      // Clean up URL
+      const url = new URL(window.location)
+      url.searchParams.delete('catalogo')
+      url.searchParams.delete('foto')
+      window.history.replaceState({}, '', url)
+    } else {
+      const pageUrl = `${window.location.origin}${window.location.pathname}?catalogo&foto=${photoId}`
+      setCatalogPhotoUrl(pageUrl)
+      window.history.replaceState({}, '', pageUrl)
+    }
+  }, [])
+
   // Reiniciar animación del botón del configurador cuando se abre
   useEffect(() => {
     if (showConfigurador) {
@@ -291,7 +307,10 @@ function App() {
 
   // Limpiar URL de foto del catálogo al cerrar
   useEffect(() => {
-    if (!showCatalog) setCatalogPhotoUrl(null)
+    if (!showCatalog) {
+      setCatalogPhotoUrl(null)
+      setInitialCatalogPhotoId(null)
+    }
   }, [showCatalog])
 
   // Cerrar confirmación con Escape
@@ -433,6 +452,15 @@ function App() {
       // Usar setTimeout para que los buckets estén cargados
       setTimeout(() => {
         handleOpenConfigurador()
+      }, 100)
+    }
+    // Si la URL tiene ?catalogo&foto=, abrir el catálogo con esa foto
+    if (urlParams.has('catalogo') && urlParams.has('foto')) {
+      const fotoId = urlParams.get('foto')
+      setTimeout(() => {
+        setInitialCatalogPhotoId(fotoId)
+        setShowCatalog(true)
+        setShowConfigurador(false)
       }, 100)
     }
   }, [])
@@ -1412,7 +1440,7 @@ function App() {
           </div>
         </div>
         </header>
-        <Catalog onCopyImage={handleCopyImage} darkMode={darkMode} onPhotoOpen={setCatalogPhotoUrl} />
+        <Catalog onCopyImage={handleCopyImage} darkMode={darkMode} onPhotoOpen={handleCatalogPhotoOpen} initialPhotoId={initialCatalogPhotoId} />
       </div>
 
       {/* Slide del configurador */}
