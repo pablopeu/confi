@@ -125,10 +125,10 @@ function App() {
   const [telegramConfig, setTelegramConfig] = useState(null)
   const [footerConfig, setFooterConfig] = useState(null)
   const [instructionsConfig, setInstructionsConfig] = useState(null)
-  const [showTypeGroups, setShowTypeGroups] = useState(true)
-  const [showSelectors, setShowSelectors] = useState(true)
-  const [showThumbnails, setShowThumbnails] = useState(true)
-  const [showTags, setShowTags] = useState(true)
+  const [showTypeGroups, setShowTypeGroups] = useState(false)
+  const [showSelectors, setShowSelectors] = useState(false)
+  const [showThumbnails, setShowThumbnails] = useState(false)
+  const [showTags, setShowTags] = useState(false)
   const [showInstructions, setShowInstructions] = useState(false)
   const [configuratorInstructionsConfig, setConfiguratorInstructionsConfig] = useState(null)
   const [showConfiguratorInstructions, setShowConfiguratorInstructions] = useState(false)
@@ -834,7 +834,14 @@ function App() {
                     </svg>
                   )}
                 </button>
-                {/* Botón Configurador */}
+                                {/* Botón Catálogo */}
+                <button
+                  onClick={handleOpenCatalog}
+                  className="flex-shrink-0 px-2 py-1.5 text-xs bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Catálogo
+                </button>
+{/* Botón Configurador */}
                 <button
                   onClick={handleOpenConfigurador}
                   className="flex-shrink-0 px-2 py-1.5 text-xs bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-1"
@@ -1062,7 +1069,14 @@ function App() {
                 </button>
               )}
 
-              {/* Botón Configurador */}
+                            {/* Botón Catálogo */}
+              <button
+                onClick={handleOpenCatalog}
+                className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Catálogo
+              </button>
+{/* Botón Configurador */}
               <button
                 onClick={handleOpenConfigurador}
                 className="px-3 py-1.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-1"
