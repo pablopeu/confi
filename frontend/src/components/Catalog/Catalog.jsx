@@ -16,7 +16,7 @@ const LEVELS = [
 
 const STEEL_ORDER = { 'Acero inoxidable': 1, 'Acero carbono': 2, 'Acero damasco': 3, 'Otros': 4 }
 
-export default function Catalog({ onCopyImage }) {
+export default function Catalog({ onCopyImage, darkMode }) {
   const [state, setState] = useState({ tipo: null, estilo: null, ag: null, acero: null, encabado: null })
   const [fullImg, setFullImg] = useState(null)
 
@@ -246,7 +246,7 @@ export default function Catalog({ onCopyImage }) {
       {fullImg && (
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center cursor-pointer"
-          style={{ background: document.documentElement.classList.contains('dark') ? 'rgba(0,0,0,0.86)' : 'rgba(255,255,255,0.86)' }}
+          style={{ background: darkMode ? 'rgba(0,0,0,0.86)' : 'rgba(255,255,255,0.86)' }}
           onClick={() => setFullImg(null)}
         >
           <img
