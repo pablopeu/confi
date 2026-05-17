@@ -2,6 +2,7 @@ import { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo } fr
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faQuestionCircle } from '@fortawesome/free-solid-svg-icons'
 import SearchBar from './components/SearchBar'
+import Catalog from './components/Catalog'
 import {
   getCategories,
   getPhotos,
@@ -169,6 +170,7 @@ function App() {
   }, [darkMode])
 
   const [showConfigurador, setShowConfigurador] = useState(false)
+  const [showCatalog, setShowCatalog] = useState(false)
   const [configuratorButtonAnimationKey, setConfiguratorButtonAnimationKey] = useState(0)
   const [savingConfigurator, setSavingConfigurator] = useState(false)
   const [configuratorMessage, setConfiguratorMessage] = useState('')
@@ -266,6 +268,17 @@ function App() {
       return
     }
   }, [buckets, activeBucket])
+
+  const handleOpenCatalog = useCallback(() => {
+    setShowCatalog(true)
+    setShowConfigurador(false)
+  }, [])
+
+  const handleCopyImage = useCallback(async (url) => {
+    try {
+      await copyImageToClipboard(url)
+    } catch {}
+  }, [])
 
   // Reiniciar animación del botón del configurador cuando se abre
   useEffect(() => {
@@ -776,7 +789,7 @@ function App() {
     <>
       <div className="page-container">
         {/* Slide del frontend */}
-        <div ref={mainScrollRef} className={`page-slide ${showConfigurador ? 'page-slide-left' : 'page-slide-visible'}`}>
+        <div ref={mainScrollRef} className={`page-slide ${(showConfigurador || showCatalog) ? 'page-slide-left' : 'page-slide-visible'}`}>
         {/* Header del frontend */}
         <header className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-40 relative">
         <div className="px-4 py-2">
@@ -1245,6 +1258,11 @@ function App() {
       )}
       </div>
 
+      {/* Slide del catálogo */}
+      <div className={`page-slide ${showCatalog ? 'page-slide-visible' : 'page-slide-right'}`}>
+        <Catalog onCopyImage={handleCopyImage} />
+      </div>
+
       {/* Slide del configurador */}
       <div className={`page-slide ${showConfigurador ? 'page-slide-visible' : 'page-slide-right'}`}>
         <Configurador
@@ -1282,7 +1300,7 @@ function App() {
       </div>
       </div>
 
-      {/* Botones flotantes del frontend - solo cuando NO está en el configurador */}
+      {/* Botones flotantes del frontend - cuando NO está en el configurador */}
       {!showConfigurador && (whatsappConfig?.enabled || telegramConfig?.enabled || instructionsConfig?.enabled) && (
         <div className="fixed bottom-20 right-4 sm:bottom-24 sm:right-6 flex flex-col gap-2 sm:gap-3 z-[100]">
           {/* Instrucciones - arriba de todo */}
@@ -1423,6 +1441,7 @@ function App() {
         showMobileSearch={showMobileSearch}
         setShowMobileSearch={setShowMobileSearch}
         showConfigurador={showConfigurador}
+        showCatalog={showCatalog}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
       />
@@ -2389,7 +2408,7 @@ function Configurador({
 }
 
 // Componente Footer
-function Footer({ footerConfig, whatsappConfig, telegramConfig, showMobileSearch, setShowMobileSearch, showConfigurador, searchQuery, setSearchQuery }) {
+function Footer({ footerConfig, whatsappConfig, telegramConfig, showMobileSearch, setShowMobileSearch, showConfigurador, showCatalog, searchQuery, setSearchQuery }) {
   if (!footerConfig?.enabled) return null
 
   const socialLinks = [
@@ -2453,7 +2472,7 @@ function Footer({ footerConfig, whatsappConfig, telegramConfig, showMobileSearch
   return (
     <footer className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 sticky bottom-0 z-30">
       {/* Buscador mobile - aparece arriba del footer */}
-      {showMobileSearch && !showConfigurador && (
+      {showMobileSearch && !showConfigurador && !showCatalog && (
         <div className="sm:hidden px-4 py-2 border-b border-gray-200 dark:border-gray-700">
           <SearchBar
             value={searchQuery}
@@ -2466,7 +2485,7 @@ function Footer({ footerConfig, whatsappConfig, telegramConfig, showMobileSearch
         {/* Mobile: búsqueda a la izquierda (solo frontend), redes y web a la derecha */}
         <div className="flex items-center justify-between gap-2 sm:hidden">
           {/* Icono de búsqueda a la izquierda - solo en frontend, placeholder invisible en configurador */}
-          {!showConfigurador ? (
+          {(!showConfigurador && !showCatalog) ? (
             <button
               onClick={() => setShowMobileSearch(!showMobileSearch)}
               className="flex-shrink-0 p-1.5 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
