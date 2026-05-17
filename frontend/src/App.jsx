@@ -171,6 +171,7 @@ function App() {
 
   const [showConfigurador, setShowConfigurador] = useState(false)
   const [showCatalog, setShowCatalog] = useState(false)
+  const [catalogPhotoUrl, setCatalogPhotoUrl] = useState(null)
   const [configuratorButtonAnimationKey, setConfiguratorButtonAnimationKey] = useState(0)
   const [savingConfigurator, setSavingConfigurator] = useState(false)
   const [configuratorMessage, setConfiguratorMessage] = useState('')
@@ -272,6 +273,7 @@ function App() {
   const handleOpenCatalog = useCallback(() => {
     setShowCatalog(true)
     setShowConfigurador(false)
+    setCatalogPhotoUrl(null)
   }, [])
 
   const handleCopyImage = useCallback(async (url) => {
@@ -286,6 +288,11 @@ function App() {
       setConfiguratorButtonAnimationKey(prev => prev + 1)
     }
   }, [showConfigurador])
+
+  // Limpiar URL de foto del catálogo al cerrar
+  useEffect(() => {
+    if (!showCatalog) setCatalogPhotoUrl(null)
+  }, [showCatalog])
 
   // Cerrar confirmación con Escape
   useEffect(() => {
@@ -1405,7 +1412,7 @@ function App() {
           </div>
         </div>
         </header>
-        <Catalog onCopyImage={handleCopyImage} darkMode={darkMode} />
+        <Catalog onCopyImage={handleCopyImage} darkMode={darkMode} onPhotoOpen={setCatalogPhotoUrl} />
       </div>
 
       {/* Slide del configurador */}
@@ -1483,7 +1490,7 @@ function App() {
           {/* Telegram - abajo de instrucciones */}
           {telegramConfig?.enabled && telegramConfig.username && (
             <a
-              href={`https://t.me/${telegramConfig.username}?text=${encodeURIComponent((showCatalog ? telegramConfig.catalog_message : null) || telegramConfig.message || '')}`}
+              href={`https://t.me/${telegramConfig.username}?text=${encodeURIComponent(((showCatalog ? telegramConfig.catalog_message : null) || telegramConfig.message || '') + (catalogPhotoUrl ? '%0A%0A' + catalogPhotoUrl : ''))}`}
               target="_blank"
               rel="noopener noreferrer"
               className="w-[42px] h-[42px] sm:w-14 sm:h-14 rounded-full bg-[#0088cc] hover:bg-[#0077b3] text-white flex items-center justify-center shadow-lg transition-all hover:scale-110"
@@ -1498,7 +1505,7 @@ function App() {
           {/* WhatsApp - abajo */}
           {whatsappConfig?.enabled && whatsappConfig.number && (
             <a
-              href={`https://wa.me/${whatsappConfig.number}?text=${encodeURIComponent((showCatalog ? whatsappConfig.catalog_message : null) || whatsappConfig.message || '')}`}
+              href={`https://wa.me/${whatsappConfig.number}?text=${encodeURIComponent(((showCatalog ? whatsappConfig.catalog_message : null) || whatsappConfig.message || '') + (catalogPhotoUrl ? '%0A%0A' + catalogPhotoUrl : ''))}`}
               target="_blank"
               rel="noopener noreferrer"
               className="w-[42px] h-[42px] sm:w-14 sm:h-14 rounded-full bg-[#25D366] hover:bg-[#20BA5A] text-white flex items-center justify-center shadow-lg transition-all hover:scale-110"

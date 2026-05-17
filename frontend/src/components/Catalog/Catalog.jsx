@@ -16,7 +16,7 @@ const LEVELS = [
 
 const STEEL_ORDER = { 'Acero inoxidable': 1, 'Acero carbono': 2, 'Acero damasco': 3, 'Otros': 4 }
 
-export default function Catalog({ onCopyImage, darkMode }) {
+export default function Catalog({ onCopyImage, darkMode, onPhotoOpen }) {
   const [state, setState] = useState({ tipo: null, estilo: null, ag: null, acero: null, encabado: null })
   const [fullImg, setFullImg] = useState(null)
 
@@ -136,6 +136,7 @@ export default function Catalog({ onCopyImage, darkMode }) {
   const handleCardClick = (url) => {
     setFullImg(url)
     if (onCopyImage) onCopyImage(url)
+    if (onPhotoOpen) onPhotoOpen(url)
   }
 
   return (
@@ -247,13 +248,19 @@ export default function Catalog({ onCopyImage, darkMode }) {
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center cursor-pointer"
           style={{ background: darkMode ? 'rgba(0,0,0,0.86)' : 'rgba(255,255,255,0.86)' }}
-          onClick={() => setFullImg(null)}
+          onClick={() => { setFullImg(null); if (onPhotoOpen) onPhotoOpen(null) }}
         >
           <img
             src={fullImg}
             alt=""
             className="max-w-[90vw] max-h-[90vh] object-contain rounded-md border-4 border-white dark:border-gray-800 shadow-[0_0_0_1px_rgba(0,0,0,0.1),0_20px_60px_rgba(0,0,0,0.3)]"
           />
+          <div
+            className="absolute bottom-4 right-4 max-w-[280px] bg-gray-900 text-white text-xs px-4 py-3 rounded-lg shadow-lg pointer-events-none leading-relaxed"
+            style={{ opacity: 0.92 }}
+          >
+            Si apretás el botón de WhatsApp o Telegram acá al costado le mando el link de esta foto a Pablo
+          </div>
         </div>
       )}
     </div>
