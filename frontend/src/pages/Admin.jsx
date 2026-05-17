@@ -2166,8 +2166,8 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
   const [savedSiteInfoFeedback, setSavedSiteInfoFeedback] = useState(false)
 
   // Estado para WhatsApp y Telegram
-  const [whatsappConfig, setWhatsappConfig] = useState({ enabled: false, number: '', message: '' })
-  const [telegramConfig, setTelegramConfig] = useState({ enabled: false, username: '', message: '' })
+  const [whatsappConfig, setWhatsappConfig] = useState({ enabled: false, number: '', message: '', catalog_message: '' })
+  const [telegramConfig, setTelegramConfig] = useState({ enabled: false, username: '', message: '', catalog_message: '' })
   const [savingContact, setSavingContact] = useState(false)
   const [savedContactFeedback, setSavedContactFeedback] = useState(false)
 
@@ -2270,8 +2270,8 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
       const response = await fetch(apiUrl('admin/config/contact') + '&' + params.toString())
       if (response.ok) {
         const data = await response.json()
-        setWhatsappConfig(data.whatsapp || { enabled: false, number: '', message: '' })
-        setTelegramConfig(data.telegram || { enabled: false, username: '', message: '' })
+        setWhatsappConfig(data.whatsapp || { enabled: false, number: '', message: '', catalog_message: '' })
+        setTelegramConfig(data.telegram || { enabled: false, username: '', message: '', catalog_message: '' })
       }
     } catch (error) {
       // Error silencioso
@@ -3038,10 +3038,19 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
                       onChange={(e) => setWhatsappConfig({ ...whatsappConfig, number: e.target.value })}
                       className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     />
+                    <label className="text-xs text-gray-500 dark:text-gray-400 mt-1 block">Mensaje del configurador:</label>
                     <textarea
-                      placeholder="Mensaje predeterminado..."
+                      placeholder="Mensaje del configurador..."
                       value={whatsappConfig.message}
                       onChange={(e) => setWhatsappConfig({ ...whatsappConfig, message: e.target.value })}
+                      rows={2}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
+                    />
+                    <label className="text-xs text-gray-500 dark:text-gray-400 mt-2 block">Mensaje del catálogo:</label>
+                    <textarea
+                      placeholder="Mensaje para el catálogo..."
+                      value={whatsappConfig.catalog_message || ''}
+                      onChange={(e) => setWhatsappConfig({ ...whatsappConfig, catalog_message: e.target.value })}
                       rows={2}
                       className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
                     />
@@ -3066,6 +3075,7 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
 
                 {telegramConfig.enabled && (
                   <div className="space-y-2">
+                    <label className="text-xs text-gray-500 dark:text-gray-400 block">Usuario:</label>
                     <input
                       type="text"
                       placeholder="Usuario (sin @)"
@@ -3073,10 +3083,19 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
                       onChange={(e) => setTelegramConfig({ ...telegramConfig, username: e.target.value })}
                       className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     />
+                    <label className="text-xs text-gray-500 dark:text-gray-400 mt-1 block">Mensaje del configurador:</label>
                     <textarea
-                      placeholder="Mensaje predeterminado..."
+                      placeholder="Mensaje del configurador..."
                       value={telegramConfig.message}
                       onChange={(e) => setTelegramConfig({ ...telegramConfig, message: e.target.value })}
+                      rows={2}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
+                    />
+                    <label className="text-xs text-gray-500 dark:text-gray-400 mt-2 block">Mensaje del catálogo:</label>
+                    <textarea
+                      placeholder="Mensaje para el catálogo..."
+                      value={telegramConfig.catalog_message || ''}
+                      onChange={(e) => setTelegramConfig({ ...telegramConfig, catalog_message: e.target.value })}
                       rows={2}
                       className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
                     />

@@ -984,10 +984,20 @@ switch (true) {
             if (isset($whatsapp['message'])) {
                 $whatsapp['message'] = transformConfigField($whatsapp['message'], $lang);
             }
+            if (isset($whatsapp['catalog_message'])) {
+                $whatsapp['catalog_message'] = transformConfigField($whatsapp['catalog_message'], $lang);
+            }
             $publicConfig['whatsapp'] = $whatsapp;
         }
         if (isset($config['telegram'])) {
-            $publicConfig['telegram'] = $config['telegram'];
+            $telegram = $config['telegram'];
+            if (isset($telegram['message'])) {
+                $telegram['message'] = transformConfigField($telegram['message'], $lang);
+            }
+            if (isset($telegram['catalog_message'])) {
+                $telegram['catalog_message'] = transformConfigField($telegram['catalog_message'], $lang);
+            }
+            $publicConfig['telegram'] = $telegram;
         }
         if (isset($config['footer'])) {
             $footer = $config['footer'];
@@ -1350,7 +1360,8 @@ switch (true) {
                     $config['whatsapp'] = [
                         'enabled' => true,
                         'number' => $input['whatsapp']['number'],
-                        'message' => $input['whatsapp']['message']
+                        'message' => $input['whatsapp']['message'],
+                        'catalog_message' => $input['whatsapp']['catalog_message'] ?? ($input['whatsapp']['message'] ?? '')
                     ];
                 } else {
                     $config['whatsapp'] = ['enabled' => false];
@@ -1372,7 +1383,8 @@ switch (true) {
                     $config['telegram'] = [
                         'enabled' => true,
                         'username' => $input['telegram']['username'],
-                        'message' => $input['telegram']['message']
+                        'message' => $input['telegram']['message'],
+                        'catalog_message' => $input['telegram']['catalog_message'] ?? ($input['telegram']['message'] ?? '')
                     ];
                 } else {
                     $config['telegram'] = ['enabled' => false];

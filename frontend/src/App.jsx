@@ -1296,7 +1296,7 @@ function App() {
                     {siteTitle}
                   </h1>
                   <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                    {siteSubtitleMobile}
+                    Catálogo interactivo
                   </p>
                 </div>
               </div>
@@ -1357,7 +1357,7 @@ function App() {
                   {siteTitle}
                 </h1>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  {siteSubtitleDesktop}
+                  Catálogo interactivo
                 </p>
               </div>
             </div>
@@ -1483,7 +1483,7 @@ function App() {
           {/* Telegram - abajo de instrucciones */}
           {telegramConfig?.enabled && telegramConfig.username && (
             <a
-              href={`https://t.me/${telegramConfig.username}?text=${encodeURIComponent(telegramConfig.message || '')}`}
+              href={`https://t.me/${telegramConfig.username}?text=${encodeURIComponent((showCatalog ? telegramConfig.catalog_message : null) || telegramConfig.message || '')}`}
               target="_blank"
               rel="noopener noreferrer"
               className="w-[42px] h-[42px] sm:w-14 sm:h-14 rounded-full bg-[#0088cc] hover:bg-[#0077b3] text-white flex items-center justify-center shadow-lg transition-all hover:scale-110"
@@ -1498,7 +1498,7 @@ function App() {
           {/* WhatsApp - abajo */}
           {whatsappConfig?.enabled && whatsappConfig.number && (
             <a
-              href={`https://wa.me/${whatsappConfig.number}?text=${encodeURIComponent(whatsappConfig.message || '')}`}
+              href={`https://wa.me/${whatsappConfig.number}?text=${encodeURIComponent((showCatalog ? whatsappConfig.catalog_message : null) || whatsappConfig.message || '')}`}
               target="_blank"
               rel="noopener noreferrer"
               className="w-[42px] h-[42px] sm:w-14 sm:h-14 rounded-full bg-[#25D366] hover:bg-[#20BA5A] text-white flex items-center justify-center shadow-lg transition-all hover:scale-110"
