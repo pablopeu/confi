@@ -259,14 +259,21 @@ export default function Catalog({ onCopyImage, darkMode, onPhotoOpen, initialPho
           style={{ background: darkMode ? 'rgba(0,0,0,0.86)' : 'rgba(255,255,255,0.86)' }}
           onClick={() => { setFullImg(null); if (onPhotoOpen) onPhotoOpen(null) }}
         >
-          <div className="relative inline-block" onClick={e => e.stopPropagation()}>
-            <img
-              src={fullImg}
-              alt=""
-              className="max-w-[90vw] max-h-[90vh] object-contain rounded-md border-4 border-white dark:border-gray-800 shadow-[0_0_0_1px_rgba(0,0,0,0.1),0_20px_60px_rgba(0,0,0,0.3)]"
-            />
+          <div className="flex flex-col items-center" onClick={e => e.stopPropagation()}>
+            <div className="relative inline-block">
+              <img
+                src={fullImg}
+                alt=""
+                className="max-w-[90vw] max-h-[75vh] sm:max-h-[90vh] object-contain rounded-md border-4 border-white dark:border-gray-800 shadow-[0_0_0_1px_rgba(0,0,0,0.1),0_20px_60px_rgba(0,0,0,0.3)]"
+              />
+              <div
+                className="hidden sm:block absolute bottom-4 right-4 max-w-[260px] bg-gray-900/95 text-white text-[11px] px-4 py-3 rounded-lg shadow-lg pointer-events-none leading-relaxed"
+              >
+                Si apretás el botón de WhatsApp o Telegram acá al costado le mando el link de esta foto a Pablo
+              </div>
+            </div>
             <div
-              className="absolute bottom-4 right-4 max-w-[260px] bg-gray-900/95 text-white text-[11px] px-4 py-3 rounded-lg shadow-lg pointer-events-none leading-relaxed"
+              className="sm:hidden mt-3 max-w-[85vw] bg-gray-900/95 text-white text-[11px] px-4 py-3 rounded-lg shadow-lg pointer-events-none leading-relaxed text-center"
             >
               Si apretás el botón de WhatsApp o Telegram acá al costado le mando el link de esta foto a Pablo
             </div>
