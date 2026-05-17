@@ -1274,10 +1274,12 @@ function App() {
 
       {/* Slide del catálogo */}
       <div className={`page-slide ${showCatalog ? 'page-slide-visible' : 'page-slide-right'}`}>
-        {/* Header del catálogo */}
-        <header className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-40">
-          <div className="px-4 py-2">
-            <div className="flex items-center justify-between gap-2">
+        {/* Header del catálogo — mismo formato que confi */}
+        <header className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-40 relative">
+        <div className="px-4 py-2">
+          {/* Mobile */}
+          <div className="lg:hidden">
+            <div className="flex items-center justify-between gap-2 py-1">
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 {logo && (
                   <img
@@ -1291,7 +1293,7 @@ function App() {
                     {siteTitle}
                   </h1>
                   <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                    Catálogo
+                    {siteSubtitleMobile}
                   </p>
                 </div>
               </div>
@@ -1314,13 +1316,81 @@ function App() {
                 </button>
                 <button
                   onClick={() => setShowCatalog(false)}
-                  className="px-2 py-1.5 text-xs bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                  className="flex-shrink-0 px-2 py-1.5 text-xs bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                 >
                   Volver
+                </button>
+                <button
+                  onClick={handleOpenConfigurador}
+                  className="flex-shrink-0 px-2 py-1.5 text-xs bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-1"
+                >
+                  Configurador
+                  {selectedPhotos.length > 0 && (
+                    <span className="bg-white text-green-600 rounded-full px-1.5 py-0.5 text-xs font-bold">
+                      {selectedPhotos.length}
+                    </span>
+                  )}
                 </button>
               </div>
             </div>
           </div>
+
+          {/* Desktop */}
+          <div className="hidden lg:flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3 min-w-0">
+              {logo && (
+                <img
+                  src={logo}
+                  alt="Logo"
+                  className={`h-12 object-contain ${darkMode ? 'brightness-0 invert' : ''}`}
+                />
+              )}
+              <div>
+                <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+                  {siteTitle}
+                </h1>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  {siteSubtitleDesktop}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={toggleDarkMode}
+                className="flex-shrink-0 p-1.5 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                aria-label="Cambiar tema"
+                title={darkMode ? 'Modo claro' : 'Modo oscuro'}
+              >
+                {darkMode ? (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                  </svg>
+                )}
+              </button>
+              <button
+                onClick={() => setShowCatalog(false)}
+                className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Volver
+              </button>
+              <button
+                onClick={handleOpenConfigurador}
+                className="px-3 py-1.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-1"
+              >
+                Configurador
+                {selectedPhotos.length > 0 && (
+                  <span className="bg-white text-green-600 rounded-full px-1.5 py-0.5 text-xs font-bold">
+                    {selectedPhotos.length}
+                  </span>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
         </header>
         <Catalog onCopyImage={handleCopyImage} darkMode={darkMode} />
       </div>
