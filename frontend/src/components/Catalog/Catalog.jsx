@@ -141,6 +141,9 @@ export default function Catalog({ onCopyImage, darkMode, onPhotoOpen, initialPho
     if (!v) break
     crumbItems.push({ label: LEVELS[i].label || v, val: v, key: LEVELS[i].key, last: i === showLevel - 1 })
   }
+  if (crumbItems.length > 0) {
+    crumbItems.unshift({ label: 'Inicio', val: '', key: 'tipo', last: false, isInicio: true })
+  }
 
   const handleCardClick = (url, id) => {
     setFullImg(url)
@@ -158,7 +161,14 @@ export default function Catalog({ onCopyImage, darkMode, onPhotoOpen, initialPho
             {crumbItems.map((it, i) => (
               <span key={i} className="flex items-center gap-1">
                 {i > 0 && <span className="text-gray-300 dark:text-gray-600 mx-0.5">/</span>}
-                {it.last ? (
+                {it.isInicio ? (
+                  <button
+                    onClick={() => setState({ tipo: null, estilo: null, ag: null, acero: null, encabado: null })}
+                    className="hover:text-blue-600 dark:hover:text-blue-400 hover:underline cursor-pointer"
+                  >
+                    Inicio
+                  </button>
+                ) : it.last ? (
                   <span className="text-gray-900 dark:text-white font-medium">{it.val}</span>
                 ) : (
                   <button
