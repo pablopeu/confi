@@ -293,6 +293,8 @@ Recorré el catálogo de cuchillos filtrando por tipo, estilo, acero y encabado.
   }, [])
 
   const handleCopyImage = useCallback(async (url) => {
+    // Mobile browsers don't support image clipboard
+    if (/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) return
     try {
       await copyImageToClipboard(url)
     } catch {}
