@@ -182,51 +182,76 @@ export default function Catalog({ onCopyImage, darkMode, onPhotoOpen, initialPho
           </div>
         )}
 
-        {/* Chip section for current level */}
-        {items.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mb-3">
-            {items.map(it => {
-              const sel = it.key === selKey
+        {/* Inicio: tarjetas de tipos (solo cuando no hay tipo seleccionado) */}
+        {!state.tipo ? (
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 max-w-lg mx-auto mt-4">
+            {getTipos().map(it => {
+              const colors = {
+                'Cocina':     { bg: 'bg-amber-50 dark:bg-amber-900/30', border: 'border-amber-200 dark:border-amber-700', text: 'text-amber-800 dark:text-amber-200', badge: 'bg-amber-100 dark:bg-amber-800 text-amber-700 dark:text-amber-300', icon: 'M3 2v4a2 2 0 002 2h2v2H5a4 4 0 01-4-4V2h2zm4 14h2v2a2 2 0 01-2 2H5v-2h2v-2zm4-14h10v2H11V2zm0 6h10v2H11V8zm0 6h7v2h-7v-2z' },
+                'Asado':      { bg: 'bg-red-50 dark:bg-red-900/30', border: 'border-red-200 dark:border-red-700', text: 'text-red-800 dark:text-red-200', badge: 'bg-red-100 dark:bg-red-800 text-red-700 dark:text-red-300', icon: 'M12 2l3 7h7l-5.5 4 2 7L12 16l-6.5 4 2-7L2 9h7z' },
+                'Orientales': { bg: 'bg-teal-50 dark:bg-teal-900/30', border: 'border-teal-200 dark:border-teal-700', text: 'text-teal-800 dark:text-teal-200', badge: 'bg-teal-100 dark:bg-teal-800 text-teal-700 dark:text-teal-300', icon: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h2v2h-2v-2zm0-12h2v8h-2V5z' },
+                'Otros':      { bg: 'bg-gray-50 dark:bg-gray-800', border: 'border-gray-200 dark:border-gray-600', text: 'text-gray-700 dark:text-gray-300', badge: 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400', icon: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h2v2h-2v-2zm0-12h2v8h-2V5z' },
+              }
+              const c = colors[it.key] || colors['Otros']
               return (
                 <button
                   key={it.key}
                   onClick={() => pick(it.key)}
-                  className={`px-2.5 py-1.5 text-sm rounded-lg border transition-colors flex items-center gap-1.5 ${
-                    sel
-                      ? 'bg-blue-100 dark:bg-blue-900/40 border-blue-500 text-blue-700 dark:text-blue-300 font-medium'
-                      : 'bg-gray-100 dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-gray-400 dark:hover:border-gray-500 hover:bg-white dark:hover:bg-gray-600'
-                  }`}
+                  className={`${c.bg} ${c.border} border-2 rounded-xl p-4 sm:p-6 text-left hover:shadow-md transition-all cursor-pointer flex flex-col gap-2`}
                 >
-                  {it.label}
-                  <span className={`text-[11px] rounded-full px-1.5 py-px border ${
-                    sel
-                      ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-300 border-blue-400 dark:border-blue-600'
-                      : 'bg-white dark:bg-gray-600 text-gray-500 dark:text-gray-400 border-gray-300 dark:border-gray-500'
-                  }`}>
-                    {it.count}
+                  <div className="flex items-center gap-2">
+                    <svg className="w-5 h-5 sm:w-6 sm:h-6 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                    </svg>
+                    <span className={`text-sm sm:text-base font-semibold ${c.text}`}>{it.label}</span>
+                  </div>
+                  <span className={`text-xs self-start px-2 py-0.5 rounded-full font-medium ${c.badge}`}>
+                    {it.count} cuchillos
                   </span>
                 </button>
               )
             })}
           </div>
-        )}
+        ) : (
+          <>
+            {/* Chip section for current level (after tipo selected) */}
+            {items.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mb-3">
+                {items.map(it => {
+                  const sel = it.key === selKey
+                  return (
+                    <button
+                      key={it.key}
+                      onClick={() => pick(it.key)}
+                      className={`px-2.5 py-1.5 text-sm rounded-lg border transition-colors flex items-center gap-1.5 ${
+                        sel
+                          ? 'bg-blue-100 dark:bg-blue-900/40 border-blue-500 text-blue-700 dark:text-blue-300 font-medium'
+                          : 'bg-gray-100 dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-gray-400 dark:hover:border-gray-500 hover:bg-white dark:hover:bg-gray-600'
+                      }`}
+                    >
+                      {it.label}
+                      <span className={`text-[11px] rounded-full px-1.5 py-px border ${
+                        sel
+                          ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-300 border-blue-400 dark:border-blue-600'
+                          : 'bg-white dark:bg-gray-600 text-gray-500 dark:text-gray-400 border-gray-300 dark:border-gray-500'
+                      }`}>
+                        {it.count}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            )}
 
-        {/* Status bar */}
-        {state.tipo && (
-          <div className="text-xs text-gray-500 dark:text-gray-400 mb-3">
-            {matching.length} cuchillos
-          </div>
+            {/* Status bar */}
+            <div className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+              {matching.length} cuchillos
+            </div>
+          </>
         )}
 
         {/* Photo grid or empty state */}
-        {!state.tipo ? (
-          <div className="flex flex-col items-center justify-center py-20 text-gray-400 dark:text-gray-500">
-            <svg className="w-16 h-16 mb-4 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <p className="text-sm">Seleccioná un tipo de cuchillo para empezar</p>
-          </div>
-        ) : matching.length === 0 ? (
+        {!state.tipo ? null : matching.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-gray-400 dark:text-gray-500">
             <p className="text-sm">No hay cuchillos con esa combinación</p>
           </div>
