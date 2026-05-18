@@ -307,9 +307,10 @@ export default function Catalog({ onCopyImage, darkMode, onPhotoOpen, initialPho
               </div>
             </div>
             <div
-              className="sm:hidden mt-3 max-w-[85vw] bg-gray-900/95 text-white text-[11px] px-4 py-3 rounded-lg shadow-lg pointer-events-none leading-relaxed text-center"
+              className="sm:hidden mt-3 ml-3 mr-12 bg-gray-900/95 text-white text-[11px] px-4 py-3 rounded-lg shadow-lg pointer-events-none leading-relaxed relative"
             >
               Si apretás el botón de WhatsApp o Telegram acá al costado le mando el link de esta foto a Pablo
+              <div className="absolute -right-3 top-1/2 -translate-y-1/2 w-0 h-0 border-t-8 border-t-transparent border-b-8 border-b-transparent border-l-8 border-l-gray-900"></div>
             </div>
           </div>
         </div>

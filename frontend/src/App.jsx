@@ -125,6 +125,21 @@ function App() {
   const [telegramConfig, setTelegramConfig] = useState(null)
   const [footerConfig, setFooterConfig] = useState(null)
   const [instructionsConfig, setInstructionsConfig] = useState(null)
+  const catalogInstructionsText = `# CATÁLOGO INTERACTIVO
+
+Recorré el catálogo de cuchillos filtrando por tipo, estilo, acero y encabado.
+
+### Cómo usar el catálogo
+* Elegí un **tipo de cuchillo** en las tarjetas de inicio
+* Después seleccioná **estilo**, grupo de **acero**, acero específico y **encabado**
+* Cada selección filtra los resultados automáticamente
+* El breadcrumb arriba te muestra tu recorrido y podés volver atrás
+
+### Fotos
+* Cliqueá cualquier foto para **verla en grande**
+* Al abrir una foto, los botones de **WhatsApp** y **Telegram** incluyen el link a esa foto
+* La foto también se copia al portapapeles`
+
   const [showTypeGroups, setShowTypeGroups] = useState(false)
   const [showSelectors, setShowSelectors] = useState(false)
   const [showThumbnails, setShowThumbnails] = useState(false)
@@ -1283,7 +1298,7 @@ function App() {
       </main>
 
       {/* Modal de Instrucciones */}
-      {showInstructions && instructionsConfig?.text && (
+      {showInstructions && (instructionsConfig?.text || showCatalog) && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           {/* Overlay */}
           <div
@@ -1299,7 +1314,7 @@ function App() {
             <div className="p-4 lg:p-6">
               <div
                 className="prose dark:prose-invert max-w-none"
-                dangerouslySetInnerHTML={{ __html: parseMarkdown(instructionsConfig.text) }}
+                dangerouslySetInnerHTML={{ __html: parseMarkdown(showCatalog ? catalogInstructionsText : instructionsConfig.text) }}
               />
             </div>
           </div>
@@ -1484,7 +1499,7 @@ function App() {
       {!showConfigurador && (whatsappConfig?.enabled || telegramConfig?.enabled || instructionsConfig?.enabled) && (
         <div className="fixed bottom-20 right-4 sm:bottom-24 sm:right-6 flex flex-col gap-2 sm:gap-3 z-[100]">
           {/* Instrucciones - arriba de todo */}
-          {instructionsConfig?.enabled && (
+          {(instructionsConfig?.enabled || showCatalog) && (
             <button
               onClick={() => setShowInstructions(prev => !prev)}
               className="w-[42px] h-[42px] sm:w-14 sm:h-14 rounded-full bg-gray-800 hover:bg-gray-900 text-white flex items-center justify-center shadow-lg transition-all hover:scale-110 relative"
