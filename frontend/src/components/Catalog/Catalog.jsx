@@ -124,14 +124,13 @@ export default function Catalog({ onCopyImage, darkMode, onPhotoOpen, initialPho
 
   const resetTo = (levelKey) => {
     const ks = ['tipo', 'estilo', 'ag', 'acero', 'encabado']
-    let found = false
     const next = { ...state }
+    let clear = false
     for (const k of ks) {
-      if (k === levelKey) { found = true; next[k] = null; continue }
-      if (found) next[k] = null
+      if (k === levelKey) { clear = true; continue }
+      if (clear) next[k] = null
     }
-    if (levelKey === 'tipo') setState({ tipo: null, estilo: null, ag: null, acero: null, encabado: null })
-    else setState(next)
+    setState(next)
   }
 
   // Build breadcrumb items
