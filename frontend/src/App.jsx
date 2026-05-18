@@ -479,6 +479,11 @@ Recorré el catálogo de cuchillos filtrando por tipo, estilo, acero y encabado.
         setShowCatalog(true)
         setShowConfigurador(false)
       }, 100)
+    } else if (urlParams.has('catalogo')) {
+      setTimeout(() => {
+        setShowCatalog(true)
+        setShowConfigurador(false)
+      }, 100)
     }
   }, [])
 
