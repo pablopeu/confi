@@ -1297,29 +1297,6 @@ Recorré el catálogo de cuchillos filtrando por tipo, estilo, acero y encabado.
         </div>
       </main>
 
-      {/* Modal de Instrucciones */}
-      {showInstructions && (instructionsConfig?.text || showCatalog) && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Overlay */}
-          <div
-            className="absolute inset-0 bg-black/50"
-            onClick={() => setShowInstructions(false)}
-          />
-
-          {/* Modal */}
-          <div
-            onClick={() => setShowInstructions(false)}
-            className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-[80vw] lg:max-w-[80vw] max-h-[95vh] lg:max-h-[95vh] overflow-y-auto cursor-pointer"
-          >
-            <div className="p-4 lg:p-6">
-              <div
-                className="prose dark:prose-invert max-w-none"
-                dangerouslySetInnerHTML={{ __html: parseMarkdown(showCatalog ? catalogInstructionsText : instructionsConfig.text) }}
-              />
-            </div>
-          </div>
-        </div>
-      )}
       </div>
 
       {/* Slide del catálogo */}
@@ -1625,6 +1602,27 @@ Recorré el catálogo de cuchillos filtrando por tipo, estilo, acero y encabado.
               </svg>
             </button>
           )}
+        </div>
+      )}
+
+      {/* Modal de Instrucciones */}
+      {showInstructions && (instructionsConfig?.text || showCatalog) && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setShowInstructions(false)}
+          />
+          <div
+            onClick={() => setShowInstructions(false)}
+            className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-[80vw] lg:max-w-[80vw] max-h-[95vh] lg:max-h-[95vh] overflow-y-auto cursor-pointer"
+          >
+            <div className="p-4 lg:p-6">
+              <div
+                className="prose dark:prose-invert max-w-none"
+                dangerouslySetInnerHTML={{ __html: parseMarkdown(showCatalog ? catalogInstructionsText : instructionsConfig.text) }}
+              />
+            </div>
+          </div>
         </div>
       )}
 
