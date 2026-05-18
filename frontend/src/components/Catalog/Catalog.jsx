@@ -156,7 +156,7 @@ export default function Catalog({ onCopyImage, darkMode, onPhotoOpen, initialPho
       <div className="flex-1 overflow-y-auto px-3 py-2 lg:px-4 lg:py-3">
         {/* Breadcrumb line */}
         {crumbItems.length > 0 && (
-          <div className="flex flex-wrap items-center justify-center sm:justify-start lg:justify-center gap-1 text-xs text-gray-500 dark:text-gray-400 mb-2 leading-relaxed">
+          <div className="flex flex-wrap items-center justify-start lg:justify-center gap-1 text-xs text-gray-500 dark:text-gray-400 mb-2 leading-relaxed">
             {crumbItems.map((it, i) => (
               <span key={i} className="flex items-center gap-1">
                 {i > 0 && <span className="text-gray-300 dark:text-gray-600 mx-0.5">/</span>}
