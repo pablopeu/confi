@@ -1815,6 +1815,133 @@ switch (true) {
         response(['enabled_languages' => $enabledLanguages]);
         break;
 
+    // GET /catalog/tree - Construir árbol del catálogo en runtime
+    case $path === 'catalog/tree' && $method === 'GET':
+        header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+        header('Cache-Control: post-check=0, pre-check=0', false);
+        header('Pragma: no-cache');
+        header('Expires: 0');
+
+        $lang = isset($_GET['lang']) ? $_GET['lang'] : 'es';
+        if (!in_array($lang, ['es', 'en'])) {
+            $lang = 'es';
+        }
+
+        $categories = readJSON('categories.json');
+        $categories = transformCategoriesForLanguage($categories, $lang);
+        $photos = readJSON('photos.json');
+
+        // Construir maps: tagId -> displayName, tagId -> groupId
+        $tagNameMap = [];
+        $tagGroupMap = [];
+        foreach ($categories['tag_groups'] as $group) {
+            $groupId = $group['id'];
+            foreach ($group['tags'] as $tag) {
+                $tagNameMap[$tag['id']] = $tag['name'];
+                $tagGroupMap[$tag['id']] = $groupId;
+            }
+        }
+
+        // Agrupar aceros
+        $getAceroGroup = function($name) {
+            $lower = mb_strtolower($name);
+            if (strpos($lower, 'inoxidable') !== false || strpos($lower, 'inox') !== false) {
+                return 'Acero inoxidable';
+            }
+            if (strpos($lower, 'carbono') !== false) {
+                return 'Acero carbono';
+            }
+            if (strpos($lower, 'damasco') !== false) {
+                return 'Acero damasco';
+            }
+            return 'Otros';
+        };
+
+        $tree = [];
+        $photosMap = [];
+        $covers = [];
+        $coverUsed = [];
+        $excludedTagIds = ['cover'];
+
+        foreach ($photos['photos'] as $photo) {
+            $id = $photo['id'];
+            $url = $photo['url'];
+            $tagIds = $photo['tags'] ?? [];
+
+            // Clasificar tags por grupo
+            $tipoTags = [];
+            $estiloTags = [];
+            $aceroTags = [];
+            $encabadoTags = [];
+            $displayTags = [];
+
+            foreach ($tagIds as $tagId) {
+                if (!isset($tagGroupMap[$tagId])) continue;
+
+                $groupId = $tagGroupMap[$tagId];
+                $displayName = $tagNameMap[$tagId];
+
+                // Tags visibles: excluir cover
+                if (!in_array($tagId, $excludedTagIds)) {
+                    $displayTags[] = $displayName;
+                }
+
+                switch ($groupId) {
+                    case 'tipo':
+                        $tipoTags[] = $displayName;
+                        break;
+                    case 'extras':
+                        $estiloTags[] = $displayName;
+                        break;
+                    case 'acero':
+                        $aceroTags[] = $displayName;
+                        break;
+                    case 'encabado':
+                        $encabadoTags[] = $displayName;
+                        break;
+                }
+            }
+
+            // Guardar en photosMap (dedup tags)
+            $photosMap[$id] = ['url' => $url, 'tags' => array_values(array_unique($displayTags))];
+
+            // Detectar cover: primera foto por tipo con tag "cover" en encabado
+            if (in_array('cover', $tagIds)) {
+                foreach ($tipoTags as $tipo) {
+                    if (!isset($coverUsed[$tipo])) {
+                        $covers[$tipo] = ['url' => $url, 'photoId' => $id];
+                        $coverUsed[$tipo] = true;
+                    }
+                }
+            }
+
+            // Colocar en el árbol (producto cartesiano)
+            foreach ($tipoTags as $tipo) {
+                if (!isset($tree[$tipo])) $tree[$tipo] = [];
+                foreach ($estiloTags as $estilo) {
+                    if (!isset($tree[$tipo][$estilo])) $tree[$tipo][$estilo] = [];
+                    foreach ($aceroTags as $acero) {
+                        $ag = $getAceroGroup($acero);
+                        if (!isset($tree[$tipo][$estilo][$ag])) $tree[$tipo][$estilo][$ag] = [];
+                        if (!isset($tree[$tipo][$estilo][$ag][$acero])) $tree[$tipo][$estilo][$ag][$acero] = [];
+                        foreach ($encabadoTags as $encabado) {
+                            if (!isset($tree[$tipo][$estilo][$ag][$acero][$encabado])) {
+                                $tree[$tipo][$estilo][$ag][$acero][$encabado] = [];
+                            }
+                            $tree[$tipo][$estilo][$ag][$acero][$encabado][] = $id;
+                        }
+                    }
+                }
+            }
+        }
+
+        response([
+            'tree' => $tree,
+            'photosMap' => $photosMap,
+            'covers' => (object)$covers,
+        ]);
+        break;
+
     default:
         response(['error' => t('general.route_not_found'), 'path' => $path], 404);
 }

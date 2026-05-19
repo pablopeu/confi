@@ -31,6 +31,11 @@ export async function getPhotos() {
   return fetchJSON('/photos')
 }
 
+// Catálogo
+export async function getCatalogTree() {
+  return fetchJSON('/catalog/tree')
+}
+
 export async function copyImageToClipboard(imageUrl) {
   try {
     // Verificar si el navegador soporta la API de clipboard con imágenes

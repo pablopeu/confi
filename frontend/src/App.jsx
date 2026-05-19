@@ -618,7 +618,7 @@ Recorré el catálogo de cuchillos filtrando por tipo, estilo, acero y encabado.
   // Obtener tags por grupo
   const getTagsByGroup = (groupId) => {
     const group = tagGroups.find(g => g.id === groupId)
-    return group?.tags || []
+    return (group?.tags || []).filter(t => t.id !== 'cover')
   }
 
   // Filtrar fotos cuando cambian los filtros
@@ -1843,6 +1843,7 @@ function PhotoCard({ photo, tagGroups, isSelected, onToggleSelection, selectedCo
     // Primero buscar tags que existen en tagGroups
     for (const group of tagGroups) {
       for (const tag of group.tags) {
+        if (tag.id === 'cover') continue
         if (photoTags.includes(tag.id)) {
           tagNames.push({ name: capitalize(tag.name), groupId: group.id })
           foundTagIds.add(tag.id)
@@ -2169,6 +2170,7 @@ function Configurador({
     const tagNames = []
     for (const group of tagGroups) {
       for (const tag of group.tags) {
+        if (tag.id === 'cover') continue
         if (photoTags.includes(tag.id)) {
           tagNames.push(capitalize(tag.name))
         }

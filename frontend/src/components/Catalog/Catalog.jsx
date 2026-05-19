@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useEffect } from 'react'
-import { TREE, photosMap } from '../../data/catalogTree'
+import { getCatalogTree } from '../../services/api'
 
 function collectIds(node, ids) {
   if (Array.isArray(node)) { node.forEach(id => ids.add(id)); return }
@@ -19,17 +19,39 @@ const STEEL_ORDER = { 'Acero inoxidable': 1, 'Acero carbono': 2, 'Acero damasco'
 export default function Catalog({ onCopyImage, darkMode, onPhotoOpen, initialPhotoId }) {
   const [state, setState] = useState({ tipo: null, estilo: null, ag: null, acero: null, encabado: null })
   const [fullImg, setFullImg] = useState(null)
+  const [catalogData, setCatalogData] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    let cancelled = false
+    async function load() {
+      try {
+        setLoading(true)
+        setError(null)
+        const data = await getCatalogTree()
+        if (!cancelled) setCatalogData(data)
+      } catch (err) {
+        if (!cancelled) setError(err.message || 'Error al cargar el catálogo')
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+    load()
+    return () => { cancelled = true }
+  }, [])
 
   const getTipos = useCallback(() => {
-    return Object.entries(TREE).map(([k, v]) => {
+    if (!catalogData?.tree) return []
+    return Object.entries(catalogData.tree).map(([k, v]) => {
       const ids = new Set(); collectIds(v, ids)
       return { key: k, label: k, count: ids.size }
     }).sort((a, b) => b.count - a.count)
-  }, [])
+  }, [catalogData])
 
   const getEstilos = useCallback(() => {
-    if (!state.tipo || !TREE[state.tipo]) return []
-    const n = TREE[state.tipo]
+    if (!state.tipo || !catalogData?.tree?.[state.tipo]) return []
+    const n = catalogData.tree[state.tipo]
     return Object.entries(n).map(([k, v]) => {
       const ids = new Set(); collectIds(v, ids)
       return { key: k, label: k, count: ids.size }
@@ -38,44 +60,45 @@ export default function Catalog({ onCopyImage, darkMode, onPhotoOpen, initialPho
       if (b.key === 'Vaina Cincelada') return -1
       return b.count - a.count
     })
-  }, [state.tipo])
+  }, [state.tipo, catalogData])
 
   const getAceroGrupos = useCallback(() => {
-    if (!state.estilo || !TREE[state.tipo]?.[state.estilo]) return []
-    const n = TREE[state.tipo][state.estilo]
+    if (!state.estilo || !catalogData?.tree?.[state.tipo]?.[state.estilo]) return []
+    const n = catalogData.tree[state.tipo][state.estilo]
     return Object.entries(n).map(([k, v]) => {
       const ids = new Set(); collectIds(v, ids)
       return { key: k, label: k, count: ids.size }
     }).sort((a, b) => (STEEL_ORDER[a.key] || 99) - (STEEL_ORDER[b.key] || 99))
-  }, [state.tipo, state.estilo])
+  }, [state.tipo, state.estilo, catalogData])
 
   const getAceros = useCallback(() => {
-    if (!state.ag || !TREE[state.tipo]?.[state.estilo]?.[state.ag]) return []
-    const n = TREE[state.tipo][state.estilo][state.ag]
+    if (!state.ag || !catalogData?.tree?.[state.tipo]?.[state.estilo]?.[state.ag]) return []
+    const n = catalogData.tree[state.tipo][state.estilo][state.ag]
     return Object.entries(n).map(([k, v]) => ({
       key: k, label: k, count: Object.keys(v || {}).length
     })).sort((a, b) => b.count - a.count)
-  }, [state.tipo, state.estilo, state.ag])
+  }, [state.tipo, state.estilo, state.ag, catalogData])
 
   const getEncabados = useCallback(() => {
-    if (!state.acero || !TREE[state.tipo]?.[state.estilo]?.[state.ag]?.[state.acero]) return []
-    const n = TREE[state.tipo][state.estilo][state.ag][state.acero]
+    if (!state.acero || !catalogData?.tree?.[state.tipo]?.[state.estilo]?.[state.ag]?.[state.acero]) return []
+    const n = catalogData.tree[state.tipo][state.estilo][state.ag][state.acero]
     return Object.entries(n).map(([k, v]) => ({
       key: k, label: k, count: v.length
     })).sort((a, b) => b.count - a.count)
-  }, [state.tipo, state.estilo, state.ag, state.acero])
+  }, [state.tipo, state.estilo, state.ag, state.acero, catalogData])
 
   // Auto-open initial photo from URL param
   useEffect(() => {
-    if (initialPhotoId && photosMap[initialPhotoId]) {
-      const url = `https://peu.net/confi/${photosMap[initialPhotoId].url}`
+    if (initialPhotoId && catalogData?.photosMap?.[initialPhotoId]) {
+      const url = `https://peu.net/confi/${catalogData.photosMap[initialPhotoId].url}`
       setFullImg(url)
       if (onPhotoOpen) onPhotoOpen(initialPhotoId)
     }
-  }, [initialPhotoId])
+  }, [initialPhotoId, catalogData])
 
   const matching = useMemo(() => {
-    let n = TREE
+    if (!catalogData?.tree) return []
+    let n = catalogData.tree
     if (!state.tipo || !n[state.tipo]) return []
     n = n[state.tipo]
     if (!state.estilo) { const ids = new Set(); collectIds(n, ids); return [...ids] }
@@ -89,7 +112,7 @@ export default function Catalog({ onCopyImage, darkMode, onPhotoOpen, initialPho
     n = n[state.acero]
     if (!state.encabado) { const ids = new Set(); collectIds(n, ids); return [...ids] }
     return n[state.encabado] || []
-  }, [state])
+  }, [state, catalogData])
 
   const showLevel = useMemo(() => {
     if (!state.tipo) return 0
@@ -150,6 +173,22 @@ export default function Catalog({ onCopyImage, darkMode, onPhotoOpen, initialPho
     if (onPhotoOpen) onPhotoOpen(id)
   }
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="text-gray-400 dark:text-gray-500 text-sm animate-pulse">Cargando catálogo...</div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="text-red-500 dark:text-red-400 text-sm">Error: {error}</div>
+      </div>
+    )
+  }
+
   return (
     <div className="flex flex-col h-full">
       {/* Scrollable content */}
@@ -197,17 +236,30 @@ export default function Catalog({ onCopyImage, darkMode, onPhotoOpen, initialPho
                 <button
                   key={it.key}
                   onClick={() => pick(it.key)}
-                  className={`${c.bg} ${c.border} border-2 rounded-xl p-4 sm:p-6 text-left hover:shadow-md transition-all cursor-pointer flex flex-col gap-2`}
+                  className={`${c.bg} ${c.border} border-2 rounded-xl overflow-hidden text-left hover:shadow-md transition-all cursor-pointer flex flex-col`}
                 >
-                  <div className="flex items-center gap-2">
-                    <svg className="w-5 h-5 sm:w-6 sm:h-6 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-                    </svg>
+                  {catalogData?.covers?.[it.key] ? (
+                    <div className="aspect-[4/3] w-full overflow-hidden">
+                      <img
+                        src={`https://peu.net/confi/${catalogData.covers[it.key].url}`}
+                        alt={it.label}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                    </div>
+                  ) : (
+                    <div className="p-4 sm:p-6 pb-2 flex items-center gap-2">
+                      <svg className="w-5 h-5 sm:w-6 sm:h-6 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                      </svg>
+                    </div>
+                  )}
+                  <div className="p-3 sm:p-4 pt-0 flex items-center justify-between">
                     <span className={`text-sm sm:text-base font-semibold ${c.text}`}>{it.label}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${c.badge}`}>
+                      {it.count} cuchillos
+                    </span>
                   </div>
-                  <span className={`text-xs self-start px-2 py-0.5 rounded-full font-medium ${c.badge}`}>
-                    {it.count} cuchillos
-                  </span>
                 </button>
               )
             })}
@@ -258,7 +310,7 @@ export default function Catalog({ onCopyImage, darkMode, onPhotoOpen, initialPho
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
             {matching.map(id => {
-              const p = photosMap[id]
+              const p = catalogData?.photosMap?.[id]
               if (!p) return null
               const url = `https://peu.net/confi/${p.url}`
               return (
@@ -273,7 +325,7 @@ export default function Catalog({ onCopyImage, darkMode, onPhotoOpen, initialPho
                     />
                   </div>
                   <div className="p-2.5 flex flex-wrap gap-1">
-                    {(p.tags || []).slice(0, 12).map((t, i) => (
+                    {(p.tags || []).filter(t => t.toLowerCase() !== 'cover').slice(0, 12).map((t, i) => (
                       <span key={i} className="text-[11px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-600">
                         {t}
                       </span>
