@@ -384,9 +384,10 @@ function UploadPhotos({ tagGroups, authParams, onRefresh, showSuccess, showError
   const [saving, setSaving] = useState(false)
   const [savedFeedback, setSavedFeedback] = useState(false) // Para feedback visual verde
   const [arrowFeedback, setArrowFeedback] = useState(null) // 'prev' | 'next' | null
-  const [bucketToDelete, setBucketToDelete] = useState(null) // ID del bucket esperando confirmación
-  const [deletedBucketFeedback, setDeletedBucketFeedback] = useState(null) // ID del bucket recién eliminado
-  const [bucketAndPhotosToDelete, setBucketAndPhotosToDelete] = useState(null) // ID del bucket para borrar todo (bucket + fotos)
+  const saveTimeout = useRef(null)
+  const [bucketToDelete, setBucketToDelete] = useState(null)
+  const [deletedBucketFeedback, setDeletedBucketFeedback] = useState(null)
+  const [bucketAndPhotosToDelete, setBucketAndPhotosToDelete] = useState(null)
 
   const currentPhoto = uploadedPhotos[currentIndex]
 
@@ -426,8 +427,7 @@ function UploadPhotos({ tagGroups, authParams, onRefresh, showSuccess, showError
     }
 
     const handleClickOutside = (e) => {
-      // Si hay un bucket activo y el click no fue en un botón
-      if (activeBucketId && !e.target.closest('button')) {
+      if (activeBucketId && !e.target.closest('button') && !e.target.closest('input') && !e.target.closest('select') && !e.target.closest('textarea')) {
         setActiveBucketId(null)
         setUploadedPhotos([])
         setCurrentIndex(0)
@@ -551,6 +551,8 @@ function UploadPhotos({ tagGroups, authParams, onRefresh, showSuccess, showError
         : [...current, tagId]
       return { ...prev, [currentPhoto.id]: newTags }
     })
+    if (saveTimeout.current) clearTimeout(saveTimeout.current)
+    saveTimeout.current = setTimeout(() => handleSaveCurrentPhoto(false), 1000)
   }
 
   const handleTextChange = (text) => {
@@ -575,6 +577,8 @@ function UploadPhotos({ tagGroups, authParams, onRefresh, showSuccess, showError
             [currentPhoto.id]: [...(prev[currentPhoto.id] || []), newTag.id]
           }))
         }
+        if (saveTimeout.current) clearTimeout(saveTimeout.current)
+        saveTimeout.current = setTimeout(() => handleSaveCurrentPhoto(false), 1000)
         // Refrescar tags después de actualizar el estado local
         onRefresh()
         return newTag
@@ -1392,6 +1396,7 @@ function ManagePhotos({ photos, tagGroups, authParams, onRefresh, showSuccess, s
   const [saving, setSaving] = useState(false)
   const [savedFeedback, setSavedFeedback] = useState(false)
   const [arrowFeedback, setArrowFeedback] = useState(null)
+  const saveTimeout = useRef(null)
   const [showOnlyUntagged, setShowOnlyUntagged] = useState(false)
   const [filterMissingGroup, setFilterMissingGroup] = useState(null) // ID del grupo para filtrar fotos sin tags de ese grupo
   const [searchQuery, setSearchQuery] = useState('')
@@ -1502,6 +1507,8 @@ function ManagePhotos({ photos, tagGroups, authParams, onRefresh, showSuccess, s
         : [...current, tagId]
       return { ...prev, [currentPhoto.id]: newTags }
     })
+    if (saveTimeout.current) clearTimeout(saveTimeout.current)
+    saveTimeout.current = setTimeout(() => handleSaveCurrentPhoto(false), 1000)
   }
 
   const handleTextChange = (text) => {
@@ -1526,6 +1533,8 @@ function ManagePhotos({ photos, tagGroups, authParams, onRefresh, showSuccess, s
             [currentPhoto.id]: [...(prev[currentPhoto.id] || []), newTag.id]
           }))
         }
+        if (saveTimeout.current) clearTimeout(saveTimeout.current)
+        saveTimeout.current = setTimeout(() => handleSaveCurrentPhoto(false), 1000)
         // Refrescar tags después de actualizar el estado local
         onRefresh()
         return newTag
