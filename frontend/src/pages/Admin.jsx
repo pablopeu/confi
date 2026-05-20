@@ -1127,6 +1127,7 @@ function PhotoCarousel({ photos, currentIndex, onSelectPhoto, disableRepeat = fa
   const carouselRef = useRef(null)
   const [draggedIndex, setDraggedIndex] = useState(null)
   const [dragOverIndex, setDragOverIndex] = useState(null)
+  const dragJustEnded = useRef(false)
 
   const THUMBNAIL_SIZE = 120
 
@@ -1160,6 +1161,7 @@ function PhotoCarousel({ photos, currentIndex, onSelectPhoto, disableRepeat = fa
   const handleDragStart = (e, index) => {
     if (!onReorder) return
     setDraggedIndex(index)
+    dragJustEnded.current = false
     e.dataTransfer.effectAllowed = 'move'
     // Crear imagen fantasma personalizada
     const dragImage = e.target.cloneNode(true)
@@ -1178,6 +1180,8 @@ function PhotoCarousel({ photos, currentIndex, onSelectPhoto, disableRepeat = fa
   const handleDragEnd = () => {
     setDraggedIndex(null)
     setDragOverIndex(null)
+    dragJustEnded.current = true
+    setTimeout(() => { dragJustEnded.current = false }, 100)
   }
 
   const handleDrop = (e, dropIndex) => {
@@ -1231,6 +1235,7 @@ function PhotoCarousel({ photos, currentIndex, onSelectPhoto, disableRepeat = fa
               onDragOver={(e) => handleDragOver(e, originalIdx)}
               onDragEnd={handleDragEnd}
               onDrop={(e) => handleDrop(e, originalIdx)}
+              onClick={() => { if (!dragJustEnded.current) onSelectPhoto(originalIdx) }}
               className={`flex-shrink-0 overflow-hidden border-2 transition-all relative ${
                 originalIdx === currentIndex
                   ? 'border-blue-500 ring-2 ring-blue-300 dark:ring-blue-700'
