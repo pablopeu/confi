@@ -33,7 +33,7 @@ export async function getPhotos() {
 
 // Catálogo
 export async function getCatalogTree() {
-  return fetchJSON(`/catalog/tree?_t=${Date.now()}`)
+  return fetchJSON(`/catalog/tree&_t=${Date.now()}`)
 }
 
 export async function copyImageToClipboard(imageUrl) {
