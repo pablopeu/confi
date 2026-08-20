@@ -103,8 +103,15 @@ const parseMarkdown = (text) => {
 
 // Parsear markdown inline (negrita, itálica, links)
 const parseInlineMarkdown = (text) => {
-  // Links [texto](url)
-  text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-blue-600 dark:text-blue-400 hover:underline" target="_blank" rel="noopener noreferrer">$1</a>')
+  // Links [texto](url): solo permitir http/https/mailto/tel, sin espacios ni comillas
+  text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, label, url) => {
+    const trimmed = url.trim()
+    if (/^(https?:|mailto:|tel:)/i.test(trimmed) && !/[\s"'<>]/.test(trimmed)) {
+      const safeUrl = trimmed.replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+      return `<a href="${safeUrl}" class="text-blue-600 dark:text-blue-400 hover:underline" target="_blank" rel="noopener noreferrer">${label}</a>`
+    }
+    return label
+  })
 
   // Negrita **texto**
   text = text.replace(/\*\*([^*]+)\*\*/g, '<strong class="font-bold">$1</strong>')

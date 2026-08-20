@@ -10,6 +10,22 @@ function apiUrl(route) {
   return `${API_BASE}?route=${route.replace(/^\//, '')}`
 }
 
+// Credenciales compartidas para el wrapper de fetch
+let authCreds = { user: '', pass: '' }
+const setAuthCreds = (next) => { authCreds = next }
+
+// Wrapper de fetch: agrega Authorization: Basic para no exponer credenciales
+// en el query string (fuga en logs, historial y Referer)
+const originalFetch = window.fetch
+window.fetch = (url, options = {}) => {
+  const headers = new Headers(options.headers || {})
+  if (authCreds.user && authCreds.pass && !headers.has('Authorization')) {
+    const token = btoa(String.fromCharCode(...new TextEncoder().encode(`${authCreds.user}:${authCreds.pass}`)))
+    headers.set('Authorization', 'Basic ' + token)
+  }
+  return originalFetch(url, { ...options, headers })
+}
+
 export default function Admin() {
   const [authenticated, setAuthenticated] = useState(false)
   const [credentials, setCredentials] = useState({ user: '', pass: '' })
@@ -31,6 +47,11 @@ export default function Admin() {
     auth_user: credentials.user,
     auth_pass: credentials.pass
   })
+
+  // Mantener las credenciales actualizadas para el wrapper de fetch
+  useEffect(() => {
+    setAuthCreds(credentials)
+  }, [credentials])
 
   // Cargar títulos públicos al montar (sin autenticación)
   useEffect(() => {
@@ -57,11 +78,8 @@ export default function Admin() {
   const handleLogin = async (e) => {
     e.preventDefault()
     try {
-      const params = new URLSearchParams({
-        auth_user: credentials.user,
-        auth_pass: credentials.pass
-      })
-      const response = await fetch(apiUrl('admin/verify') + '&' + params.toString())
+      setAuthCreds({ user: credentials.user, pass: credentials.pass })
+      const response = await fetch(apiUrl('admin/verify'))
       if (response.ok) {
         setAuthenticated(true)
         loadData()
@@ -76,8 +94,7 @@ export default function Admin() {
 
   const loadBackendTitle = async () => {
     try {
-      const params = new URLSearchParams(getAuthParams())
-      const response = await fetch(apiUrl('admin/config/site-info') + '&' + params.toString())
+      const response = await fetch(apiUrl('admin/config/site-info'))
       if (response.ok) {
         const data = await response.json()
         setBackendTitle(data.backend_title || 'Admin')
@@ -107,8 +124,8 @@ export default function Admin() {
   }
 
   const handleChangePassword = async () => {
-    if (newPassword.length < 6) {
-      showError('Error', 'La contraseña debe tener al menos 6 caracteres')
+    if (newPassword.length < 12) {
+      showError('Error', 'La contraseña debe tener al menos 12 caracteres')
       return
     }
 
@@ -348,7 +365,7 @@ export default function Admin() {
               type="password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="Nueva contraseña (mín. 6 caracteres)"
+              placeholder="Nueva contraseña (mín. 12 caracteres)"
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white mb-4"
               autoComplete="new-password"
             />
@@ -704,8 +721,7 @@ function UploadPhotos({ tagGroups, authParams, onRefresh, showSuccess, showError
 
   const handleDeleteBucket = async (bucketId) => {
     try {
-      const params = new URLSearchParams(authParams)
-      const response = await fetch(apiUrl(`admin/buckets/${bucketId}`) + '&' + params.toString(), {
+      const response = await fetch(apiUrl(`admin/buckets/${bucketId}`), {
         method: 'DELETE'
       })
 
@@ -738,8 +754,7 @@ function UploadPhotos({ tagGroups, authParams, onRefresh, showSuccess, showError
 
   const handleDeleteBucketAndPhotos = async (bucketId) => {
     try {
-      const params = new URLSearchParams(authParams)
-      const response = await fetch(apiUrl(`admin/buckets/${bucketId}/photos`) + '&' + params.toString(), {
+      const response = await fetch(apiUrl(`admin/buckets/${bucketId}/photos`), {
         method: 'DELETE'
       })
 
@@ -1579,8 +1594,7 @@ function ManagePhotos({ photos, tagGroups, authParams, onRefresh, showSuccess, s
     if (!currentPhoto) return
     showConfirm('Eliminar foto', '¿Eliminar esta foto permanentemente?', async () => {
       try {
-        const params = new URLSearchParams(authParams)
-        const response = await fetch(apiUrl(`admin/photos/${currentPhoto.id}`) + '&' + params.toString(), {
+        const response = await fetch(apiUrl(`admin/photos/${currentPhoto.id}`), {
           method: 'DELETE'
         })
         if (response.ok) {
@@ -1891,8 +1905,7 @@ function TagsManager({ tagGroups, authParams, onRefresh, showSuccess, showError,
 
   const handleDeleteTag = async (groupId, tagId) => {
     try {
-      const params = new URLSearchParams(authParams)
-      const response = await fetch(apiUrl(`admin/tags/${groupId}/${tagId}`) + '&' + params.toString(), {
+      const response = await fetch(apiUrl(`admin/tags/${groupId}/${tagId}`), {
         method: 'DELETE'
       })
       if (response.ok) {
@@ -1932,8 +1945,7 @@ function TagsManager({ tagGroups, authParams, onRefresh, showSuccess, showError,
     if (!editingTag) return
 
     try {
-      const params = new URLSearchParams(authParams)
-      const response = await fetch(apiUrl(`admin/tags/${editingTag.groupId}/${editingTag.tagId}`) + '&' + params.toString(), {
+      const response = await fetch(apiUrl(`admin/tags/${editingTag.groupId}/${editingTag.tagId}`), {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: editingTag.name })
@@ -1973,8 +1985,7 @@ function TagsManager({ tagGroups, authParams, onRefresh, showSuccess, showError,
     tags.splice(dropIndex, 0, draggedItem)
 
     try {
-      const params = new URLSearchParams(authParams)
-      const response = await fetch(apiUrl(`admin/tag-groups/${groupId}/reorder`) + '&' + params.toString(), {
+      const response = await fetch(apiUrl(`admin/tag-groups/${groupId}/reorder`), {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tag_order: tags.map(t => t.id) })
@@ -2250,8 +2261,7 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
   const loadBackups = async () => {
     setLoading(true)
     try {
-      const params = new URLSearchParams(authParams)
-      const response = await fetch(apiUrl('admin/backups') + '&' + params.toString())
+      const response = await fetch(apiUrl('admin/backups'))
       if (response.ok) {
         const data = await response.json()
         setBackups(data.backups || [])
@@ -2280,8 +2290,7 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
 
   const loadContactConfig = async () => {
     try {
-      const params = new URLSearchParams(authParams)
-      const response = await fetch(apiUrl('admin/config/contact') + '&' + params.toString())
+      const response = await fetch(apiUrl('admin/config/contact'))
       if (response.ok) {
         const data = await response.json()
         setWhatsappConfig(data.whatsapp || { enabled: false, number: '', message: '', catalog_message: '' })
@@ -2294,8 +2303,7 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
 
   const loadHeadersConfig = async () => {
     try {
-      const params = new URLSearchParams(authParams)
-      const response = await fetch(apiUrl('admin/config/headers') + '&' + params.toString())
+      const response = await fetch(apiUrl('admin/config/headers'))
       if (response.ok) {
         const data = await response.json()
         setHeadersConfig(data.headers || { showTypeGroups: true, showSelectors: true, showThumbnails: true, showTags: true })
@@ -2307,8 +2315,7 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
 
   const loadMetaTags = async () => {
     try {
-      const params = new URLSearchParams(authParams)
-      const response = await fetch(apiUrl('admin/config/metatags') + '&' + params.toString())
+      const response = await fetch(apiUrl('admin/config/metatags'))
       if (response.ok) {
         const data = await response.json()
         setMetaTags(data.meta_tags || '')
@@ -2320,8 +2327,7 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
 
   const loadConfiguratorMessage = async () => {
     try {
-      const params = new URLSearchParams(authParams)
-      const response = await fetch(apiUrl('admin/config/configurator') + '&' + params.toString())
+      const response = await fetch(apiUrl('admin/config/configurator'))
       if (response.ok) {
         const data = await response.json()
         setConfiguratorMessage(data.configurator_message || 'Hola Pablo, te envío mi página del configurador de cuchillos: {link}')
@@ -2333,8 +2339,7 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
 
   const loadFooterConfig = async () => {
     try {
-      const params = new URLSearchParams(authParams)
-      const response = await fetch(apiUrl('admin/config/footer') + '&' + params.toString())
+      const response = await fetch(apiUrl('admin/config/footer'))
       if (response.ok) {
         const data = await response.json()
         setFooterConfig(data.footer || {
@@ -2356,8 +2361,7 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
 
   const loadSiteInfo = async () => {
     try {
-      const params = new URLSearchParams(authParams)
-      const response = await fetch(apiUrl('admin/config/site-info') + '&' + params.toString())
+      const response = await fetch(apiUrl('admin/config/site-info'))
       if (response.ok) {
         const data = await response.json()
         setSiteTitle(data.site_title || 'PEU Cuchillos Artesanales')
@@ -2374,8 +2378,7 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
   const handleSaveMetaTags = async () => {
     setSavingMetaTags(true)
     try {
-      const params = new URLSearchParams(authParams)
-      const response = await fetch(apiUrl('admin/config/metatags') + '&' + params.toString(), {
+      const response = await fetch(apiUrl('admin/config/metatags'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ meta_tags: metaTags })
@@ -2402,8 +2405,7 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
   const handleSaveConfiguratorMessage = async () => {
     setSavingConfiguratorMessage(true)
     try {
-      const params = new URLSearchParams(authParams)
-      const response = await fetch(apiUrl('admin/config/configurator') + '&' + params.toString(), {
+      const response = await fetch(apiUrl('admin/config/configurator'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ configurator_message: configuratorMessage })
@@ -2428,8 +2430,7 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
   const handleSaveFooter = async () => {
     setSavingFooter(true)
     try {
-      const params = new URLSearchParams(authParams)
-      const response = await fetch(apiUrl('admin/config/footer') + '&' + params.toString(), {
+      const response = await fetch(apiUrl('admin/config/footer'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ footer: footerConfig })
@@ -2453,8 +2454,7 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
 
   const loadInstructionsConfig = async () => {
     try {
-      const params = new URLSearchParams(authParams)
-      const response = await fetch(apiUrl('admin/config/instructions') + '&' + params.toString())
+      const response = await fetch(apiUrl('admin/config/instructions'))
       if (response.ok) {
         const data = await response.json()
         setInstructionsConfig(data.instructions || {
@@ -2470,8 +2470,7 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
   const handleSaveInstructions = async () => {
     setSavingInstructions(true)
     try {
-      const params = new URLSearchParams(authParams)
-      const response = await fetch(apiUrl('admin/config/instructions') + '&' + params.toString(), {
+      const response = await fetch(apiUrl('admin/config/instructions'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ instructions: instructionsConfig })
@@ -2495,8 +2494,7 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
 
   const loadConfiguratorInstructionsConfig = async () => {
     try {
-      const params = new URLSearchParams(authParams)
-      const response = await fetch(apiUrl('admin/config/configurator-instructions') + '&' + params.toString())
+      const response = await fetch(apiUrl('admin/config/configurator-instructions'))
       if (response.ok) {
         const data = await response.json()
         setConfiguratorInstructions(data.configurator_instructions)
@@ -2509,8 +2507,7 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
   const handleSaveConfiguratorInstructions = async () => {
     setSavingConfiguratorInstructions(true)
     try {
-      const params = new URLSearchParams(authParams)
-      const response = await fetch(apiUrl('admin/config/configurator-instructions') + '&' + params.toString(), {
+      const response = await fetch(apiUrl('admin/config/configurator-instructions'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ configurator_instructions: configuratorInstructions })
@@ -2535,8 +2532,7 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
   const handleSaveSiteInfo = async () => {
     setSavingSiteInfo(true)
     try {
-      const params = new URLSearchParams(authParams)
-      const response = await fetch(apiUrl('admin/config/site-info') + '&' + params.toString(), {
+      const response = await fetch(apiUrl('admin/config/site-info'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -2572,8 +2568,7 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
 
     setCreating(true)
     try {
-      const params = new URLSearchParams(authParams)
-      const response = await fetch(apiUrl('admin/backups') + '&' + params.toString(), {
+      const response = await fetch(apiUrl('admin/backups'), {
         method: 'POST'
       })
 
@@ -2604,9 +2599,25 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
     }
   }
 
-  const handleDownloadBackup = (filename) => {
-    const params = new URLSearchParams(authParams)
-    window.location.href = apiUrl(`admin/backups/${filename}`) + '&' + params.toString()
+  const handleDownloadBackup = async (filename) => {
+    try {
+      const response = await fetch(apiUrl(`admin/backups/${filename}`))
+      if (!response.ok) {
+        showError('Error', response.status === 401 ? 'Sesión expirada' : 'No se pudo descargar el backup')
+        return
+      }
+      const blob = await response.blob()
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = filename
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      URL.revokeObjectURL(url)
+    } catch (error) {
+      showError('Error', 'Error de conexión')
+    }
   }
 
   const handleDeleteBackup = async (filename) => {
@@ -2617,8 +2628,7 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
     // Esperar animación antes de eliminar
     setTimeout(async () => {
       try {
-        const params = new URLSearchParams(authParams)
-        const response = await fetch(apiUrl(`admin/backups/${filename}`) + '&' + params.toString(), {
+        const response = await fetch(apiUrl(`admin/backups/${filename}`), {
           method: 'DELETE'
         })
 
@@ -2674,8 +2684,7 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
 
   const handleDeleteLogo = async () => {
     try {
-      const params = new URLSearchParams(authParams)
-      const response = await fetch(apiUrl('admin/config/logo') + '&' + params.toString(), {
+      const response = await fetch(apiUrl('admin/config/logo'), {
         method: 'DELETE'
       })
 
@@ -2726,8 +2735,7 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
 
   const handleDeleteCaratula = async () => {
     try {
-      const params = new URLSearchParams(authParams)
-      const response = await fetch(apiUrl('admin/config/caratula') + '&' + params.toString(), {
+      const response = await fetch(apiUrl('admin/config/caratula'), {
         method: 'DELETE'
       })
 
@@ -2746,8 +2754,7 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
   const handleSaveContactConfig = async () => {
     setSavingContact(true)
     try {
-      const params = new URLSearchParams(authParams)
-      const response = await fetch(apiUrl('admin/config/contact') + '&' + params.toString(), {
+      const response = await fetch(apiUrl('admin/config/contact'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -2775,8 +2782,7 @@ function Configuration({ authParams, showSuccess, showError, onLogoChange, backe
   const handleSaveHeadersConfig = async () => {
     setSavingHeaders(true)
     try {
-      const params = new URLSearchParams(authParams)
-      const response = await fetch(apiUrl('admin/config/headers') + '&' + params.toString(), {
+      const response = await fetch(apiUrl('admin/config/headers'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

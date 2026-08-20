@@ -1,0 +1,4 @@
+# Bloquear acceso directo a scripts de diagnóstico (solo uso vía CLI/desarrollo)
+<FilesMatch "^(diagnostic|check_limits)\.php$">
+  Require all denied
+</FilesMatch>

@@ -3,8 +3,10 @@
     "required": "Authentication required",
     "invalid_credentials": "Invalid credentials",
     "authenticated": "Authenticated",
-    "password_min_length": "Password must be at least 6 characters",
-    "password_updated": "Password updated"
+    "password_min_length": "Password must be at least 12 characters",
+    "password_updated": "Password updated",
+    "too_many_attempts": "Too many attempts. Try again later.",
+    "not_configured": "Administrator is not configured"
   },
   "bucket": {
     "not_found": "Bucket not found",
@@ -67,7 +69,8 @@
     "save_error": "Error saving configuration",
     "saved": "Configuration saved",
     "not_found": "Configuration not found",
-    "read_error": "Error reading configuration"
+    "read_error": "Error reading configuration",
+    "invalid_code": "Invalid configuration code"
   },
   "footer": {
     "footer_required": "footer parameter required",

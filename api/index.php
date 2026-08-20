@@ -5,9 +5,28 @@
  */
 
 header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: *');
+
+// CORS restringido: solo orígenes del sitio o el mismo host
+$requestOrigin = $_SERVER['HTTP_ORIGIN'] ?? '';
+$allowedOrigin = '';
+if ($requestOrigin !== '') {
+    $originHost = strtolower((string)parse_url($requestOrigin, PHP_URL_HOST));
+    $serverHost = strtolower($_SERVER['HTTP_HOST'] ?? '');
+    if ($originHost === $serverHost || in_array($originHost, ['peu.net', 'www.peu.net'])) {
+        $allowedOrigin = $requestOrigin;
+    }
+}
+if ($allowedOrigin !== '') {
+    header('Access-Control-Allow-Origin: ' . $allowedOrigin);
+    header('Vary: Origin');
+}
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
+
+// Cabeceras de seguridad
+header('X-Content-Type-Options: nosniff');
+header('X-Frame-Options: DENY');
+header('Referrer-Policy: no-referrer');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
@@ -21,6 +40,10 @@ define('BACKUPS_DIR', __DIR__ . '/../backups');
 define('CONFIGURATOR_DIR', DATA_DIR . '/configurator');
 define('CONFIG_FILE', DATA_DIR . '/config.json');
 define('LOCALES_DIR', __DIR__ . '/locales');
+
+// Límites de autenticación (fuerza bruta)
+define('AUTH_MAX_ATTEMPTS', 10);
+define('AUTH_WINDOW', 900); // 15 minutos
 
 // Sistema de traducciones
 $TRANSLATIONS = null;
@@ -71,9 +94,9 @@ loadTranslations($requestedLang);
 function getConfig() {
     if (file_exists(CONFIG_FILE)) {
         $config = json_decode(file_get_contents(CONFIG_FILE), true);
-        if ($config) return $config;
+        if (is_array($config)) return $config;
     }
-    return ['user' => 'admin', 'pass' => 'admin123'];
+    return [];
 }
 
 function saveConfig($config) {
@@ -83,11 +106,15 @@ function saveConfig($config) {
 // Verificar si una string es un hash de contraseña válido
 function isPasswordHash($string) {
     // Los hashes de password_hash() empiezan con $2y$ (bcrypt)
-    return preg_match('/^\$2[ayb]\$.{56}$/', $string);
+    if (!is_string($string)) return false;
+    return preg_match('/^\$2[ayb]\$.{56}$/', $string) === 1;
 }
 
 // Verificar contraseña (soporta plaintext legacy y hash)
 function verifyPassword($password, $storedPassword) {
+    if (!is_string($storedPassword) || $storedPassword === '') {
+        return false;
+    }
     // Si es un hash, usar password_verify
     if (isPasswordHash($storedPassword)) {
         return password_verify($password, $storedPassword);
@@ -98,7 +125,7 @@ function verifyPassword($password, $storedPassword) {
 
 // Migrar contraseña plaintext a hash si es necesario
 function migratePasswordIfNeeded($config, $password) {
-    if (!isPasswordHash($config['pass'])) {
+    if (!isset($config['pass']) || !isPasswordHash($config['pass'])) {
         // La contraseña actual es plaintext, migrar a hash
         $config['pass'] = password_hash($password, PASSWORD_DEFAULT);
         saveConfig($config);
@@ -106,8 +133,8 @@ function migratePasswordIfNeeded($config, $password) {
 }
 
 $CONFIG = getConfig();
-define('ADMIN_USER', $CONFIG['user']);
-define('ADMIN_PASS', $CONFIG['pass']);
+define('ADMIN_USER', $CONFIG['user'] ?? null);
+define('ADMIN_PASS', $CONFIG['pass'] ?? null);
 
 // Leer input UNA sola vez y almacenarlo globalmente
 $RAW_INPUT = file_get_contents('php://input');
@@ -230,35 +257,86 @@ function sanitize($str) {
 }
 
 function generateUUID() {
-    return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
-        mt_rand(0, 0xffff), mt_rand(0, 0xffff),
-        mt_rand(0, 0xffff),
-        mt_rand(0, 0x0fff) | 0x4000,
-        mt_rand(0, 0x3fff) | 0x8000,
-        mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
-    );
+    $data = random_bytes(16);
+    $data[6] = chr((ord($data[6]) & 0x0f) | 0x40);
+    $data[8] = chr((ord($data[8]) & 0x3f) | 0x80);
+    return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
 }
 
 function generateConfigCode() {
-    $characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Sin I, O, 0, 1 para evitar confusión
-    $code = '';
-    for ($i = 0; $i < 8; $i++) {
-        $code .= $characters[mt_rand(0, strlen($characters) - 1)];
-    }
-    return $code;
+    // 16 caracteres hexadecimales = 64 bits de entropía criptográfica
+    return strtoupper(bin2hex(random_bytes(8)));
 }
 
 function generateUniqueConfigCode() {
-    $maxAttempts = 100;
-    for ($i = 0; $i < $maxAttempts; $i++) {
+    for ($i = 0; $i < 100; $i++) {
         $code = generateConfigCode();
-        $filepath = CONFIGURATOR_DIR . '/' . $code . '.json';
-        if (!file_exists($filepath)) {
+        if (!file_exists(CONFIGURATOR_DIR . '/' . $code . '.json')) {
             return $code;
         }
     }
-    // Si después de 100 intentos no se encontró un código único, usar timestamp
-    return generateConfigCode() . substr(time(), -2);
+    // Improbable: colisión persistente, regenerar
+    return generateConfigCode();
+}
+
+// ===== Rate limiting por archivo (compatible con hosting compartido) =====
+function getClientIP() {
+    return $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+}
+
+// Devuelve true si la petición debe ser rechazada (429). Incrementa el contador.
+function rateLimitHit($bucket, $limit, $window, &$retryAfter = null) {
+    $file = DATA_DIR . '/rate_' . $bucket . '.json';
+    $ip = getClientIP();
+    $now = time();
+
+    $data = [];
+    if (file_exists($file)) {
+        $decoded = json_decode((string)file_get_contents($file), true);
+        if (is_array($decoded)) $data = $decoded;
+    }
+
+    $entry = $data[$ip] ?? ['count' => 0, 'window_start' => $now, 'blocked_until' => 0];
+    if ($now - $entry['window_start'] > $window) {
+        $entry = ['count' => 0, 'window_start' => $now, 'blocked_until' => 0];
+    }
+
+    if ($entry['blocked_until'] > $now) {
+        $retryAfter = $entry['blocked_until'] - $now;
+        return true;
+    }
+
+    $entry['count']++;
+    if ($entry['count'] >= $limit) {
+        $entry['blocked_until'] = $now + $window;
+        $entry['count'] = 0;
+        $data[$ip] = $entry;
+        @file_put_contents($file, json_encode($data), LOCK_EX);
+        $retryAfter = $window;
+        return true;
+    }
+
+    // Podar entradas viejas (máximo 2 ventanas)
+    foreach ($data as $k => $e) {
+        $ws = $e['window_start'] ?? 0;
+        if ($now - $ws > $window * 2 && ($e['blocked_until'] ?? 0) <= $now) {
+            unset($data[$k]);
+        }
+    }
+    $data[$ip] = $entry;
+    @file_put_contents($file, json_encode($data), LOCK_EX);
+    return false;
+}
+
+function rateLimitClear($bucket) {
+    $file = DATA_DIR . '/rate_' . $bucket . '.json';
+    $data = [];
+    if (file_exists($file)) {
+        $decoded = json_decode((string)file_get_contents($file), true);
+        if (is_array($decoded)) $data = $decoded;
+    }
+    unset($data[getClientIP()]);
+    @file_put_contents($file, json_encode($data), LOCK_EX);
 }
 
 function checkAuth() {
@@ -274,17 +352,12 @@ function checkAuth() {
         $user = $JSON_INPUT['auth_user'];
         $pass = $JSON_INPUT['auth_pass'];
     }
-    // 2. Intentar desde query string (para GET requests)
-    elseif (!empty($_GET['auth_user']) && !empty($_GET['auth_pass'])) {
-        $user = $_GET['auth_user'];
-        $pass = $_GET['auth_pass'];
-    }
-    // 3. Intentar PHP_AUTH (si el hosting lo permite)
+    // 2. Intentar PHP_AUTH (si el hosting lo permite)
     elseif (isset($_SERVER['PHP_AUTH_USER']) && isset($_SERVER['PHP_AUTH_PW'])) {
         $user = $_SERVER['PHP_AUTH_USER'];
         $pass = $_SERVER['PHP_AUTH_PW'];
     }
-    // 4. Intentar header Authorization manual
+    // 3. Intentar header Authorization manual
     else {
         $authHeader = null;
         if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
@@ -298,7 +371,7 @@ function checkAuth() {
 
         if ($authHeader && preg_match('/Basic\s+(.*)$/i', $authHeader, $matches)) {
             $decoded = base64_decode($matches[1]);
-            if ($decoded && strpos($decoded, ':') !== false) {
+            if ($decoded !== false && strpos($decoded, ':') !== false) {
                 list($user, $pass) = explode(':', $decoded, 2);
             }
         }
@@ -307,6 +380,24 @@ function checkAuth() {
     if (!$user || !$pass) {
         http_response_code(401);
         echo json_encode(['error' => t('auth.required')]);
+        exit;
+    }
+
+    // Rate limiting por IP (fuerza bruta)
+    $retryAfter = null;
+    if (rateLimitHit('auth', AUTH_MAX_ATTEMPTS, AUTH_WINDOW, $retryAfter)) {
+        http_response_code(429);
+        if ($retryAfter) {
+            header('Retry-After: ' . $retryAfter);
+        }
+        echo json_encode(['error' => t('auth.too_many_attempts')]);
+        exit;
+    }
+
+    // Sin credenciales configuradas: rechazar (nunca usar defaults)
+    if (ADMIN_USER === null || ADMIN_PASS === null) {
+        http_response_code(500);
+        echo json_encode(['error' => t('auth.not_configured')]);
         exit;
     }
 
@@ -323,6 +414,9 @@ function checkAuth() {
         echo json_encode(['error' => t('auth.invalid_credentials')]);
         exit;
     }
+
+    // Éxito: limpiar intentos fallidos
+    rateLimitClear('auth');
 
     // Migrar contraseña a hash si aún está en plaintext
     $config = getConfig();
@@ -409,7 +503,7 @@ switch (true) {
         }
 
         $newPass = $input['new_password'];
-        if (strlen($newPass) < 6) {
+        if (strlen($newPass) < 12) {
             response(['error' => t('auth.password_min_length')], 400);
         }
 
@@ -436,16 +530,8 @@ switch (true) {
         }
 
         $data = readJSON('categories.json');
-
-        // Si viene del admin (con auth params), NO transformar - devolver datos completos multilingües
-        $isAdmin = !empty($_GET['auth_user']) && !empty($_GET['auth_pass']);
-
-        if ($isAdmin) {
-            response($data);
-        } else {
-            $transformed = transformCategoriesForLanguage($data, $lang);
-            response($transformed);
-        }
+        $transformed = transformCategoriesForLanguage($data, $lang);
+        response($transformed);
         break;
 
     // GET /photos - Listar fotos
@@ -1217,7 +1303,7 @@ switch (true) {
         }
 
         $file = $_FILES['logo'];
-        $allowedTypes = ['image/jpeg', 'image/png', 'image/svg+xml', 'image/webp'];
+        $allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
 
         if (!in_array($file['type'], $allowedTypes)) {
             response(['error' => t('logo.file_type_not_allowed')], 400);
@@ -1471,8 +1557,15 @@ switch (true) {
                 // Remover metadatos anteriores si existen
                 $html = preg_replace('/<!-- DYNAMIC META START -->.*?<!-- DYNAMIC META END -->/s', '', $html);
 
-                // Construir metadatos a inyectar
-                $metaTagsToInject = trim($input['meta_tags']);
+                // Permitir solo etiquetas <meta> (whitelist) y escapar comillas para evitar HTML injection
+                $metaTagsToInject = '';
+                if (preg_match_all('/<meta\b[^>]*>/i', (string)$input['meta_tags'], $matches)) {
+                    $sanitizedMetas = [];
+                    foreach ($matches[0] as $m) {
+                        $sanitizedMetas[] = str_replace('"', '&quot;', trim($m));
+                    }
+                    $metaTagsToInject = implode("\n", $sanitizedMetas);
+                }
 
                 // Agregar og:image y twitter:image si hay carátula
                 if (isset($config['caratula'])) {
@@ -1480,7 +1573,11 @@ switch (true) {
                     // Convertir a URL absoluta si es relativa
                     if (!preg_match('/^https?:\/\//', $caratulaUrl)) {
                         $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
-                        $host = $_SERVER['HTTP_HOST'];
+                        // Validar el host contra dominios conocidos (evita host header injection)
+                        $host = $_SERVER['HTTP_HOST'] ?? '';
+                        if (!preg_match('/^(peu\.net|www\.peu\.net)(:\d+)?$/i', $host)) {
+                            $host = 'peu.net';
+                        }
                         // Obtener el path base (por ejemplo /confi)
                         $basePath = dirname($_SERVER['SCRIPT_NAME'], 2);
                         // Construir URL sin dobles barras
@@ -1498,10 +1595,11 @@ switch (true) {
                     $metaTagsToInject = trim($metaTagsToInject);
 
                     // Agregar og:image y twitter:image
-                    $metaTagsToInject .= "\n<meta property=\"og:image\" content=\"$caratulaUrl\">";
+                    $caratulaEscaped = htmlspecialchars($caratulaUrl, ENT_QUOTES, 'UTF-8');
+                    $metaTagsToInject .= "\n<meta property=\"og:image\" content=\"$caratulaEscaped\">";
                     $metaTagsToInject .= "\n<meta property=\"og:image:width\" content=\"1200\">";
                     $metaTagsToInject .= "\n<meta property=\"og:image:height\" content=\"630\">";
-                    $metaTagsToInject .= "\n<meta name=\"twitter:image\" content=\"$caratulaUrl\">";
+                    $metaTagsToInject .= "\n<meta name=\"twitter:image\" content=\"$caratulaEscaped\">";
                 }
 
                 // Insertar nuevos metadatos antes de </head>
@@ -1538,14 +1636,28 @@ switch (true) {
             response(['error' => t('configurator.buckets_required')], 400);
         }
 
-        // Si viene un código, usarlo (sobrescribir); si no, generar uno nuevo
-        if (!empty($input['code'])) {
-            $code = $input['code'];
-        } else {
-            $code = generateUniqueConfigCode();
+        // Rate limit por IP (evita abuso y llenado de disco)
+        if (rateLimitHit('configurator_write', 60, 3600)) {
+            http_response_code(429);
+            echo json_encode(['error' => t('auth.too_many_attempts')]);
+            exit;
         }
 
-        $filepath = CONFIGURATOR_DIR . '/' . $code . '.json';
+        // Si viene un código existente, solo se permite actualizar si tiene formato válido
+        // y el archivo ya existe (nunca crear códigos arbitrarios o con path traversal)
+        if (!empty($input['code'])) {
+            $code = $input['code'];
+            if (!preg_match('/^[A-Z0-9]{8,16}$/', $code)) {
+                response(['error' => t('configurator.invalid_code')], 400);
+            }
+            $filepath = CONFIGURATOR_DIR . '/' . $code . '.json';
+            if (!file_exists($filepath)) {
+                response(['error' => t('configurator.invalid_code')], 400);
+            }
+        } else {
+            $code = generateUniqueConfigCode();
+            $filepath = CONFIGURATOR_DIR . '/' . $code . '.json';
+        }
 
         // Leer created_at existente si es una actualización
         $created_at = date('Y-m-d H:i:s');
@@ -1572,7 +1684,14 @@ switch (true) {
         break;
 
     // GET /configurator/:code - Cargar configuración por código
-    case preg_match('/^configurator\/([A-Z0-9]{8,10})$/', $path, $matches) && $method === 'GET':
+    case preg_match('/^configurator\/([A-Z0-9]{8,16})$/', $path, $matches) && $method === 'GET':
+        // Rate limit por IP (evita enumeración masiva de códigos)
+        if (rateLimitHit('configurator_read', 120, 900)) {
+            http_response_code(429);
+            echo json_encode(['error' => t('auth.too_many_attempts')]);
+            exit;
+        }
+
         $code = $matches[1];
         $filepath = CONFIGURATOR_DIR . '/' . $code . '.json';
 

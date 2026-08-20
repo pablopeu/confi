@@ -3,8 +3,10 @@
     "required": "Autenticación requerida",
     "invalid_credentials": "Credenciales inválidas",
     "authenticated": "Autenticado",
-    "password_min_length": "La contraseña debe tener al menos 6 caracteres",
-    "password_updated": "Contraseña actualizada"
+    "password_min_length": "La contraseña debe tener al menos 12 caracteres",
+    "password_updated": "Contraseña actualizada",
+    "too_many_attempts": "Demasiados intentos. Intente de nuevo más tarde.",
+    "not_configured": "El administrador no está configurado"
   },
   "bucket": {
     "not_found": "Bucket no encontrado",
@@ -67,7 +69,8 @@
     "save_error": "Error al guardar configuración",
     "saved": "Configuración guardada",
     "not_found": "Configuración no encontrada",
-    "read_error": "Error al leer configuración"
+    "read_error": "Error al leer configuración",
+    "invalid_code": "Código de configuración inválido"
   },
   "footer": {
     "footer_required": "Parámetro footer requerido",

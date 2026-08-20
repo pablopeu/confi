@@ -49,10 +49,16 @@ jobs:
           mkdir -p deploy/backups
           cp backups/.htaccess deploy/backups/.htaccess 2>/dev/null || echo "Deny from all" > deploy/backups/.htaccess
           mkdir -p deploy/uploads
+          # Proteger uploads contra ejecución de scripts
+          if [ -f uploads/.htaccess ]; then
+            cp uploads/.htaccess deploy/uploads/.htaccess
+          else
+            printf '<FilesMatch "\\.(?i:php|phtml|php[0-9]|phar|cgi|pl|py|sh|asp|aspx|jsp|html?|shtml)$">\n  Require all denied\n</FilesMatch>\nRemoveHandler .php .phtml .php8 .phar\nRemoveType .php .phtml .php8 .phar\n' > deploy/uploads/.htaccess
+          fi
           # Copiar .htaccess principal para SPA routing
           cp .htaccess deploy/.htaccess
           # NO copiar datos JSON - dejar los del servidor
-          # NO copiar uploads - dejar los del servidor
+          # NO copiar uploads (solo su .htaccess) - dejar los del servidor
 
       - name: Deploy to FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5

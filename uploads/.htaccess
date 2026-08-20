@@ -1,0 +1,13 @@
+# No permitir ejecución de scripts en uploads/ (solo imágenes)
+<FilesMatch "\.(?i:php|phtml|php[0-9]|phar|cgi|pl|py|sh|asp|aspx|jsp|html?|shtml)$">
+  Require all denied
+</FilesMatch>
+RemoveHandler .php .phtml .php8 .phar
+RemoveType .php .phtml .php8 .phar
+
+# Servir uploads como archivos inertes
+<IfModule mod_headers.c>
+  Header set X-Content-Type-Options "nosniff"
+  Header set Content-Disposition "inline"
+  Header set Content-Security-Policy "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'"
+</IfModule>

@@ -11,6 +11,7 @@ frontend/dist/
 # Uploads (fotos subidas)
 uploads/*
 !uploads/.gitkeep
+!uploads/.htaccess
 
 # Data (JSON de producción - no versionar)
 data/*.json
